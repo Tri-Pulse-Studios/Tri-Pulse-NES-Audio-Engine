@@ -86,3 +86,6 @@
 ### vsCode Theme
 - Releasing a more comprehensive and usable theme (or themes)
 
+- The Tri-Pulse Studios theme will support the .s file extensions and TextMate grammer, all in one package.
+	- At minimum, bundling several theme options.
+	- If possible, an additional option for fully customizable theme.

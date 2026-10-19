@@ -61,6 +61,8 @@ A Square wave and Triangle wave share the same harmonic profile, but Pulse harmo
 For a Tri-Pulse wave with a duty cycle, `d`:
 
 ```text
+For 0 < d <= 1/2
+
 f(t) = t/d,           0 <= t < d
        1 - (t-d)/d,   d <= t < 2d
        0,             2d <= t < 1
@@ -75,7 +77,7 @@ f(t)
    +---------------------------- t
      0    d    2d        1
 ```
-where `0 < d <= 1/2`.
+where 
 
 For `1/2 < d < 1`, the waveform is the vertical inversion of the waveform with duty cycle 1-d, similar to how 25% and 75% Pulse waves are inverted.
 ### Harmonics Formulae
@@ -122,16 +124,48 @@ H(n) ∝ sin²(π*n*d) / n²
 
 **Required**
 
-* [ ] **ca65 and ld65** ([CC65 toolchain](https://cc65.github.io/)) - Assemble and link the engine.
-* [ ] **Python 3** - Run the build scripts.
+## Required
 
-**Recommended**
+- [ ] **[ca65 and ld65](https://cc65.github.io/)** ([CC65 toolchain](https://cc65.github.io/)) - Assemble and link the engine.
+- [ ] **[Visual Studio Code](https://code.visualstudio.com/)** - Code editor and assembler.
+- [ ] **[Mesen](https://www.mesen.ca/)** - NES emulator.
+- [ ] **[Python 3](https://www.python.org/downloads/)** - Run the build scripts.
 
-* [ ] **Visual Studio Code** - Recommended code editor.
-* [ ] **Tri-Pulse Studios Theme** - Recommended FamiStudio theme.
-* [ ] **Mesen** - Recommended NES emulator.
-* [ ] **FamiStudio** - Recommended music editor. Open `user/Example_Songs.fms` in FamiStudio.
-* [ ] **YY-CHR.net** - Recommended NES tile editor.
+## Recommended
+
+- [ ] **[tri-pulse-studios-ca65-theme](tools/theme/tri-pulse-studios-ca65-theme1.0.vsix)** - VS Code theme for Song Data.
+- [ ] **[FamiStudio](https://famistudio.org/)** - NES music editor. The various `.fms` files in `user/Song_Data/` are opened in Famistudio
+- [ ] **[YY-CHR.net](https://www.nesdev.org/wiki/YY-CHR)** - Recommended NES tile editor.
+
+## Installing the Tri-Pulse Studios ca65 Theme
+
+The `tri-pulse-studios-ca65-theme` has two primary purposes:
+
+- Syntax highlighting for ca65 6502 assembly, including macros.
+- Syntax highlighting when authoring Song Data for the Tri-Pulse NES Audio Engine.
+
+
+
+**Installing the Theme**
+
+1. Find the [Tri-Pulse Studios ca65 Theme](tools/theme/tri-pulse-studios-ca65-theme.vsix).
+    - It's a VS Code Extension
+    - It combines a theme with required TextMate formatting.
+
+2. In VS Code, open **Extensions** from the left sidebar.
+
+3. Click the `...` menu at the top of the Extensions panel.
+
+4. Select **Install from VSIX...** and choose the downloaded `.vsix` file.
+
+**Activating the Theme**
+
+1. Press `Ctrl+K`, then `Ctrl+T` in VS Code.
+2. Select **Tri-Pulse CA65 Theme** from the theme list. It should appear near the bottom.
+
+**Customizing the Theme**
+
+*Planned for a future version.*
 
 ## Building the ROM
 
@@ -152,9 +186,7 @@ The `user/Song_Data/Examples/` directory contains completed example songs playab
 
 
 
-## Installing the Tri-Pulse Studios Theme
 
-*Instructions coming soon.*
 
 ## Making Your Own Music
 

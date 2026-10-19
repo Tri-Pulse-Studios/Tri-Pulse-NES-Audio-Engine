@@ -1,0 +1,47 @@
+{
+  "name": "tri-pulse-studios-ca65-custom-theme",
+  "displayName": "Tri-Pulse Studios CA65 Theme",
+  "description": "Custom dark theme for CA65, specifically designed for opcodes and music command highlighting.",
+  "version": "1.0.0",
+  "publisher": "tri-pulse-studios",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tri-pulse-studios/ca65-theme"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "ca65",
+        "aliases": [
+          "CA65",
+          "ca65"
+        ],
+        "extensions": [
+          ".s"
+        ],
+        "filenames": [],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "Tri-Pulse CA65 Theme",
+        "uiTheme": "vs-dark",
+        "path": "./themes/ca65-color-theme.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ca65",
+        "scopeName": "source.ca65",
+        "path": "./syntaxes/ca65.tmLanguage.json"
+      }
+    ]
+  }
+}

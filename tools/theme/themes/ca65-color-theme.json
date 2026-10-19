@@ -1,0 +1,58 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "CA65 Custom Theme",
+  "type": "dark",
+
+  "include": "./dark_plus.json",
+
+
+  "colors": {
+    "editor.background": "#1f1f1f",
+    "editor.foreground": "#e0e0e0",
+    "editorCursor.foreground": "#FFFFFF",
+    "editor.lineHighlightBackground": "#2a2a2a",
+    "editor.selectionBackground": "#264f78",
+    "editorWhitespace.foreground": "#3b3b3b",
+    "editorIndentGuide.background1": "#3b3b3b",
+    "editorIndentGuide.activeBackground1": "#707070"
+
+  },
+  "tokenColors": [
+    {
+      "scope": "keyword.control.controlcommand.ca65, keyword.control",
+      "settings": { "foreground": "#C586C0" }
+    },
+    {
+      "scope": "string.quoted.double.ca65, string",
+      "settings": { "foreground": "#CE9178" }
+    },
+    {
+      "scope": "comment.line.ca65, comment",
+      "settings": { "foreground": "#7CA668" }
+    },
+    {
+      "scope": "constant.numeric.hex.ca65, constant.numeric",
+      "settings": { "foreground": "#DDAA33" }
+    },
+    {
+      "scope": "source.ca65",
+      "settings": { "foreground": "#e0e0e0" }
+    },
+    {
+      "scope": "variable.label, variable",
+      "settings": { "foreground": "#9CDCFE" }
+    },
+    {
+      "scope": "keyword.other.opcode.ca65.65c02, keyword",
+      "settings": { "foreground": "#569CD6" }
+    },
+    {
+      "scope": "entity.name.function.macro, entity.name.function",
+      "settings": { "foreground": "#AA66DD" }
+    },
+    {
+      "scope": "constant.numeric.musicname.ca65",
+      "settings": { "foreground": "#9999FF" }
+    }
+  ]
+}
