@@ -8,22 +8,26 @@
 .segment "VECTORS"
   .addr nmi
   .addr reset 
-  .addr $2026 ;irq
+  .addr irq ;Unused
  
 .segment "STARTUP" ; "nes" linker config requires a STARTUP section, even if it's empty
 
 .segment "CHARS"
 
-  .incbin "MK64_Tiles_Truncated.bin"
+  .incbin "engine\Data\Tri_Pulse_UI_Tiles.bin"
 
 ;
 
 .segment "CODE"; Main code segment for the program
 
 
-  .res $4000, $00 ;Unoptimized starts at $8000, fills to $c000. Binned starts at $e000
 
-  .include "Defined/Print_PC_as_Warning.s"  
+  ;Start at $c000 instead of $8000
+    ;DMC samples must start past $c000, and 16K of ROM is plenty.
+  .res $4000, $00 
+
+
+  .include "Defined\Print_PC_as_Warning.s"  
   .define Print_PC_Enabled 0 ;This is very slow
 
   ;Above here ignored/hardcoded for tmp
@@ -31,126 +35,65 @@
 py_Segment __Defines, Defines
 
   __Defines:
-    ;Toggleable Debugging/Settings
-    ;All are T/F 1/0 statements.
-
-    .define Debugging_Enabled 0 ;Remove certain debugging checks for benchmark/final builds.
-    .define Emit_MK64_Unused 0 ;Remove Code blocks unused by this specific project, (Such as Sq/Tri SFX support.)
-
+    Emit__Unused = 0 ;TODO. Make Vestigial
 
     .feature line_continuations + ; Ending w/ a "\" lets single lines spill over multiple.
     .feature underline_in_numbers + ;ie, lda #%1010_0101 is now valid.
   
 
-    .include "Defined\Defined_RAM.s"
-    .include "Defined/Defined_Macros.s"
+    .include "user\Config.s" ;User settings.
+
+    .include "engine\Defined\Defined_RAM.s"
+    .include "engine\Defined\Defined_Macros.s"
+
+
+  .include "user\Engine_Data.s"
+  .include "user\SFX_Data.s"
+  .include "user\UI_Data_and_Song_Registry.s"
+
+    ;Data emitted elsewhere. Defines names here.
 
 py_Segment_End __Defines
-;
 
 
+ 
 
-py_Segment NB, Defines ;Free
-DKs_Jungle_Parkway_dmc = (Inf_Wait -2) ;Only plays NoiseFX
-  NB:
-  .include "Music\MK64\Noise_Bank.s"
-
-py_Segment_End NB
 
 py_Segment NB_Data, Free
   NB_Data:
-  ;Macro Output Column-Major LUTs
-  Output_All_NoiseFX 
-py_Segment_End NB_Data
+  Output_All_NoiseFX  ;Macro Output Column-Major LUTs
 
-.include "Music\Music_Init.s"
-.include "Music\New_Note.s"
-.include "Music\Music_Update.s"
+  Output_All_Songs ;Macro Output Song Pointers
+py_Segment_End NB_Data 
 
 
+;===============================================================
+;Primary Music Code Block
+;===============================================================
 
-.include "Music\Music_LUTs.s"
+.include "engine\Code\Music_Init.s"
+.include "engine\Code\Music_Update.s"
+.include "engine\Code\Music_New_Note.s"
 
-.include "Music\SFX_Engine.s"
-py_Segment __SFX_Data, Free
-  __SFX_Data:
-  .include "Music\SFX_LUTs.s"
-py_Segment_End __SFX_Data
-
-
-
-
-.include "Music\MK64\MK64_Title.s" ;Could Organize these based on shared data.
-.include "Music\MK64\MK64_Menu.s"
+.include "engine\Data\Music_Period_LUTs.s"
 
 
-.include "Music\MK64\Raceway.s" 
-.include "Music\MK64\Yoshi_Valley.s" ;Tri End not Releasing
-  .include "Music\MK64\Choco_Mountain.s"
-.include "Music\MK64\Koopa_Beach.s"  
-.include "Music\MK64\Kalamari_Desert.s" 
-
-.include "Music\MK64\Toads_TurnPike.s"
-.include "Music\MK64\Frappe_Snowland.s"
-
-.include "Music\MK64\Bowsers_Castle.s"
-
-.include "Music\MK64\DKs_Jungle_Parkway.s"
-.include "Music\MK64\Banshee_Boardwalk.s"
-.include "Music\MK64\Rainbow_Road.s"
-
-
-.include "Music\MK64\Staff_Roll.s"
-
-.include "Music\MK64\Race_Results.s"
-.include "Music\MK64\SFX\Lose_Race.s"
-
-
-
-.align 256
-py_Segment Start_Fanfares, PageFit
-  Start_Fanfares:
-  .include "Music\MK64\SFX\Race_Start.s"
-  .include "Music\MK64\SFX\Battle_Start.s"
-py_Segment_End Start_Fanfares
-
-.align 256
-py_Segment Finish_Fanfares, PageFit
-  Finish_Fanfares:
-  .include "Music\MK64\SFX\Award_Lose.s"
-  .include "Music\MK64\SFX\Finish_1st.s"
-  .include "Music\MK64\SFX\Finish_2nd_to_4th.s"
-py_Segment_End Finish_Fanfares
-
-
-.include "Music\MK64\SFX\Star_Power.s"
-.include "Music\MK64\Battle.s"
-
-.include "Music\MK64\SFX\Battle_Results.s"
-
-.include "Music\MK64\Award_Win.s"
-
-
-
-.include "Code_MK64\Lap_3.s" ;Defines
 
 py_Segment __Reset_w_UI, Free
     __Reset_w_UI:
 
+  .include "engine\Code\Music_UI_Reset.s"
+  .include "engine\Code\Music_UI.s"
+
+py_Segment_End __Reset_w_UI 
 
 
-  .include "Code_MK64\Music_Only_Reset.s"
-
-  .include "Code_MK64\Background_Simplified.s"
 
 
-py_Segment_End __Reset_w_UI ;Can split into a few smaller Free Segments, but whatever.
-
-
-  ;Should be blank (Unless I impliment dmc ATK)
+ 
 py_Segment irq, Free
   
-  irq: ;using for brk has issues.
+  irq: 
   .if Debugging_Enabled
     .byte $02
     cmp $8070
@@ -167,7 +110,7 @@ DMC_Samples:
     Zero_Sample_Addr:
     DMC_Sample_1_17:
     DMC_Sample_4_65: ;Data Overlaps
-    .incbin "Music\FamiConverter\Output_Files\DMC_Sample_Merged_12.5%_Tri_Pulse.bin" ;All Three  12.5% Tri-Pulse
+    .incbin "engine\Data\DMC Samples\DMC_Sample_Merged_12.5%_Tri_Pulse.bin" ;All Three  12.5% Tri-Pulse
     DMC_Sample_6_81 = DMC_Sample_1_17+64 ;Shares the 65th $00 Byte.
   
     Output_All_Env  ;Overloading $00s w/ DMC
@@ -177,7 +120,7 @@ DMC_Samples:
   py_Segment DMC_Sample_8_65, Indicies, 0, $40, $80, $c0
     DMC_Sample_8_65: 
     DMC_Sample_9_81 = DMC_Sample_8_65+64 ;Shares the 65th $FF Byte.
-    .incbin "Music\FamiConverter\Output_Files\DMC_Sample_Merged_25%_Tri_Pulse.bin" ;Two 25% Tri-Pulse
+    .incbin "engine\Data\DMC Samples\DMC_Sample_Merged_25%_Tri_Pulse.bin" ;Two 25% Tri-Pulse
   py_Segment_End DMC_Sample_8_65
 
 
@@ -185,19 +128,30 @@ DMC_Samples:
   py_Segment DMC_Sample_2_17, Indicies, 0, $40, $80, $c0
     FF_Sample:
     DMC_Sample_2_17:
-    .incbin "Music\FamiConverter\Output_Files\DMC_Sample_2_17.bin" ;One 25% Tri-Pulse
+    .incbin "engine\Data\DMC Samples\DMC_Sample_2_17.bin" ;One 25% Tri-Pulse
   py_Segment_End DMC_Sample_2_17
 
 
     .align 64, $DC
   py_Segment DMC_Sample_Tri_Kick, Indicies, 0, $40, $80, $c0
     DMC_Sample_Tri_Kick: ;2-17, 50% Duty, Double Volume.
-    .incbin "Music\FamiConverter\Output_Files\DMC_Sample_Tri_Kick.bin" 
+    .incbin "engine\Data\DMC Samples\DMC_Sample_Tri_Kick.bin" 
   py_Segment_End DMC_Sample_Tri_Kick
 
 ;
 
-.byte "Fritz"
+
+
+Output_UI_Words
+Output_UI_Text
+
+; TODO Song "Silence"
+;Song "Silence" ;Press B-button to silence engine by playing a song of "Nothing"
+
+
+
+
+.byte "Tri-Pulse Studios 2026"
 
 py_Ignore
 

@@ -15,13 +15,18 @@ first_env .set -1 ;If first is not the start of a bank.
     ; 4b = 9 user variables
     ; 3b = 8 user variables
 
-    .if first_env = -1
+    .ifndef Env_Index
+        .error "Envelope not inside an Env_Bank"
+        .exitmacro
+
+    .elseif first_env = -1
         first_env .set Env_Index
     .endif
 
     ;Catalog Names here? Or in Sub Envs?
-
-    .if .xmatch(Size, "6b")
+    .if .xmatch(Name, "Unused")
+        Sub_Env Name, 0,0,0,0,0, 0,0,0,0,0, 0,0,0
+    .elseif .xmatch(Size, "6b")
         .ifblank v13
             .error "Not enough Variables for 6-Byte Env."
         .elseif .not .blank v14
@@ -32,14 +37,18 @@ first_env .set -1 ;If first is not the start of a bank.
             first_atk .set Env_Index
         .elseif last_atk <> -1
             last_atk .set -1
-            .warning "This 6-Byte is after a 4 or 3 Byte. Not optimal."
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 6-Byte is after a 4 or 3 Byte. Not optimal."
+            .endif
         .endif 
 
         .if first_dmc = -1
             first_dmc .set Env_Index
         .elseif last_dmc <> -1
             last_dmc .set -1
-            .warning "This 6-Byte is after a 5 or 3 Byte. Not optimal."
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 6-Byte is after a 5 or 3 Byte. Not optimal."
+            .endif
         .endif 
 
         Sub_Env Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12, v13
@@ -55,7 +64,9 @@ first_env .set -1 ;If first is not the start of a bank.
             first_atk .set Env_Index
         .elseif last_atk <> -1
             last_atk .set -1
-            .warning "This 5-Byte is after a 4 or 3 Byte. Not optimal."
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 5-Byte is after a 4 or 3 Byte. Not optimal."
+            .endif
         .endif 
 
 
@@ -83,7 +94,9 @@ first_env .set -1 ;If first is not the start of a bank.
             first_dmc .set Env_Index
         .elseif last_dmc <> -1
             last_dmc .set -1
-            .warning "This 4-Byte is after a 5 or 3 Byte. Not optimal."
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 4-Byte is after a 5 or 3 Byte. Not optimal."
+            .endif
         .endif 
 
         Sub_Env Name, v1,0,0,v2,v3, v4,0,0,v5,v6, v7,v8, v9 ;No Attack
@@ -246,11 +259,7 @@ first_env .set -1 ;If first is not the start of a bank.
 .endmacro
 
 
-.macro Env_Bank bank_num
-
-    .ifnblank bank_num
-        .out "Env_Bank macro no longer takes an argument. bank_num ignored"
-    .endif
+.macro Env_Bank
 
     .ifndef Env_Index
         Env_Index .set 0
@@ -375,7 +384,7 @@ Env_Bank
         Env "6b", Lead_sqr_13_0, \
             $d0, -$20, $6c, -$0c, $00, \
             _d50, atk_4, _d50, _0f, _d50,\
-            No_Vib, No_Delay, \
+            Vib_None, No_Delay, \
             dmc_low_25
 
         T_M11__d25 .set Lead_sqr_13_0

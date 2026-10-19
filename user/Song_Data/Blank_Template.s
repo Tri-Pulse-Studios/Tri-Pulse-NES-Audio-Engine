@@ -7,9 +7,10 @@
 ;
 ; Replace "Song_Name" throughout this file with your song's name 
 ; as defined in User/UI_Data_and_Song_Registry.s 
-;   ie: Song Fanfare, <BPM>, <UI_text>
+;   ie: Song Fanfare, <Tempo>, <UI_text>
 ;       matches
 ;       Channel Fanfare_Sq0
+;          Header <BP>, <Env>
 ;
 ; Channel syntax:
 ;   Channel <Name>_channel_type, [<Global_Designator>]
@@ -27,10 +28,10 @@
 
 _8th .set -1
 
-; This variable is used for note lengths that are inconvenient to write manually.
+; This optional variable is used for note lengths that are inconvenient to write manually.
 ;    Example: "Notes 16*_8th,rest" is a two-measure rest.
 ;
-; Typical usage: Set it to the song's BPM 
+; Typical usage: Set it to the song's Tempo 
 ; as defined in User/UI_Data_and_Song_Registry.s 
 ;   ie: Song Fanfare, 11, <UI_text>
 ;       matches

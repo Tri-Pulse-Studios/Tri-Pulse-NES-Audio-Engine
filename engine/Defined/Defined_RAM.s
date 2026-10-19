@@ -37,7 +37,11 @@
     .endif
 
     .if RAM_Index > 256
-        .fatal .sprintf(" RAM Page: $%x is already full", Page)
+        .if Page = 0
+            .warning .sprintf("ZP RAM Overflowed. ZP,x instructions may not function.")
+        .elseif (Page+RAM_Index) >= $800
+            .error .sprintf("2k of RAM Overflowed. Index: $%X", (Page + RAM_Index))
+        .endif
     .endif
 
 .endmacro
@@ -59,35 +63,63 @@
 .endmacro
 
  
-;This is for MUSIC DEMO ONLY
 
-Page0:
+
+ZP_RAM:
+
+
     Res_RAM_Set_Page 0
+    RAM_Index .set ZP_RAM_Start
 
-    Res_RAM  irq_tmp_0 ;irq_tmp_0 = $00 ;IRQ needs its own seperate scratch
-    Res_RAM  irq_tmp_1
-    Res_RAM  irq_tmp_2
-    Res_RAM  irq_tmp_3
+    ;$00
+    Res_RAM Note_Data
+    Res_RAM Note_Data_High ;Sq0
+    Res_RAM irq_tmp_0 ;Scratch RAM
+    Res_RAM irq_tmp_1
+
+    Res_RAM ND_Sq1 ;Note_Data_Sq1. 
+    Res_RAM NDH_Sq1 ;Channel data is spaced 4 bytes apart (To match APU Register spacing format.)
+    Res_RAM irq_tmp_2
+    Res_RAM irq_tmp_3
  
-    Res_RAM Song_Pointer
-    Res_RAM Song_ID ;Playing Song
-    Res_RAM Track_Index ;Displayed Name
-    Res_RAM Unused
-
-    Res_RAM Eighth_Length
-    Res_RAM Music_Fade_Out_Flag
-    Res_RAM Music_pause_Flag
-    Res_RAM DMC_MIDI
+    ;$08
+    Res_RAM ND_Tri
+    Res_RAM NDH_Tri
+    Res_RAM Song_ID 
+    Res_RAM Song_Pointer ;ID*5
     
-
-    Res_RAM Unused
-    Res_RAM Unused
-    Res_RAM Held_Button
-    Res_RAM Pressed_Button
-
-
+    Res_RAM ND_Noise
+    Res_RAM NDH_Noise
+    Res_RAM Eighth_Length
+    Res_RAM DMC_MIDI
 
     ;$10
+    Res_RAM ND_DMC
+    Res_RAM NDH_DMC
+
+
+    ;For UI Text 
+    Res_RAM Held_Button
+    Res_RAM Pressed_Button
+    Res_RAM Track_Index ;Displayed Name
+
+
+;
+
+
+
+Normal_RAM:
+    Res_RAM_Set_Page >RAM_Start
+    RAM_Index .set <RAM_Start
+
+    
+    ;Order of all of these is, Sq0 0-3, Sq1 4-7, Tri 8-b, Noise c-f, DMC 10-13
+
+    ;All SFX are +1 of the mirrored Music RAM (For jsr function re-use)
+        ;The Indented ones RELY on inx/jsr/dex between SFX and Music
+                ;Noise Alts are for Primary/Secondary inx,jsr,dex re-use.
+
+    ;$00
     Res_5_Channels  Note_Period_High, \
                     Note_Period_Low, \
                     Vibrato_Timer, \
@@ -96,12 +128,13 @@ Page0:
                     ;This group only read by Sq-Tri
                         ;Only Vib_Depth is written by dmc-Noise (Depth read by Noise as Kick Ptr)
 
+
     Res_5_Channels  Riff_Depth, \
                     Repeat_Counter, \
                     Read_by_Nibble_Flag, \
                     Length_Nibble_Index
-    ;$38
- 
+
+    ;$28
     Res_5_Channels  Base_Pitch, \
                     Alt_If_Flag, \
                     No_Reset_Env_Flag,\
@@ -115,11 +148,12 @@ Page0:
                     Volume_Timer ;0 = full Volume,  1 = -13% Volume,  7 = -87% Volume ;Frames to wait per update.
 
 
-    ;$60 ;Mixed Music/SFX
+    ;$50 ;Mixed Music/SFX
     Res_5_Channels  Note_Timer, \
                         SFX_Timer, \
                     Note_Env_Timer, \
                         SFX_ATK_Timer
+
 
     Res_5_Channels  Note_Volume, \
                         SFX_Volume, \
@@ -128,7 +162,7 @@ Page0:
                         ;DMC SFX Volume / Env is entirely ignored.
 
 
-    ;$88  SFX Only
+    ;$78  SFX Only
         ;The Noise_Alts are for inx/jsr/dex re-use when nothing else needs that.
     Res_5_Channels      SFX_MIDI_Noise_Alt, \
                     SFX_MIDI, \  
@@ -137,64 +171,28 @@ Page0:
 
 
                 ;For Complex, the timer between each pitch.
-    Res_5_Channels  SFX_pitch_timer_Noise_Alt,\
+    Res_5_Channels      SFX_pitch_timer_Noise_Alt,\
                     SFX_pitch_timer, \
                     No_Reset_F_Effects_Flag,\
                     SFX_Queued
 
-
-
-    ;$b0
-    Res_5_Channels  Note_Data,\
-                    Note_Data_High, \
-                    Unused,\
-                    Unused2
-
-    Res_RAM Lap_3_Flag
-    Res_RAM Music_Speed_Up_Timer ;MK64 Specific
-    Res_RAM Music_Slow_Down_Timer
-    Res_RAM Stored_Song_ID
-
-
-
-Page1: ;Stack
-    Res_RAM_Set_Page 1
-
-    ;Trashed by nmi w/o rti
-
-Page2: ;OAM
-    Res_RAM_Set_Page 2
-
-
-    Res_RAM OAM_Buffer, $100
-    OAM_Buffer_Page = OAM_Buffer/$100
-
-Page3: ;Unusued
-    Res_RAM_Set_Page 3
-
-
-
-Page4: ;Unusued
-    Res_RAM_Set_Page 4
-
-
-
-Page5: ;Music Overflow
-    Res_RAM_Set_Page 5
-
-    ;Order of all of these is, Sq0 0-3, Sq1 4-7, Tri 8-b, Noise c-f 
-        ;If dmc needs it too, it uses a whole extra line. Fill gaps w/ unrelated Data.
-
-    ;All SFX are +1 of the mirrored Music RAM (For jsr function re-use)
-        ;The Indented ones RELY on inx/jsr/dex between SFX and Music
-                ;Noise Alts are for Primary/Secondary inx,jsr,dex re-use.
-
     ;$a0
-    ;Riff Stack
-    Res_RAM Riff_Ends_At, 5*8
-    Res_RAM Riff_Returns_To, 5*8
+OAM:
+    OAM_Buffer_Page = 2
+    Res_RAM_Set_Page OAM_Buffer_Page
+    Res_RAM OAM_Buffer, $100
+
+Riff_Stack:
+
+    .if Expand_Max_Riff_Depth
+        Res_RAM Riff_Ends_At, 5*8
+        Res_RAM Riff_Returns_To, 5*8
+    .else
+        Res_RAM Riff_Ends_At, 5*4
+        Res_RAM Riff_Returns_To, 5*4
+    .endif
     ;Recursion depth of 7 per channel. idx 0 = "In Root"
-        ;Only DMC and Noise can use this much.
+        ;Only DMC and Noise realistically need this much.
 
 
 Page6: ;Unusued
@@ -256,73 +254,6 @@ Misc_Constants:
     APU_Channel_Enable = $4015
 
 
-
-    ; .ifndef Loop
-    ; Loop = $c0
-    ; .endif
-
-
-
-    _A = $0B
-    _B = $0C
-    _C = $0D
-    _D = $0E
-    _E = $0F
-    _F = $10
-    ;G
-    _H = $11
-    _I = $12
-    ;J
-    _K = $13
-    _L = $14
-    _M = $15
-    _N = $16
-    _O = $01
-    _P = $17
-    ;Q
-    _R = $18
-    _S = $19
-    _T = $1A
-    _U = $1B
-    ;V
-    _W = $1C
-    ;X
-    _Y = $1D
-    ;Z
-
-    _apo_S = $1E
-    _dash = $1F
-    _spc = $00
-    ; _A = $0A
-    ; _B = $0B
-    ; _C = $0C
-    ; _D = $0D
-    ; _E = $0E
-    ; _F = $0F
-    ; ;G
-    ; _H = $10
-    ; _I = $11
-    ; ;J
-    ; _K = $12
-    ; _L = $13
-    ; _M = $14
-    ; _N = $15
-    ; _O = 0
-    ; _P = $16
-    ; ;Q
-    ; _R = $17
-    ; _S = $18
-    ; _T = $19
-    ; _U = $1A
-    ; ;V
-    ; _W = $1B
-    ; ;X
-    ; _Y = $1C
-    ; ;Z
-
-    ; _apo_S = $1d
-    ; _dash = $1e
-    ; _spc = $1f
 
 
 ;End of Constants

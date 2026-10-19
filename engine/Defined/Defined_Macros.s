@@ -15,7 +15,7 @@ Macros_Defined .set 1
 
 ;Math
 
-  .macro inh arg, indexed ;INc High
+.macro inh arg, indexed ;Inc High
 
   .ifblank indexed
 
@@ -74,127 +74,95 @@ Macros_Defined .set 1
       .endif
 
   .endif
-  .endmacro
+.endmacro
 
 
  
-CMP_CRASH_ADDR = -1
-
-  .macro add arg, mode
-
-    .ifblank mode
-      clc
-      adc arg
-
-    .elseif .xmatch(mode, clc)
-
-        .if Debugging_Enabled
-
-          bcc *+6 ;skip if valid
-
-          .assert * <> CMP_CRASH_ADDR, error, "CMP_CRASH_ADDR Here: "
-          cmp *
-          .byte $02
-
-        .endif
-
-      adc arg
-    .elseif .xmatch(mode, sec)
-
-        .if Debugging_Enabled
-
-          bcs *+6 ;skip if valid
-
-          .assert * <> CMP_CRASH_ADDR, error, "CMP_CRASH_ADDR Here: "
-          cmp *
-          .byte $02
-
-        .endif
-
-      adc arg
-    .else
-        .error .sprintf("Invalid add mode '%s'.", mode)
-        .out "Usage:  add <arg> [, clc|sec]"
-        .out "        clc|sec: carry state guaranteed by prior logic"
-    .endif
-
-  .endmacro
 
 
-  .macro sub arg, mode
+.macro add arg, mode
 
-    .ifblank mode
-      sec
-      sbc arg
+  .ifblank mode
+    clc
+    adc arg
 
-    .elseif .xmatch(mode, clc)
+  .elseif .xmatch(mode, clc)
 
-        .if Debugging_Enabled
+      .if Debugging_Enabled
 
-          bcc *+6 ;skip if valid
+        bcc *+6 ;skip if valid
 
-          .assert * <> CMP_CRASH_ADDR, error, "CMP_CRASH_ADDR Here: "
-          cmp *
-          .byte $02
+        .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
+        cmp *
+        .byte $02
 
-        .endif
+      .endif
 
-      sbc arg
-    .elseif .xmatch(mode, sec)
+    adc arg
+  .elseif .xmatch(mode, sec)
 
-        .if Debugging_Enabled
+      .if Debugging_Enabled
 
-          bcs *+6 ;skip if valid
+        bcs *+6 ;skip if valid
 
-          .assert * <> CMP_CRASH_ADDR, error, "CMP_CRASH_ADDR Here: "
-          cmp *
-          .byte $02
+        .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
+        cmp *
+        .byte $02
 
-        .endif
+      .endif
 
-      sbc arg
-    .else
-        .error .sprintf("Invalid sub mode '%s'.", mode)
-        .out "Usage:  sub <arg> [, clc|sec]"
-        .out "        clc|sec: carry state guaranteed by prior logic"
-    .endif
+    adc arg
+  .else
+      .error .sprintf("Invalid add mode '%s'.", mode)
+      .out "Usage:  add <arg> [, clc|sec]"
+      .out "        clc|sec: carry state guaranteed by prior logic"
+  .endif
 
-  .endmacro
-
-
+.endmacro
 
 
-  ; .macro add arg
-  ;   clc
-  ;   adc arg
-  ; .endmacro
+.macro sub arg, mode
 
-  ; .macro sub arg
-  ;     sec
-  ;     sbc arg
-  ; .endmacro
+  .ifblank mode
+    sec
+    sbc arg
+
+  .elseif .xmatch(mode, clc)
+
+      .if Debugging_Enabled
+
+        bcc *+6 ;skip if valid
+
+        .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
+        cmp *
+        .byte $02
+
+      .endif
+
+    sbc arg
+  .elseif .xmatch(mode, sec)
+
+      .if Debugging_Enabled
+
+        bcs *+6 ;skip if valid
+
+        .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
+        cmp *
+        .byte $02
+
+      .endif
+
+    sbc arg
+  .else
+      .error .sprintf("Invalid sub mode '%s'.", mode)
+      .out "Usage:  sub <arg> [, clc|sec]"
+      .out "        clc|sec: carry state guaranteed by prior logic"
+  .endif
+
+.endmacro
 
 
 
-  .macro invert_twos
-  eor #$ff
-  add #$01
-  .endmacro
-
-
-  .macro abs ;Take the ABSolute value of A. Requires A to have N/Z set
-
-  bpl *+7
-  eor #$ff
-  add #$01
-
-  .endmacro
-
-  .macro flc ;FLip Carry (clc is CLear Carry)   alt: xrc ;XOR C
-  ror
-  eor #$80
-  rol 
-  .endmacro
 ;
 
 ;Shift repeated N times:
@@ -508,7 +476,7 @@ CMP_CRASH_ADDR = -1
 
     .if Debugging_Enabled
 
-        .assert * <> CMP_CRASH_ADDR, error, "CMP_CRASH_ADDR Here: "
+        .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
 
         cmp *
         .byte $02
@@ -518,6 +486,20 @@ CMP_CRASH_ADDR = -1
 
 ;
 ;Decimal Flag Utilization
+  .macro bds Target
+  php
+  pla
+  and #$08
+  bne Target
+  .endmacro
+
+  .macro bdc Target
+  php
+  pla
+  and #$08
+  beq Target
+  .endmacro
+
   .macro jds Target
   php
   pla
@@ -532,16 +514,11 @@ CMP_CRASH_ADDR = -1
   jeq Target
   .endmacro
 
-  .macro tdeq ;Transfer Decimal flag to EQual flag
-  php
-  pla
-  and #$08
-  .endmacro
 ;
 
 
 ;Music Engine Stuff
-    ;Pass Length as the Number of bytes in the Riff. This handles the off-by-one.
+
 
   .macro If_Alt _Old, _New, Supress_Warning
 
@@ -727,7 +704,32 @@ CMP_CRASH_ADDR = -1
       Bb5 = $3D
       B5  = $3E
 
-      C6  = $3F
+      ;Enharmonics
+      Bs0 = C1
+
+      Cb1 = B0
+      Fb1 = E1
+      Es1 = F1
+      Bs1 = C2
+
+      Cb2 = B1
+      Fb2 = E2
+      Es2 = F2
+      Bs2 = C3
+
+      Cb3 = B2
+      Fb3 = E3
+      Es3 = F3
+      Bs3 = C4
+
+      Cb4 = B3
+      Fb4 = E4
+      Es4 = F4
+      Bs4 = C5
+
+      Cb5 = B4
+      Fb5 = E5
+      Es5 = F5
 
     Repeat_xN = ($90 + (0<<1))
     Repeat_x1 = ($91 + (1<<1))
@@ -745,13 +747,14 @@ CMP_CRASH_ADDR = -1
     d12_Tom .set 3
 
   .endmacro
+
   Define_Pitches ;Define them Globally.
 
 
 
   .macro Duration Length_Pattern, P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
       .if .xmatch(Length_Pattern, "Cont")
-        Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12  ;Riffs can start a duration, then end it differently.
+        Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12  ;Riffs can start a Duration, then return partway through Duration
 
       .elseif ((Length_Pattern >= $50) .and (Length_Pattern <= $5f))
         .byte Length_Pattern
@@ -886,10 +889,10 @@ CMP_CRASH_ADDR = -1
         DoMacro _8x8, 4
 
         DoMacro _111_R, 2 ;\ For YV.
-        DoMacro _4444, 2  ;/
+        ;DoMacro _4444, 2  ;/
 
-        DoMacro _0_00_0_Es, 4   ;\ For KTB
-        DoMacro _00_0_0_4_Es, 5 ;/
+        ; DoMacro _0_00_0_Es, 4   ;\ For KTB
+        ; DoMacro _00_0_0_4_Es, 5 ;/
 
 
           ;Khevari
@@ -954,86 +957,335 @@ CMP_CRASH_ADDR = -1
 
 
 
-  .macro Env _Name, _AT_Init, _AT_Rate, _Decay_Init, _Decay_Rate, _Sustain, _DmcLow
+
+;Group Boundary Init.
+
+first_atk  .set -1
+last_atk   .set -1
+
+first_dmc  .set -1
+last_dmc   .set -1
+
+first_env .set -1 ;If first is not the start of a bank.
+
+.macro Env Size, Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12, v13,  v14
+    ; 6b = 13 user variables
+    ; 5b = 12 user variables
+    ; 4b = 9 user variables
+    ; 3b = 8 user variables
+
+    .ifndef Env_Index
+        .error "Envelope not inside an Env_Bank"
+        .exitmacro
+
+    .elseif first_env = -1
+        first_env .set Env_Index
+    .endif
+
+    ;Catalog Names here? Or in Sub Envs?
+    .if .xmatch(Size, "Unused")
+        Sub_Env Name, 0,0,0,-$80,0, 0,0,0,0,0, 0,0,0
+        ;-$80 gets stored as 0.
 
 
-      .if (Env_Index - Env_Bank_Index) >= $10
+    .elseif .xmatch(Size, "6b")
+        .ifblank v13
+            .error "Not enough Variables for 6-Byte Env."
+        .elseif .not .blank (v14)
+            .error "Too Many Variables for 6-Byte Env."
+        .endif
+
+        .if first_atk = -1
+            first_atk .set Env_Index
+        .elseif last_atk <> -1
+            last_atk .set -1
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 6-Byte is after a 4 or 3 Byte. Not optimal."
+            .endif
+        .endif 
+
+        .if first_dmc = -1
+            first_dmc .set Env_Index
+        .elseif last_dmc <> -1
+            last_dmc .set -1
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 6-Byte is after a 5 or 3 Byte. Not optimal."
+            .endif
+        .endif 
+
+        Sub_Env Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12, v13
+
+    .elseif .xmatch(Size, "5b")
+        .ifblank v12
+            .error "Not enough Variables for 5-Byte Env."
+        .elseif .not .blank (v13)
+            .error "Too Many Variables for 5-Byte Env."
+        .endif
+
+        .if first_atk = -1
+            first_atk .set Env_Index
+        .elseif last_atk <> -1
+            last_atk .set -1
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 5-Byte is after a 4 or 3 Byte. Not optimal."
+            .endif
+        .endif 
+
+
+        .if (first_dmc <> -1) .and last_dmc = -1
+            last_dmc .set Env_Index
+        .endif
+
+
+        Sub_Env Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12,  0 ;No DMC
+
+
+    .elseif .xmatch(Size, "4b")
+        .ifblank v9
+            .error "Not enough Variables for 4-Byte Env."
+        .elseif .not .blank (v10)
+            .error "Too Many Variables for 4-Byte Env."
+        .endif
+
+
+        .if (first_atk <> -1) .and last_atk = -1
+            last_atk .set Env_Index
+        .endif 
+
+        .if first_dmc = -1
+            first_dmc .set Env_Index
+        .elseif last_dmc <> -1
+            last_dmc .set -1
+            .if .not Suppress_Env_Optimization_Warnings
+                .warning "This 4-Byte is after a 5 or 3 Byte. Not optimal."
+            .endif
+        .endif 
+
+        Sub_Env Name, v1,0,0,v2,v3, v4,0,0,v5,v6, v7,v8, v9 ;No Attack
+
+    .elseif .xmatch(Size, "3b")
+        .ifblank v8
+            .error "Not enough Variables for 3-Byte Env."
+        .elseif .not .blank (v9)
+            .error "Too Many Variables for 3-Byte Env."
+        .endif
+
+        .if (first_atk <> -1) .and last_atk = -1
+            last_atk .set Env_Index
+        .endif 
+
+        .if (first_dmc <> -1) .and last_dmc = -1
+            last_dmc .set Env_Index
+        .endif
+
+        Sub_Env Name, v1,0,0,v2,v3, v4,0,0,v5,v6, v7,v8, 0 
+            ;No Attack and No DMC
+
+    .else
+        .error "Invalid Env Size." ;input "6b", "5b", "4b", or "3b" with quotes.
+    .endif
+
+    Name .set Env_Index
+
+    Env_Index .set Env_Index + 1
+
+.endmacro
+
+.macro Sub_Env Name, atk_vol, atk_rate, dec_vol, dec_rate, sus_vol, atk_duty, atk_len, dec_duty, cutoff, sus_duty, vib_spd, vib_del, dmc_lowest_d25
+
+
+    ;============================================================
+    ; Envelope Bank / Index validation
+    ;============================================================
+
+    .if (Env_Index - Env_Bank_Index) >= $10
         .out "Env Warning: Envelope exceeds its Bank"
-      .endif
+    .endif
 
     .if Env_Index > $FF
         .error "Env Error: Max Index exceeded (0..255)"
-        .out"        Usage: Env <Name>, <Data ...>"
+        .out "        Usage: Env <Size>, <Name>, <Data ...>"
         .exitmacro
     .endif
 
-      ; Assign row index to the given name
+    _Name .set Env_Index
+
+    ;============================================================
+    ;Data Validation
+    ;============================================================
+
+    ;Volume
+    .if (atk_vol & $0F) <> 0
+        .error "Env Error: Attack Volume must use whole values * $10"
+    .endif
+
+    .if (atk_vol < 0) .or (atk_vol > $F0)
+        .error "Env Error: Attack Volume out of range (0..15) * $10"
+    .endif
 
 
-      _Name .set Env_Index
-      ; .ident(.sprintf("%s", .string(_Name))) = Env_Index
+    .if (dec_vol & $03) <> 0
+        .error "Env Error: Decay Volume must use 0.25 increments * $10"
+    .endif
+
+    .if (dec_vol < 0) .or (dec_vol > $FC)
+        .error "Env Error: Decay Volume out of range (0..15.75) * $10"
+    .endif
 
 
-      ; Store values
-      .ident(.sprintf("Row%02x_AT_Init", Env_Index))     = _AT_Init
+    .if (sus_vol & $0F) <> 0
+        .error "Env Error: Sustain Volume must use whole values * $10"
+    .endif
 
-      .if (_AT_Rate & $f) = 0
-        .ident(.sprintf("Row%02x_AT_Rate", Env_Index))     = _AT_Rate
-      .elseif (_AT_Rate & $f) = $F
-        .error .sprintf("Env Error:  AT_Rate's Frame-Length out of Range. 0 = None  1..14 = Num of Frames")
-
-          ;Specifically, that +1 Hack means  that:
-            ;0 = No AT Phase
-            ;1 = Defines AT Phase. Doesn't Use it
-            ;2..$f = Executes AT Phase for 1..$e frames
-
-      .else
-        .ident(.sprintf("Row%02x_AT_Rate", Env_Index))     = (_AT_Rate+1)
-      .endif
-
-      .ident(.sprintf("Row%02x_Decay_Init", Env_Index))  = _Decay_Init
-      .ident(.sprintf("Row%02x_Decay_Rate", Env_Index))  = _Decay_Rate
-      .ident(.sprintf("Row%02x_Sustain", Env_Index))     = _Sustain
-      .ident(.sprintf("Row%02x_DmcLow", Env_Index))      = _DmcLow
-
-      Env_Index .set Env_Index + 1
+    .if (sus_vol < 0) .or (sus_vol > $F0)
+        .error "Env Error: Sustain Volume out of range (0..15) * $10"
+    .endif
 
 
-    .endmacro
+    ;Rate
+    .if (atk_rate & $03) <> 0
+        .error "Env Error: Attack Rate must use 0.25 increments"
+    .endif
+
+    .if (atk_rate < -$20) .or (atk_rate > $1C)
+        .error "Env Error: Attack Rate out of range (-2.00 .. +1.75)"
+    .endif
 
 
-  .macro Env_Bank bank_num
+    .if (dec_rate & $03) <> 0
+        .error "Env Error: Decay Rate must use 0.25 increments * $10"
+    .endif
 
-      .ifnblank bank_num
-          .out "Env_Bank macro no longer takes an argument. bank_num ignored"
-      .endif
+    .if (dec_rate < -$80) .or (dec_rate > -$04)
+        .error "Env Error: Decay Rate out of range (-8.00 .. -0.25) * $10"
+    .endif
+
+
+    ;Duty
+    .if (atk_duty) > 3 .or (atk_duty < 0)
+        .error "Env Error: Attack Duty must be 0..3"
+    .endif
+
+    .if (dec_duty) > 3 .or (dec_duty < 0)
+        .error "Env Error: Decay Duty must be 0..3"
+    .endif
+
+    .if (sus_duty) > 3 .or (sus_duty < 0)
+        .error "Env Error: Sustain Duty must be 0..3"
+    .endif
+
+
+    ;Timers
+    .if (atk_len = 1) .or (atk_len > $0F) .or (atk_len < 0)
+        .error "Env Error: Attack Length must be 0 or 2..15 (Use the vars atk_1 .. atk_14)" ;Interally represented as 2..15
+    .endif                                              ;A one technically functions, but it still skips Atk_Rate
+
+     .if (cutoff < 0) .or (cutoff > 7)
+        .error "Env Error: Cutoff must be 0..7"
+    .endif
+
+
+    ;Vibrato
+    .if (vib_spd & $F3) <> 0
+        .error "Env Error: Invalid Vibrato Speed"
+    .endif
+        ;Both are (0..3) << 2
+    .if (vib_del & $F3) <> 0
+        .error "Env Error: Invalid Vibrato Delay"
+    .endif
+
+    ;TODO tweak these values around so I can just type F2, and it does what I think.
+    ;dmc
+    .if dmc_lowest_d25 <> 0 ;Zero is placeholder
+        .if dmc_lowest_d25 < As1 
+            .error "Env Error: DMC Lowest d25 pitch too low."
+        .elseif dmc_lowest_d25 > Cs3 
+            .error "Env Error: DMC Lowest d25 pitch too high."
+        .endif
+    .endif 
+
+    ;============================================================
+    ; Store values
+    ;============================================================
+
+    .ident(.sprintf("Row%02x_AT_Init", Env_Index)) = atk_vol | vib_del | atk_duty
+
+    .ident(.sprintf("Row%02x_AT_Rate", Env_Index)) = (atk_rate & $3c) << 2 | atk_len
+    .ident(.sprintf("Row%02x_Decay_Init", Env_Index)) = dec_vol | dec_duty   
+
+    .ident(.sprintf("Row%02x_Decay_Rate", Env_Index)) = (dec_rate & $7c) << 1 | cutoff
+    .ident(.sprintf("Row%02x_Sustain", Env_Index)) = sus_vol | vib_spd | sus_duty
+
+    .ident(.sprintf("Row%02x_DmcLow", Env_Index)) = dmc_lowest_d25 +1 ;Likely is off by one.
+
+
+
+.endmacro
+
+
+
+.macro Env_Bank Bank_Name, Init_Env_Index
 
       .ifndef Env_Index
-          Env_Index .set 0
+
+          .ifblank Init_Env_Index
+              .fatal "The first Env_Bank needs the starting Env_Index. ie: Env_Bank 'Starting_Index', 0"
+          .endif
+
+          Env_Index .set Init_Env_Index
+
       .else
-          ; Otherwise, move to next multiple of 16
-          Env_Index .set ((Env_Index + 15) & $FFF0)
+
+          .ifnblank Init_Env_Index
+              .error "Only the first Env_Bank may specify Init_Env_Index."
+          .endif
+
+          .repeat ((16 - (Env_Index & $0F)) & $0F), I
+              Env "Unused", Unused_Env
+          .endrepeat
+
       .endif
 
-      ; Remember start of current bank
-      Env_Bank_Index .set Env_Index
+      Env_Bank_Index .set (Env_Index & $F0)
 
   .endmacro
 
 
-  .macro Output_All_Env
+.macro Output_All_Env
+
+    .if first_env = -1
+        .fatal "No Envelopes to emit."
+    .endif
+
+    .if first_atk = -1
+        first_atk .set Env_Index
+    .endif
+
+    .if last_atk = -1
+        last_atk .set Env_Index
+    .endif
+
+    .if first_dmc = -1
+        first_dmc .set Env_Index
+    .endif
+
+    .if last_dmc = -1
+        last_dmc .set Env_Index
+    .endif
+
 
 
     ;----------------------------------------------------------
     ; AT Rate
     ;----------------------------------------------------------
 
-    LUT_Env_AT_Rate = * - First_5b_Env_Index
+    LUT_Env_AT_Rate = * - first_atk
     .assert (*-81 = DMC_Sample_6_81), warning, "Env Data not after DMC sample. Either disable $00 overloading, or move it closer."
-    .assert (First_3b_Env_Index + 10 >= First_5b_Env_Index), warning, "Too many Env's Overloading DMC $00s (Max 10)"
+    .assert (first_env + 10 >= first_atk), warning, "Too many Env's Overloading DMC $00s (Max 10)" ;This should be able to auto-emit 10 fewer at most.
+            
 
-    .repeat (Env_Index-First_5b_Env_Index), I
-        J .set  I+First_5b_Env_Index
+    .repeat (Env_Index-first_atk), I ;Uses Env_Index as end, as must emit $00s after Overloading is complete.
+        J .set  I+first_atk
         .byte .ident(.sprintf("Row%02x_AT_Rate",J))
     .endrepeat
 
@@ -1041,10 +1293,10 @@ CMP_CRASH_ADDR = -1
     ; Decay Init
     ;----------------------------------------------------------
 
-    LUT_Env_Decay_Init = * - First_5b_Env_Index
+    LUT_Env_Decay_Init = * - first_atk
 
-    .repeat (Env_Index-First_5b_Env_Index), I
-        J .set I+First_5b_Env_Index
+    .repeat (Env_Index-first_atk), I
+        J .set I+first_atk
         .byte .ident(.sprintf("Row%02x_Decay_Init",J))
     .endrepeat
 
@@ -1056,10 +1308,10 @@ CMP_CRASH_ADDR = -1
     ; AT Init
     ;----------------------------------------------------------
 
-    LUT_Env_AT_Init = * - First_3b_Env_Index
+    LUT_Env_AT_Init = * - first_env
 
-    .repeat (Env_Index-First_3b_Env_Index), I
-        J .set  I+First_3b_Env_Index
+    .repeat (Env_Index-first_env), I
+        J .set  I+first_env
         .byte .ident(.sprintf("Row%02x_AT_Init",J))
     .endrepeat
 
@@ -1067,10 +1319,10 @@ CMP_CRASH_ADDR = -1
     ; Decay Rate
     ;----------------------------------------------------------
 
-    LUT_Env_Decay_Rate = * - First_3b_Env_Index
+    LUT_Env_Decay_Rate = * - first_env
 
-    .repeat (Last_Decay_Rate_Index-First_3b_Env_Index), I
-        J .set I+First_3b_Env_Index
+    .repeat (Env_Index-first_env), I
+        J .set I+first_env
         .byte .ident(.sprintf("Row%02x_Decay_Rate",J))
     .endrepeat
 
@@ -1079,26 +1331,27 @@ CMP_CRASH_ADDR = -1
     ; Sustain
     ;----------------------------------------------------------
 
-    LUT_Env_Sustain = * - First_3b_Env_Index
+    LUT_Env_Sustain = * - first_env
 
-    .repeat (Last_Sustain_Index-First_3b_Env_Index), I
-        J .set I+First_3b_Env_Index
+    .repeat (Env_Index-first_env), I
+        J .set I+first_env
         .byte .ident(.sprintf("Row%02x_Sustain",J))
     .endrepeat
 
 
     ;----------------------------------------------------------
-    ; DMC Maybe (Depreciated)
+    ; DMC
     ;----------------------------------------------------------
 
-      LUT_env_dmc_lowest_25_pitch = * - First_DMC_Env_Index
+      LUT_env_dmc_lowest_25_pitch = * - first_dmc
 
-      .repeat (Last_DMC_Env_Index-First_DMC_Env_Index), I
-          J .set I+First_DMC_Env_Index
+      .repeat (last_dmc-first_dmc), I
+          J .set I+first_dmc
           .byte .ident(.sprintf("Row%02x_DmcLow",J))
       .endrepeat
 
   .endmacro
+
 
 
 
@@ -1404,7 +1657,7 @@ CMP_CRASH_ADDR = -1
 
 
 
-  .macro Notes L1,P1, L2,P2, L3,P3, L4,P4, L5,P5
+  .macro Notes L1,P1, L2,P2, L3,P3, L4,P4, L5,P5, L6,P6, L7,P7, L8,P8, L9,P9, L10,P10
 
   
       .ifblank L1
@@ -1772,27 +2025,31 @@ CMP_CRASH_ADDR = -1
 
     .ifndef Song_Index
       Song_Index .set 0
+
+      UI_Text_Index .set 0 ;Init
+
+      UI_Word_Index .set 0
+      UI_Word_Text_Index .set 0
+
+    
     .endif
 
 
 
-  .macro Song Name, Len
+.macro Song Name, Len, Song_UI_Text
     .local Sq0, Sq1, Tri, Noise, Dmc
 
     .if Song_Index > 61
       .error "Song Error: Max Index exceeded (0..61)" ;61*5 = 255
-      .fatal "Success"
       .exitmacro
 
     .elseif .xmatch(Name, "Silence")
       Song_Silence  ;Macro to emit minimal data.
-      ;.fatal "Success"
       .exitmacro
 
     ; guard
     .elseif .defined(.ident(.concat(.string(Name), "_SongDefined")))
       .error "Song already defined: " .string(Name)
-      .fatal "Success"
       .exitmacro
     .endif
 
@@ -1816,17 +2073,28 @@ CMP_CRASH_ADDR = -1
       .ident(.sprintf("Song%02x_Len", Song_Index)) = Len
 
       .if Len = 0 .or Len > 32
-        .warning .sprintf("Song Warning: BPM > 32 causes 8-bit overflow; note lengths become non-monotonic. Given BPM = %u", Len)
+        .warning .sprintf("Song Warning: Tempo > 32 causes 8-bit overflow; note lengths become non-monotonic. Given Tempo = %u", Len)
       .endif 
 
-      Song_Index .set Song_Index + 1
+    ;----------------------------------------
+    ; UI text start index
+    ;----------------------------------------
 
-      ; mark defined
-      .ident(.concat(.string(Name), "_SongDefined")) = 1
-    .endmacro
+  .ident(.sprintf("Song%02x_UI_Start", Song_Index)) = UI_Text_Index
 
-    .macro Song_Silence
+  Collect_UI_Text Song_UI_Text
+
+  Song_Index .set Song_Index + 1
+
+  ; mark defined
+  .ident(.concat(.string(Name), "_SongDefined")) = 1
+
+  .endmacro
+
+
+  .macro Song_Silence
  
+      
       ; write fixed pointers
       .ident(.sprintf("Song%02x_Sq0",   Song_Index)) = Inf_Wait-2
       .ident(.sprintf("Song%02x_Sq1",   Song_Index)) = Inf_Wait-2
@@ -1837,15 +2105,20 @@ CMP_CRASH_ADDR = -1
       ; length = 0
       .ident(.sprintf("Song%02x_Len", Song_Index)) = 0
 
+      ;Store nothing, but let the index exist.
+      .ident(.sprintf("Song%02x_UI_Start", Song_Index)) = UI_Text_Index
+      Collect_UI_Text
+
       ; advance index
       Song_Index .set Song_Index + 1
 
   .endmacro
 
 
-
-
   .macro Output_All_Songs
+
+
+    Max_Track_Index .set Song_Index
 
     ; -------------------------
     ; Length table
@@ -1881,7 +2154,122 @@ CMP_CRASH_ADDR = -1
         .byte >.ident(.sprintf("Song%02x_Dmc", I))
       .endrepeat
 
+.endmacro
+
+
+
+
+
+;----------------------------------------
+;UI Macros
+;----------------------------------------
+  .macro Collect_UI_Text v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
+
+
+    .ifblank v1
+      .exitmacro
+    .endif
+
+    ; 256 bytes cannot be represented by an 8-bit start index.
+    .if UI_Text_Index > 255
+      .error "Song UI Text Error: Maximum UI text size is 256 bytes"
+      .exitmacro
+    .endif
+
+    ; Store byte
+    .ident(.sprintf("UI_Text_%02x", UI_Text_Index)) = v1
+
+    ; Advance global text index
+    UI_Text_Index .set UI_Text_Index + 1
+
+    ; Continue with remaining variables
+    Collect_UI_Text v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
   .endmacro
+
+  .macro Output_UI_Text
+
+    ;----------------------------------------
+    ; UI text bytes
+    ;----------------------------------------
+    LUT_Song_Names_Text:
+
+      .repeat UI_Text_Index, I
+        .byte .ident(.sprintf("UI_Text_%02x", I))
+      .endrepeat
+
+
+    ;----------------------------------------
+    ; UI text start indexes
+    ;----------------------------------------
+    LUT_Name_Start_Indexes:
+
+      .repeat Song_Index, I
+        .byte .ident(.sprintf("Song%02x_UI_Start", I))
+      .endrepeat
+
+      ; ; End of final song / start of next song
+      .byte UI_Text_Index
+        ;Having Song_Silence should do it.
+
+  .endmacro
+
+
+  .macro UI_Word Name, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
+    .ident(.string(Name)) = UI_Word_Text_Index|$80
+    Collect_UI_Word_Text v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
+  .endmacro
+
+
+
+  .macro Collect_UI_Word_Text v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
+    .ifblank v1
+      .exitmacro
+    .endif
+
+
+    .if UI_Word_Text_Index > $7e
+      .error "UI Word Error: LUT_Words_Text exceeds max LUT size of 127 bytes"
+      .exitmacro
+    .endif
+
+    ; .if (v1 > $7f) .and .not .blank (v2)
+    ;   .error "UI_Words cannot nest."
+    ; .endif
+
+
+    .ident(.sprintf("UI_Word_%02x", UI_Word_Text_Index)) = v1
+
+    UI_Word_Text_Index .set UI_Word_Text_Index + 1
+
+    ;----------------------------------------
+    ; Recurse
+    ;----------------------------------------
+    Collect_UI_Word_Text v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20
+
+  .endmacro
+
+  ;
+    UI_Word _LOGO, _T, _R, _I, _dash, \
+    _P, _U, _L, _S, _E, _spc, \
+    _S, _T, _U, _D, _I, _O, _S|$80
+  
+
+.macro Output_UI_Words
+
+  LUT_Words_Text:
+
+    .repeat UI_Word_Text_Index, I
+      .byte .ident(.sprintf("UI_Word_%02x", I))
+    .endrepeat
+
+.endmacro
+
+
 
 
 
@@ -1919,9 +2307,16 @@ CMP_CRASH_ADDR = -1
 
   .endmacro
 
+  .macro NB_Validate _Name
+      .assert NoiseFX_Index - _Name < 16, error, "Exceeded 15 Noise_FX window"
+  .endmacro
+
+
+
+
   ;Define Vol Names
     .define Vol_100 0  ;Number of 1/8ths to subtract from volume.
-    .define Vol_82  1
+    .define Vol_87  1
     .define Vol_75  2
     .define Vol_62  3
     .define Vol_50  4
