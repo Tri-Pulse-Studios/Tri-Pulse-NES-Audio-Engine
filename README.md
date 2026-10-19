@@ -547,8 +547,9 @@ to maximize the available pitch range for the desired duty cycle
 The available pitch ranges for each duty cycle are:
 
 - **12.5% Tri-Pulse:** B0 to C3
+    - **NOTE:** C1, A1, and A2 are poorly tuned for 12.5%.
 - **25% Tri-Pulse:** A♯1 to C4
-
+    - **NOTE:** D3 and A3 are poorly tuned for 25%
 
 #### Envelope banks
 Envelopes are organized into banks of 16.

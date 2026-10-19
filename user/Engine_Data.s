@@ -121,16 +121,16 @@
 
 
             ;25% Lead
-            Env "5b", Lead_12to25_s6_v12, \
-                $a0, -$14, $7c, -$04, $60, \
-                _d12, atk_2, _d25, _0f, _d25, \
+            Env "3b", Lead_12to25_s6_v12, \
+                $90, -$1c, $60, \
+                _d12, _0f, _d25, \
                 Vib_Slow, Short_Delay
 
             ;
 
             ;12.5% Lead
             Env "4b", Lead_d12_s7_v8_1f, \
-                $a0, -$10, $70, \
+                $b0, -$14, $70, \
                 _d12, _1f, _d12, \
                 Vib_Med, Long_Delay, \
                 dmc_d12
@@ -170,13 +170,13 @@
         ;========================================================
 
             ;50% Pad
-            Env "4b", Pad_sqr_s4_v8, \
-                $60, -$10, $40, \
+            Env "4b", Pad_sqr_s3_v8, \
+                $60, -$14, $30, \
                 _d50, _0f, _d50, \
                 Vib_Med, Long_Delay, \
                 dmc_d25
 
-            T_0f_v8__d25 .set Pad_sqr_s4_v8
+            T_0f_v8__d25 .set Pad_sqr_s3_v8
 
 
             ;25% Pad
