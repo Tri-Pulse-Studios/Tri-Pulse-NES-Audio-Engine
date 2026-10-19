@@ -1,0 +1,4 @@
+For  E3-As2-Ds2  (9-6-3)
+A:0
+B:55  (Rotate Left ~20%)
+C:51  (Rotate left 25%)

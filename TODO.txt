@@ -1,0 +1,25 @@
+
+A build config is needed. Joy.
+	-Do this the right way with a .bat to execute a build of the new Tri-Pulse folder.
+
+
+
+
+
+
+Change Env Update order.
+
+	-Update before new note. (So the AT init is directly pushed.)
+	-Add an rts to Decay Init, it is directly used.
+
+	-Then rewrite all the "Stock" envs to the new format. (After probs a lot of V2 Env debugging...)
+
+
+Write README
+	-Pretty much everything needs explaining. 
+
+
+Template for UI
+
+
+Template for SFX (And starter Noise set.)
