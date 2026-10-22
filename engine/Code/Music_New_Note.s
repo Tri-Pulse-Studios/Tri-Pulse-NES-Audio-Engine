@@ -97,6 +97,7 @@ py_Segment Pre_New_Note, Free
     .endmacro
 
 
+
     .macro Check_Riff_Return
         @Check_Riff_Return:
         ldy Riff_Depth,x
@@ -238,7 +239,7 @@ py_Ignore_End
  ;Can have an error check .assert space range is valid. (Is accurate will be annoying to pop up constantly.)
 
 py_Segment Reset_Channel_and_F_Effects, IndexRange, $d2, $fe 
-
+ 
 Reset_Channel:
     txa     
     lsrn 2 ;A = 0..4
@@ -276,6 +277,8 @@ Reset_Channel:
 
 
     lda #$00
+    sta Note_Volume,x ;May not be Initialized by note.
+
     sta Read_by_Nibble_Flag,x ;Ensure reading whole Bytes.
     sta Repeat_Counter,x ;Ensure not Repeating.
 

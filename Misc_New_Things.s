@@ -212,9 +212,9 @@ first_env .set -1 ;If first is not the start of a bank.
 
 
     ;Timers
-    .if (atk_len = 1) .or (atk_len > $0F) .or (atk_len < 0)
-        .error "Env Error: Attack Length must be 1..14" ;Interally represented as 2..15
-    .endif                                              ;A one technically functions, but it still skips Atk_Rate
+    .if (atk_len < 0) .or (atk_len > 15)
+        .error "Env Error: Attack Length must be 1..15" 
+    .endif                                              
 
      .if (cutoff < 0) .or (cutoff > 7)
         .error "Env Error: Cutoff must be 0..7"

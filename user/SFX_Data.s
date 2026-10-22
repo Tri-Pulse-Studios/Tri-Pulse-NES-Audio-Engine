@@ -20,7 +20,7 @@
             ; Simple_SFX Char_Jump_SFX,  A2, +2, 6, Snare_env
 
         @Noise:
-            Simple_SFX Hat_4_adr, $4, 0
+            Simple_SFX Hat_d_adr, $d, 0
             Simple_SFX Hat_2_adr, $2, 0, 1,   Hat_env
 
             Simple_SFX  Rasp_d_adr, $d, 0
@@ -93,11 +93,11 @@
         @Noise:
                 ;[WARN] The Length Param is ignored for Complex Noise SFX
                     ;The length is over-ridden by the Timer for New_Note
-            Complex_SFX Crash_3_adr, $3 
-            Complex_SFX Crash_7_adr, $7, 36, Crash_env 
+            Complex_SFX Crash_4_adr, $4 
+            Complex_SFX Crash_6_adr, $6, 36, Crash_env 
             .byte $18, $34, $43, $52, $01
 
-            Complex_SFX Snare_8_adr, $8 
+            Complex_SFX Snare_4_adr, $4 
             Complex_SFX Snare_6_adr, $6, 9, Snare_env
             .byte $15, $01
 
@@ -160,29 +160,30 @@
 ; Noise Bank
 ;============================================================
 
-    Rainbow_Road_NB .set NoiseFX_Index 
+    Star_Cave_NB .set NoiseFX_Index 
+    Rubify_NB .set NoiseFX_Index
 
         ;0
-        NoiseFX Crash_3,       Crash_3_adr,  "Kick"
-        NoiseFX Crash_7,       Crash_7_adr,  "Kick" 
+        NoiseFX Solo_Kick,     $00, "Kick"
+
+        NoiseFX Crash_4,       Crash_4_adr,  
+        NoiseFX Crash_6,       Crash_6_adr,  
+
+        NoiseFX Snare_4,       Snare_4_adr   
+        NoiseFX Snare_4_Kick,  Snare_4_adr,  "Kick"
 
         NoiseFX Snare_6,       Snare_6_adr   
         NoiseFX Snare_6_Kick,  Snare_6_adr,  "Kick"
 
-        ;4
+
         NoiseFX Shaker_2,      Shaker_2_adr
         NoiseFX Shaker_Kick,   Shaker_2_adr, "Kick"
-        NoiseFX Shaker_D3,     Shaker_2_adr, Ds3_Tom ;Pair w/ the A3_Tom Kick
 
         NoiseFX Hat_2,         Hat_2_adr  
         NoiseFX Hat_Kick,      Hat_2_adr,    "Kick"    
-        NoiseFX Hat_D3,        Hat_2_adr,    Ds3_Tom ;Pair w/ the A3_Tom Kick
 
-        ;10
-        NoiseFX Rasp_d,      Rasp_d_adr
-        NoiseFX Rasp_c,      Rasp_c_adr
+        NoiseFX Rasp_c_Kick, Rasp_c_adr,     "Kick"
 
-        NoiseFX Rasp_2,      Rasp_w_Shaker_2_adr
         NoiseFX Rasp_2_Kick, Rasp_w_Shaker_2_adr, "Kick"
 
         ;15
@@ -192,7 +193,7 @@
             ;More than 15 NoiseFX can be defined, but not accessed all at once.
             ;Shift_Pitch instructions can change the defined window mid-song as well.
 
-    NB_Validate Rainbow_Road_NB ;Simple check that all NoiseFX fit in 15 window.
+    NB_Validate Star_Cave_NB ;Simple check that all NoiseFX fit in 15 window.
 
 ;============================================================
 ; Kick Types

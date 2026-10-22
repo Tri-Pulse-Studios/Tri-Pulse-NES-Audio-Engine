@@ -86,9 +86,6 @@ py_Segment Update_Music, Free
     .endmacro
 
 
-
-
-
     .macro DMC_Update_Regs
         lda SFX_Timer,x
         beq @Mute_Check
@@ -121,7 +118,7 @@ py_Segment Update_Music, Free
         sta APU_Channel_Enable ;Enable NT10. Leave DMC unchanged.
                 ;This is handled in DMC_Update_Regs, but its not stable.
 
-
+ 
         ldx #$00
         Loop_All_Channels:
 
@@ -146,16 +143,16 @@ py_Segment Update_Music, Free
                 @sqr_tri:
                     jsr Sq_Tri_Update_Regs  
 
-                inxn 4
-                bal Loop_All_Channels, bne 
-                    ;on inx to $c, cpx $c diverts to noise.
+                    inxn 4
+                    bal Loop_All_Channels, bne 
+                        ;on inx to $c, cpx $c diverts to noise.
 
 
                 @noise:
                     jsr Noise_Update_Regs ;An Inline Fits. Has internal Tail-Calls though
 
-                ldx #$10
-                bal Loop_All_Channels, bne
+                    ldx #$10
+                    bal Loop_All_Channels, bne
 
 
                 @dmc:            
@@ -163,15 +160,10 @@ py_Segment Update_Music, Free
     rts
 
     Noise_Update_Regs:
-        ;lda Note_Volue,x
-        ;and #$f0
-        ;beq @skip_secondary
+        dex ;Secondary (Crash, Snare, Etc, Anything w/ the "Musical"/"Complex" type that are usually longer.)
+        jsr SFX_Write_Regs   ;"Normal" Music SFX updates volume by default.
+        inx 
 
-            dex ;Secondary (Crash, Snare, Etc, Anything w/ the "Musical"/"Complex" type that are usually longer.)
-            jsr Update_SFX_No_Update_Volume   ;"Normal" Music Ram auto-updates already.
-            inx 
-
-        ; @skip_secondary:
 
         lda SFX_Timer,x  ;Primary ;(Hat, Game SFX)
         beq @skip_primary
@@ -205,8 +197,6 @@ py_Segment Update_Music, Free
         .endif
 
         tay
-
-
 
         lda LUT_SFX_Data-2,y
         and #$7f ;bit 7 set means its a Base Period.  Its so multiple Pitches to the same sound are usable.
@@ -286,8 +276,9 @@ py_Segment Update_Music, Free
 
 
 
+
     Update_SFX: ;For Primary.
-        jsr Update_SFX_No_Update_Volume
+        jsr SFX_Write_Regs
         ;Update Volume
         inx
         jsr SFX_Update_Volume
@@ -295,7 +286,7 @@ py_Segment Update_Music, Free
 
     rts
 
-        Update_SFX_No_Update_Volume:
+    SFX_Write_Regs:
 
         ;Update Pitch
         ldy SFX_Index,x
@@ -591,7 +582,7 @@ py_Segment Update_Volume, Free
         @Decay_Init:
             lda LUT_Env_Decay_Init,y ;%VVVV vv DD 
             sta Note_Volume,x
-            ;jmp @Decay
+        rts
 
         ;
         
@@ -645,7 +636,7 @@ py_Segment Write_APU_Volume, Free
 
             pla
             @loop:
-                sub irq_tmp_0 ;subtract 1/8  1-7 times. (or 256 if unintended  sneaks in)
+                sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
                 dey
                 bne @loop
 
@@ -656,7 +647,7 @@ py_Segment Write_APU_Volume, Free
         @skip:
         ;
 
-        Write_APU_Volume_no_dampen: ;SFX
+        Write_APU_Volume_no_dampen: ;<- SFX
         ;IN A = lda Note_Volume,x
 
         ;A= %VVVV-vv-dD

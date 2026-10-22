@@ -704,6 +704,8 @@ Macros_Defined .set 1
       Bb5 = $3D
       B5  = $3E
 
+      C6 = $3f
+
       ;Enharmonics
       Bs0 = C1
 
@@ -1176,10 +1178,10 @@ first_env .set -1 ;If first is not the start of a bank.
 
 
     ;Timers
-    .if (atk_len = 1) .or (atk_len > $0F) .or (atk_len < 0)
-        .error "Env Error: Attack Length must be 0 or 2..15 (Use the vars atk_1 .. atk_14)" ;Interally represented as 2..15
-    .endif                                              ;A one technically functions, but it still skips Atk_Rate
-
+    .if (atk_len < 0) .or (atk_len > 15)
+        .error "Env Error: Attack Length must be 1..15" 
+    .endif  
+    
      .if (cutoff < 0) .or (cutoff > 7)
         .error "Env Error: Cutoff must be 0..7"
     .endif
@@ -2394,7 +2396,7 @@ first_env .set -1 ;If first is not the start of a bank.
 
   .endmacro
 
-  .macro Volume_Set Volume
+  .macro Set_Volume Volume
 
     .byte $f0|Volume,  0 << 3 | Volume
       ;Set Volumes are still Two Bytes, and they must specify the Volume Twice.
