@@ -111,4 +111,4 @@
         ;I type 6+7 to mean 16ths of length 6 and 7.
             ;Some songs compress better when "8th" length is functionally 16th, denoted as just Tempo = 6
 ;
-
+ 

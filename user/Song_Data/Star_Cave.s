@@ -1,12 +1,12 @@
 ;============================================================
 ; Statistics
 ;============================================================
-;Total Size: 246 Bytes
+;Total Size: 243 Bytes
 ;Sq0: 104B
-;Sq1: 45B
+;Sq1: 44B
 ;Tri: 36B
 ;Noise: 45B
-;DMC: 16B
+;DMC: 14B
 
 
 _8th .set 7+7
@@ -152,21 +152,20 @@ Channel Star_Cave_Sq1,
     Riff _14, _15
 
     _11:
-            Notes 8th,A5, qtr,Fs5, 8th,E5
-            _11_3:
-            Notes qtr,Cs5, qtr,E5
+        Notes 8th,A5, qtr,Fs5, 8th,E5
+        _11_3:
+        Notes qtr,Cs5, qtr,E5
 
         _12:
         Riff _11, _12 -1
-        Notes qtr,A5
+        ;Notes qtr,A5
 
         _13:
-            Notes 8th,B5, qtr,Gs5, 8th,Fs5, 
-            _13_3:
-            Notes qtr,E5, qtr,A5
+        Riff _14 -1, _15 -2
+        Notes qtr,E5, qtr,A5
 
         _14:
-        Riff _13, _14 -2
+        Notes 8th,B5, qtr,Gs5, 8th,Fs5, 
         Notes qtr,Cs5, qtr,E5
 
     _15:
@@ -255,12 +254,14 @@ Channel Star_Cave_dmc
     Repeat "2b", 2
     Notes qtr,rest
 
-    _2_3:
+    
     Shift_Pitch Cs2, Gs1
-    Notes 8th,Gs2, 8th,Gs1
+    _2_3:
+        Notes 8th,Gs2, 8th,Gs1
 
     Shift_Pitch Gs1, B1
-    Notes 8th,B2, 8th,B1
+    Repeat _2_3, 1 ;Notes 8th,B2, 8th,B1
+        ;Base Pitch is corrupted, but fixed on Loop
 
 Loop Star_Cave_dmc
 
