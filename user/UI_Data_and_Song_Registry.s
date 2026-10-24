@@ -73,9 +73,9 @@
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE, "Subtitle", $80
+    UI_Word _SUBTITLE, "Fantastic Fist by 100th-Coin", $80
 
-    SUBTITLE_OFFSET = $0c
+    SUBTITLE_OFFSET = $02
         ; $00 - $1f to adjust text-centering.
         
 
@@ -103,10 +103,10 @@
 
 
     .include "user/Song_Data/Star_Cave.s"
-    Song Star_Cave, 7+7, {_S, _T, _A, _R, _spc, _C, _A, _V, _E}  
+    Song Star_Cave, 7+7, "Star Cave"
           
     .include "user/Song_Data/Rubify.s"
-    Song Rubify, 10, {_R, _U, _B, _I, _F, _Y}  
+    Song Rubify, 10, "Rubify"
 
         ;I type 6+7 to mean 16ths of length 6 and 7.
             ;Some songs compress better when "8th" length is functionally 16th, denoted as just Tempo = 6

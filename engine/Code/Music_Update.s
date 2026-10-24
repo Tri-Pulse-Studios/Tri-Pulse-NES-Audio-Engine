@@ -113,6 +113,15 @@ py_Segment Update_Music, Free
 
 
     Update_Music:
+        lda Silence_APU_Flag
+        bne @play        
+
+            ;lda #$00
+            sta APU_Channel_Enable
+            rts
+
+
+        @play:
         lda APU_Channel_Enable
         ora #$0f
         sta APU_Channel_Enable ;Enable NT10. Leave DMC unchanged.

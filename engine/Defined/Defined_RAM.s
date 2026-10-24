@@ -102,7 +102,7 @@ ZP_RAM:
     Res_RAM Held_Button
     Res_RAM Pressed_Button
     Res_RAM Track_Index ;Displayed Name
-
+    Res_RAM Silence_APU_Flag
 
 ;
 

@@ -137,9 +137,9 @@
             _d25, atk_3, _d50, _0f, _d50, \
             Vib_Slow, Med_Delay
 
-        Env "4b", T_2f__F2,\
-            $10, -$04, $10, \
-            _d50, _2f, _d50, \
+        Env "4b", T_M12__F2,\
+            $c0, -$10, $00, \
+            _d50, _0f, _d50, \
             Vib_None, No_Delay, \
             F2
             ;Pitch >= F2 is d25. Else < F2 is d12.

@@ -186,8 +186,8 @@ Channel Rubify_Noise
     Noise_Header ::Rubify_NB, 0;_d50_Kick
 
     _1:
-        Notes hlf,Solo_Kick
-        Repeat "1b", 13
+        Notes hlf,Solo_Kick, hlf,Solo_Kick
+        Repeat "2b", 6
 
         _4_5:
         Notes dqt,Solo_Kick

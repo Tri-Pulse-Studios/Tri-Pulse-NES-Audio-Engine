@@ -1034,73 +1034,73 @@
     .endif
 
 
-.macro Song Name, Len, v1, v2, v3, v4, v5, \
-                       v6, v7, v8, v9, v10, \
-                       v11, v12, v13, v14, v15, \
-                       v16, v17, v18, v19, v20
-
-        .local Sq0, Sq1, Tri, Noise, Dmc
-
-        .if Song_Index > 61
-        .error "Song Error: Max Index exceeded (0..61)" ;61*5 = 255
-        .exitmacro
-
-        .elseif .xmatch(Name, "Silence")
-        Song_Silence  ;Macro to emit minimal data.
-        .exitmacro
-
-        ; Guard
-        .elseif .defined(.ident(.concat(.string(Name), "_SongDefined")))
-            .error "Song Error"
-            .out .sprintf("Error: Song Name '%s' is already defined.", .string(Name))
-            .out ""
-            .exitmacro
-        .endif
-
-        ; assign index
-        .ident(.concat(.string(Name), "_Index")) .set Song_Index
-
-        ; resolve symbols
-        Sq0   = .ident(.concat(.string(Name), "_Sq0"))
-        Sq1   = .ident(.concat(.string(Name), "_Sq1"))
-        Tri   = .ident(.concat(.string(Name), "_Tri"))
-        Noise = .ident(.concat(.string(Name), "_Noise"))
-        Dmc   = .ident(.concat(.string(Name), "_dmc"))
-
-        ; store row
-        .ident(.sprintf("Song%02x_Sq0", Song_Index)) = Sq0
-        .ident(.sprintf("Song%02x_Sq1", Song_Index)) = Sq1
-        .ident(.sprintf("Song%02x_Tri", Song_Index)) = Tri
-        .ident(.sprintf("Song%02x_Noise", Song_Index)) = Noise
-        .ident(.sprintf("Song%02x_Dmc", Song_Index)) = Dmc
-
-        .ident(.sprintf("Song%02x_Len", Song_Index)) = Len
-
-        .if Len = 0 .or Len > 32
-            .warning .sprintf("Song Warning: Tempo > 32 causes 8-bit overflow; note lengths become non-monotonic. Given Tempo = %u", Len)
-        .endif 
-
-        ;----------------------------------------
-        ; UI text start index
-        ;----------------------------------------
-
-        .ident(.sprintf("Song%02x_UI_Start", Song_Index)) = UI_Text_Index
-
-        Collect_UI_Text v1, v2, v3, v4, v5, \
+    .macro Song Name, Len, v1, v2, v3, v4, v5, \
                         v6, v7, v8, v9, v10, \
                         v11, v12, v13, v14, v15, \
                         v16, v17, v18, v19, v20
 
-        Song_Index .set Song_Index + 1
+            .local Sq0, Sq1, Tri, Noise, Dmc
 
-        ; mark defined
-        .ident(.concat(.string(Name), "_SongDefined")) = 1
+            .if Song_Index > 61
+            .error "Song Error: Max Index exceeded (0..61)" ;61*5 = 255
+            .exitmacro
+
+            .elseif .xmatch(Name, "Silence")
+                Song_Silence  ;Macro to emit minimal data.
+                .exitmacro
+
+            ; Guard
+            .elseif .defined(.ident(.concat(.string(Name), "_SongDefined")))
+                .error "Song Error"
+                .out .sprintf("Error: Song Name '%s' is already defined.", .string(Name))
+                .out ""
+                .exitmacro
+            .endif
+
+            ; assign index
+            .ident(.concat(.string(Name), "_Index")) .set Song_Index
+
+            ; resolve symbols
+            Sq0   = .ident(.concat(.string(Name), "_Sq0"))
+            Sq1   = .ident(.concat(.string(Name), "_Sq1"))
+            Tri   = .ident(.concat(.string(Name), "_Tri"))
+            Noise = .ident(.concat(.string(Name), "_Noise"))
+            Dmc   = .ident(.concat(.string(Name), "_dmc"))
+
+            ; store row
+            .ident(.sprintf("Song%02x_Sq0", Song_Index)) = Sq0
+            .ident(.sprintf("Song%02x_Sq1", Song_Index)) = Sq1
+            .ident(.sprintf("Song%02x_Tri", Song_Index)) = Tri
+            .ident(.sprintf("Song%02x_Noise", Song_Index)) = Noise
+            .ident(.sprintf("Song%02x_Dmc", Song_Index)) = Dmc
+
+            .ident(.sprintf("Song%02x_Len", Song_Index)) = Len
+
+            .if Len = 0 .or Len > 32
+                .warning .sprintf("Song Warning: Tempo > 32 causes 8-bit overflow; note lengths become non-monotonic. Given Tempo = %u", Len)
+            .endif 
+
+            ;----------------------------------------
+            ; UI text start index
+            ;----------------------------------------
+
+            .ident(.sprintf("Song%02x_UI_Start", Song_Index)) = UI_Text_Index
+
+            Collect_UI_Text v1, v2, v3, v4, v5, \
+                            v6, v7, v8, v9, v10, \
+                            v11, v12, v13, v14, v15, \
+                            v16, v17, v18, v19, v20
+
+            Song_Index .set Song_Index + 1
+
+            ; mark defined
+            .ident(.concat(.string(Name), "_SongDefined")) = 1
 
     .endmacro
 
 
     .macro Song_Silence
-    
+
         
         ; write fixed pointers
         .ident(.sprintf("Song%02x_Sq0",   Song_Index)) = Inf_Wait-2

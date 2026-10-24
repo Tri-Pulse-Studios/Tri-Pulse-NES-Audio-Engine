@@ -175,8 +175,6 @@ Channel Star_Cave_Sq1,
 
 
     
-
-
     _59:
     Riff SC_Sq0::_15_Env, SC_Sq0::_Pre_19
     Repeat "2b", 3
@@ -247,11 +245,11 @@ Loop Star_Cave_Tri, "Riffed"
 ;============================================================
 
 Channel Star_Cave_dmc
-    Header Cs2, T_2f__F2
+    Header Cs2, T_M12__F2
+        ;M12 is Max 12f. Channel silences after 12f.
 
     _1:
-    Notes 8th,Cs2, 8th,Cs3, 
-    Notes qtr,rest
+    Notes 8th,Cs2, dqt,Cs3 ;<- 8th,Cs3 + qtr,rest
 
     Notes 8th,Cs2, 8th,Cs3
     Repeat "2b", 2

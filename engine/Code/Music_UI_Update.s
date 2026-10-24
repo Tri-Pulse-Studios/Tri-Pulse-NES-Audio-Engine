@@ -59,7 +59,7 @@ nmi:
     beq @skip_UD
 
         and #up
-        beq @up ;yes, backwards
+        beq @up
 
 
             @down:
@@ -69,7 +69,7 @@ nmi:
                 ;lda_GameFX Buzzer
                 ;sta SFX_Queue+$10 ;Have it be a DMC Tri effect.
 
-                    ;Fall Through to @up to cancel the dec
+                    
 
             @up:
             inc Track_Index
@@ -79,7 +79,7 @@ nmi:
         cmp #Max_Track_Index+1 ;+1 to stop going beyond it.
         bcs @down ;dec to cancel inc
 
-        jsr Update_Track_Cursor ;Not Inline. No point when a beq skips over it.
+        jsr Update_Track_Cursor ;Not Inline. No point when a jeq skips over it.
 
         ;If can be fancy, a hold -> Scroll faster Would be nice.
 
@@ -89,6 +89,9 @@ nmi:
     bit Pressed_Button
     bpl skip_A ;A_Button
 
+        lda #$80
+        sta Silence_APU_Flag ;Clear when Set.
+
         lda Track_Index
         jsr Song_Init
 
@@ -96,7 +99,6 @@ nmi:
 
     skip_A:
 
-    ; TODO Song "Silence"
     ; bit Pressed_Button
     ; bvc @skip_B ;B_Button
 
@@ -104,6 +106,13 @@ nmi:
     ;     jsr Song_Init
 
     ; @skip_B:
+    bit Pressed_Button
+    bvc @skip_B
+
+        asl Silence_APU_Flag ;Clear Flag.
+
+    @skip_B:
+
 
     jsr Update_Displayed_Addresses
 
@@ -122,7 +131,7 @@ rti ;go back to inf-wait in reset.
 Update_Now_Playing:
     lda #$22
     sta $2006
-    lda #$06 ;Set PPU isn't flexible enough. Also, more space desired.
+    lda #$0a ;Set PPU can't Display a Song Name.
     sta $2006
 
     ldx Song_ID
@@ -233,7 +242,7 @@ rts
 Display_Nibble = 0
 Update_Displayed_Addresses:
     lda Pressed_Button
-    bne @rts ;not enough time to update in nmi is Song also changes.
+    bne @rts ;not enough time to update in nmi if Song also changes.
 
     ldy #$04
     @Loop_5_Channels:
@@ -242,13 +251,13 @@ Update_Displayed_Addresses:
         lda @LUT_Possition,y
         tax
 
-        lda @LUT_Words,y
+        lda @LUT_Words,y ;lda #`Sq0`
         
         ldy #$22
-        jsr Set_16bit_PPU_ADDR_Display_Word
+        jsr Set_16bit_PPU_ADDR_Display_Word 
 
 
-        lda #_Hex
+        lda #_Hex ;`: $`
         jsr Display_Word
 
         ;Display Pointer
