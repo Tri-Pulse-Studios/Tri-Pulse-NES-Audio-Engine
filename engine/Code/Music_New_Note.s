@@ -737,7 +737,7 @@ All_Music_Opcodes:
             dey 
             bne @loop_add_8th 
 
-        beq Store_Duration ;@exit_loop
+        bal Store_Duration, beq ;@exit_loop
 
     ;Out A= _8th*Y
 
@@ -904,7 +904,6 @@ All_Music_Opcodes:
                 lda LUT_DMC_SFX_Ptr-1,y 
                 bpl @Hardcoded
 
-                    ;.byte $02
 
                     ;Kick selector
                     ldx Vibrato_Depth +$c  ;Init w/ Set_BP 0..3

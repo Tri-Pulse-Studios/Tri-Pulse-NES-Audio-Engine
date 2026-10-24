@@ -200,11 +200,8 @@
 ;============================================================
 
     
-
-
-    LUT_Kick_Ptr:
-        SFX_Byte d50_Kick_adr
-        SFX_Byte d25_Kick_adr
-        SFX_Byte As3_Tom_adr
-        ;Unused 4th slot
+        Kick_Type _d50_K,   d50_Kick_adr
+        Kick_Type _d25_K,   d25_Kick_adr
+        Kick_Type _d25_tom, As3_Tom_adr
+        ;Kick_Type Unused 4th Slot
     ;

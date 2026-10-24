@@ -1,7 +1,7 @@
 ﻿-----------------------
 -- Name: Piano Roll (NES)
 -- Author: zeta0134
--- Tweaks by: Fritzafella
+-- Tweaks by: Tri-Pulse Studios
 -- Based on: https://github.com/zeta0134/mesen-piano-roll
 -----------------------
 

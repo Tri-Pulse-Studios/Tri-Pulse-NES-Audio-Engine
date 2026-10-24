@@ -45,7 +45,7 @@
 
 - Duration Non-Note syntax.
 	- `Shift_Pitch`
-	- `Env_Change`
+	- `Set_Env`
 
 ### Names of Constants
 - Vibrato related constants are not cohesive.
@@ -77,6 +77,14 @@
 -	Pitch-Naming compability
 
 - NES Runtime Debugging tools.
+
+- Misc Effect Expansion
+	- A set of macros to only include the code/data for used Misc Effects.
+		- Repalcing all `.byte <Effect>` with Macros, for logging purposes. 
+
+	- I have more ideas for Misc Effects. Too many for only 16 slots.
+		- The SPecial Volume by default uses 8, but in practice won't need that many.
+
 
 ### API
 - documentation to integrate the engine into a game or other user projects.

@@ -11,12 +11,12 @@ stx $2000	; disable NMI
 stx $2001 	; disable rendering
 
 ; stx $4010 	; disable DMC IRQs
-; txs 
+; txs ;Consistant stack location. 
 
 
 bit $2002 ;Not flushed on reset. Must flush manually.
 ; :
-;     bit $2002 ;5-Bytes to make start time deterministic.  like SP, non-determinite is irrelevent.
+;     bit $2002 ;Deterministic start time.
 ;     bpl :-
 
 

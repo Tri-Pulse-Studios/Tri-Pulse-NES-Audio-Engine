@@ -65,23 +65,29 @@
     ; See the README for details and limitations
 
 
-            UI_Word __dash__, _spc, _dash, _spc|$80
+    UI_Word __dash__, " - ", $80
 
-            UI_Word _CURRENT_TRACK__, _C, _U, _R, _R, _E, _N, _T, _spc ;No |$80 terminator.
-                UI_Word _TRACK__, _T, _R, _A, _C, _K, _spc|$80
+    UI_Word _CURRENT_TRACK__, "CURRENT "
+    UI_Word _TRACK__, "TRACK ", $80
 
- 
 
-            ;This message appears below "Tri-Pulse Studios"
-            ;See the README for details.
-            UI_Word _SUBTITLE, _spc|$80
-     
-            SUBTITLE_OFFSET = $00 
-                ;$00 - $1f to adjust text-centering.
-                ;$0a worked for " in 8KB"
+    ; This message appears below "Tri-Pulse Studios"
+    ; See the README for details.
+    UI_Word _SUBTITLE, "Subtitle", $80
 
-            UI_Word _2026, 2, 0, 2, 6|$80
+    SUBTITLE_OFFSET = $0c
+        ; $00 - $1f to adjust text-centering.
+        
 
+    UI_Word _Sq0, "Sq0", $80
+    UI_Word _Sq1, "Sq1", $80
+    UI_Word _Tri, "Tri", $80
+    UI_Word _Noi, "Noise", $80
+    UI_Word _DMC, "DMC", $80
+    UI_Word _Hex, ": $", $80
+
+
+    UI_Word _2026, "2026", $80
 
 ;============================================================
 ; Song Registry

@@ -562,7 +562,7 @@ Envelopes are organized into banks of 16.
     - It takes Two Bytes of music data.
     - Bank error checking is disabled for the rest of that channel’s data, making debugging harder.
 
-- See [Set_Env Instruction](#env_change-and-set_env-instructions)for details
+- See [Set_Env Instruction](#Set_Env-and-set_env-instructions)for details
 
 
 **NOTE:** This does not apply to Noise Channel envelopes.
@@ -801,15 +801,16 @@ then referencing it in the song's header.
 
 - Maps characters to the tile IDs used to display them on screen.
 
-- Alphanumeric characters `0`-`9` and `a`-`z` use indices `$00`-`$23`(0 - 35), respectively.
-- A fairly comprehensive selection of symbols is available, though most are unlikely to be needed.
-
-- The tile data is located at `engine/Tri_Pulse_UI_Tiles.bin`. 
-Modify it as needed, but ensure the Character Dictionary is updated to match.
+- The tile data is located at `engine/Data/Tri_Pulse_UI_Tiles.bin`. 
+    - Characters are mapped to ASCII indexes. 
+    - Additional, custom characters can be defined from `$01` to `$1f`.
+        - *Support for custom characters coming in a future update*
 
 - **WARNING:** Tile IDs `$80`-`$ff` are not supported by the text engine. Using a tile ID greater than `$7f` results in undefined behavior.
 
-- **WARNING:** Tile IDs `$3f` and `$ff` must remain empty.
+- **WARNING:** Tile IDs `$00` and `$20` must remain blank tiles.
+    - `$20` is ASCII for `Space`
+    - `$00` is ASCII for `Null` and is used for vRAM Initialization 
 
 
 #### Compressed Text Dictionary
@@ -824,14 +825,21 @@ Modify it as needed, but ensure the Character Dictionary is updated to match.
 **Format**
 
 ```asm
-UI_Word <_Alias>, <_T, _E, _X, _T|$80>
+UI_Word <_Alias>, <"Text">, [EOL_Flag]
 ```
-
-* Defines reusable text character by character. `|$80` marks the end of a complete text entry.
-**Note:** `UI_Word` entries cannot nest other `UI_Word` entries.
 
 * Aliases start with `_`, primarily to allow names beginning with numbers to remain valid ca65 identifiers.
 
+* Text is set inside quotation marks.
+    - `.byte "Text"` is ca65 syntax to emits the ASCII for T,e,x, and t.
+
+* The optional EOL_Flag terminates printing this word.
+    - See Advanced Format Below for the purpose of omitting it
+
+    
+
+
+- **Note:** `UI_Word` entries cannot nest other `UI_Word` entries.
 
 **Data Savings**
 
@@ -851,13 +859,13 @@ UI_Word <_Alias>, <_T, _E, _X, _T|$80>
 * For example, if `TEXT` is already defined and `NEXT` appears elsewhere:
 
   ```asm
-  UI_Word _TEXT, _T
-  UI_Word _EXT, _E, _X, _T|$80
+  UI_Word _TEXT, "T"
+  UI_Word _EXT, "EXT", $80
   ```
 
-* Notice that `_TEXT` has no `|$80` terminator. Its final characters are supplied by the `_EXT` entry.
+* Notice that `_TEXT` has no `$80` terminator. Its final characters are supplied by the `_EXT` entry.
 
-* Both _TEXT and _EXT can now be used as text entries. The raw sequence `_N, _EXT` takes two bytes instead of four, with no additional data overhead.
+* Both _TEXT and _EXT can now be used as text entries. The raw sequence `"N", _EXT` takes two bytes instead of four, with zero additional data overhead.
 
 
 
@@ -869,8 +877,8 @@ UI_Word <_Alias>, <_T, _E, _X, _T|$80>
 
 - A customizable subtitle is displayed immediately below `TRI-PULSE STUDIOS`.
 
-**Usage:** `UI_Word _SUBTITLE, <_T, _E, _X, _T|$80>`
-- Like all complete text fragments, the subtitle must end with the `|$80` terminator
+**Usage:** `UI_Word _SUBTITLE, "Subtitle", $80
+- Like all complete text fragments, the subtitle must end with the `$80` terminator
     - See [Compressed Text Dictionary](#compressed-text-dictionary) for details.
 
 * Define `SUBTITLE_OFFSET = <Offset>` to specify the number of blank tiles inserted to the left of the subtitle.
@@ -887,14 +895,17 @@ UI_Word <_Alias>, <_T, _E, _X, _T|$80>
 
 - Defines the song list, links song names to their corresponding song data, and explains how to use compressed text definitions in displayed song names.
 
-**Usage:** `Song <Song_Name>, <Tempo>, {<UI_text>}`
+**Usage:** `Song <Song_Name>, <Tempo>, <"Text">`
   - `Song_Name` is the internal name used to find each channel's Song Data.
-  - `Tempo` is an integer that determines the song's playback tempo. Typically, it specifies how many frames an eighth note plays.
-  - `UI_Text` defines the text displayed on screen while the song plays, specified character by character.
+  - `Tempo` is an integer that determines the song's playback tempo. 
+    - Specifically, it specifies how many frames `Notes 8th,<Pitch>` will play.
+  - `<"Text">` defines the text displayed on screen while the song plays.
+    - Defined UI_Word definitions can compress text here.
+    -
 
-**Example:** `Song Fanfare, 12, {_F, _A, _N, _F, _A, _R, _E}` 
+**Example:** `Song Fanfare, 12, "Fanfare"` 
 
-  - If `FAN` has a defined alias, `UI_Text` can be shortened to `{_FAN, _F, _A, _R, _E}`
+  - If `UI_Word _Fan, "Fan"` is a defined alias, `UI_Text` can be shortened to `Song Fanfare, 12, _Fan, "fare"`
   - See [Compressed Text Dictionary](#compressed-text-dictionary) for details on when and how to make aliases.
 
 - The list of Songs is the ordered list in which to cycle the tracks.
@@ -968,7 +979,7 @@ UI_Word <_Alias>, <_T, _E, _X, _T|$80>
 - Only specify the Frame if the `_Measure_Beat:` label already exists.
     - Otherwise, truncating to `_Measure_Beat:` for readability is often worthwhile.
 
-- When two labels with the same Timestamp are needed, (ie, to include or exclude an `Env_Change` with different Riffs), add a short word or abbreviation.
+- When two labels with the same Timestamp are needed, (ie, to include or exclude an `Set_Env` with different Riffs), add a short word or abbreviation.
     - Examples include `_5_BP:, _5_Env:, _5_Pre_BP:`
 
 
@@ -1387,14 +1398,14 @@ BP .set BP +2
 
 
 
-### `Env_Change` and `Set_Env` Instructions
+### `Set_Env` and `Set_Env` Instructions
 - These instructions modify the current Envelope used by notes.
 
-#### Env_Change
+#### Set_Env
 
 - One-Byte instruction to set the Envelope Index within the current `Env_Bank`.
 
-**Usage:** `Env_Change <New_Env_Name>
+**Usage:** `Set_Env <New_Env_Name>
 
 #### Set_Env_Bank
 - Two-Byte instruction to set both the Envelope Bank, and Index.
@@ -1797,7 +1808,7 @@ Would be optimal, but the label `_BD` cannot exist. (It would start in the middl
 
 ```asm
  _5: ;Timestamp for measure 5
-    Env_Change <Name>
+    Set_Env <Name>
     Set_Pitch <BP>
 
 ...<Notes>
@@ -1942,12 +1953,12 @@ Duration "Cont", Shaker_Kick, rest,     Snare_6, Hat_2
 - In principle, any instructions can be executed through a Duration.
 - In practice, `Notes` are used very nearly exclusively. 
 
-- Occasionally, `Shift_Pitch`, `Env_Change`, and some Misc Effects are used.
+- Occasionally, `Shift_Pitch`, `Set_Env`, and some Misc Effects are used.
     - See [Bad Ideas](#bad-ideas) for details on the other instructions.
     - In short, most other instructions would only fuction as the second nibble read in a byte, and have extremely obtuse syntax.
 
 *The following syntax is difficult to write.*
-- *For `Shift_Pitch` and `Env_Change`, clearer syntax is planned for a future release.*
+- *For `Shift_Pitch` and `Set_Env`, clearer syntax is planned for a future release.*
 
 To use Non-Notes in a Duration, the **raw hexadecimal values** needs to be supplied.
 - See [Reading Raw Byte-Code](#reading-raw-byte-code) for details.
@@ -1988,7 +1999,7 @@ Specifically, both the instruction Operand **and** Opcode must be supplied.
 
 - **WARNING:** The way Envelope IDs are calculated, their aliases are **not** usable in Duration instructions.
 - Example: `Duration _<Set_Alias>, $e0 | <Used_Raw_Index>, ...`  
-- Then somewhere nearby: `.assert (<Env_Alias> & $0f) = <Used_Raw_Index>, .error, "Invalid Manual Env_Change"`  
+- Then somewhere nearby: `.assert (<Env_Alias> & $0f) = <Used_Raw_Index>, .error, "Invalid Manual Set_Env"`  
     - Where `<Used_Raw_Index>` is the 0..15 index of the Envelope within in Bank.
     - `$e-` is the Opcode for Envelope change.
 
@@ -2251,7 +2262,7 @@ but probably shouldn't be attempted.
 - Techncially already doing this. The Unused Envelope data for the Attack Timer actually has to be $00. Lucklily, I have a bunch of $00 bytes. In the dmc samples. Its just... more complicated to keep things lined up.
 
 - In general though, there are several 2-byte instrctions where teeeechnicaly a Riff / Repeat could access these a second time as an actual instruction. 
-- For example, having the stars align so a Riffs jump address creates an instruction that a different Riff reads as an `Env_Change` so it can play the same section, but with a new instrument AND without specifying the `Env_Cange` with a new byte.
+- For example, having the stars align so a Riffs jump address creates an instruction that a different Riff reads as an `Set_Env` so it can play the same section, but with a new instrument AND without specifying the `Env_Cange` with a new byte.
     - Of course, saving this one single byte then relies on:
         1) The index order of the envelopes.
         2) The address the first Riff jumps to.
@@ -2494,7 +2505,7 @@ Mnemonic : `7` is for... uh... Look, it was just what was left over, OK?
         - `$rr` specifies how many bytes to reread before returning (32+)
         - `$xx` is the 8-bit absolute address to jump to.
 
-## Opcode `$e-` is `Env_Change`
+## Opcode `$e-` is `Set_Env`
 **Mnemonic :** `E` for Envelope.
 
     *This data is not human readable*

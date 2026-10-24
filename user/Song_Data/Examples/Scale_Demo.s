@@ -87,7 +87,7 @@ Channel Scale_Demo_dmc
     Shift_Pitch +1
     Repeat "2b", $24 ;To max pitch
 
-    Env_Change T_2f__d25
+    Set_Env T_2f__d25
     Set_Pitch B0
 
     Notes 8th,B0
@@ -112,7 +112,7 @@ Loop Scale_Demo_dmc
 ;============================================================
 
 Channel Scale_Demo_Noise
-    Header $00, _d50
+    Noise_Header ::Default_NB, _d50_K
 
         Notes 8th,rest
     Repeat "1b", $49 
@@ -125,6 +125,6 @@ Channel Scale_Demo_Noise
 
     Notes hlf,A0
         Shift_Pitch +1
-        Repeat "2b", $0f ;To max pitch
+        Repeat "2b", $0f ;Play 16 NoiseFX. 
 
 Loop Scale_Demo_Noise

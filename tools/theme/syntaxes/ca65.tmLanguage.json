@@ -132,7 +132,7 @@
 			"patterns": [{
 				"comment": "6502 Macros",
 				"name": "entity.name.function.macro",
-				"match": "\\bEnv_Change\\b"
+				"match": "\\bSet_Env\\b"
 			},
 			{
 				"comment": "Other 6502 Macros (case-insensitive)",
