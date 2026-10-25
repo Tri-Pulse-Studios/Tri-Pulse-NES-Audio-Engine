@@ -20,7 +20,7 @@
             ; Simple_SFX Char_Jump_SFX,  A2, +2, 6, Snare_env
 
         @Noise:
-            Simple_SFX Hat_d_adr, $d, 0
+            Simple_SFX Hat_4_adr, $4, 0
             Simple_SFX Hat_2_adr, $2, 0, 1,   Hat_env
 
             Simple_SFX  Rasp_d_adr, $d, 0
@@ -32,19 +32,6 @@
             Simple_SFX Shaker_2_adr, $1, +2, 3, Shaker_env
 
             
-
-
-        @Tri:
-            
-
-
-            ; Simple_SFX Kick, D2, -5, 4, Crash_env
-
-            ; Simple_SFX G3_Sweep, G3, -2
-            ; Simple_SFX F3_Sweep, F3, -2, 12, Crash_env
-
-        @dmc:
-            ;Simple_SFX Water_Hit, $7, +2, 4, DMC_Tri
 
 
             Simple_SFX DK_d12_Kick, $f,   -2, 12, DMC_d12_1_17
@@ -75,29 +62,15 @@
             ;If this gets annoying, I can unrolled loop .assert when the ($80-index) should be.
 
 
-    ; .if (Musical_SFX-LUT_SFX_Data)< $80
-    ;     .error "Musical_SFX not starting with bit 7 set."
-    ; .endif
-
-        @Sqr:
-        ;     Complex_SFX @Side, F2
-        ;     Complex_SFX Side_Flip_FX, Ds2, 8, Snare_env
-        ;     .byte $11, $15, $18, $1a, $1b, $3c
-
-        @Tri:
-        ;     Complex_SFX Hoot_Fs5, Ds5
-        ;     Complex_SFX Hoot_F5,  D5
-        ;     Complex_SFX Hoot_C5,  A4, 8, T_0f__d25
-        ;     .byte $11, $64, $11 ;1f, 6f, 1f,   A4, C5, Ca4
 
         @Noise:
                 ;[WARN] The Length Param is ignored for Complex Noise SFX
                     ;The length is over-ridden by the Timer for New_Note
-            Complex_SFX Crash_4_adr, $4 
-            Complex_SFX Crash_6_adr, $6, 36, Crash_env 
+            Complex_SFX Crash_3_adr, $3 
+            Complex_SFX Crash_7_adr, $7, 36, Crash_env 
             .byte $18, $34, $43, $52, $01
 
-            Complex_SFX Snare_4_adr, $4 
+            Complex_SFX Snare_8_adr, $8 
             Complex_SFX Snare_6_adr, $6, 9, Snare_env
             .byte $15, $01
 
@@ -114,33 +87,6 @@
 
 
 
-        ; @Tri: ;And other depreciated
-
-            ;     Complex_SFX C4_Blip, C4
-            ;     Complex_SFX D3_Blip, D3, 9, Crash_env ;env always on. 
-            ;     .byte $31,$30,$31,$00 ;On-off-On every 3f (The $00 is safety that it doesn't stay on)
-
-            ; Complex_SFX Tamberine, $1
-            ; Complex_SFX Tamb_3_adr, $3, 21, Tamberine_env
-            ; .byte $16, $22, $01
-    
-
-            ; Simple_SFX Lo_Sweep, $0a, -1
-            ; Simple_SFX Hi_Sweep, $06, -1, 6, Sweep_env
-
-
-
-            ; Simple_SFX Tick_1_adr,  $01, +0
-            ; Simple_SFX Tick_11_adr, $0b, +0
-            ; Simple_SFX Tick_12_adr, $0c, +0, 1, Crash_env
-
-            ; Complex_SFX Metroid_Sweep_11, $b
-            ; Complex_SFX Metroid_Sweep_12, $c
-            ; Complex_SFX Metroid_Sweep_13, $d, 15, Metroid_Sweep
-            ; .byte $11, $32, $03
-
-
-    ;
 
 
 
@@ -160,30 +106,29 @@
 ; Noise Bank
 ;============================================================
 
-    Star_Cave_NB .set NoiseFX_Index 
-    Rubify_NB .set NoiseFX_Index
+    Default_NB .set NoiseFX_Index 
 
         ;0
-        NoiseFX Solo_Kick,     $00, "Kick"
-
-        NoiseFX Crash_4,       Crash_4_adr,  
-        NoiseFX Crash_6,       Crash_6_adr,  
-
-        NoiseFX Snare_4,       Snare_4_adr   
-        NoiseFX Snare_4_Kick,  Snare_4_adr,  "Kick"
+        NoiseFX Crash_3,       Crash_3_adr,  "Kick"
+        NoiseFX Crash_7,       Crash_7_adr,  "Kick" 
 
         NoiseFX Snare_6,       Snare_6_adr   
         NoiseFX Snare_6_Kick,  Snare_6_adr,  "Kick"
 
-
+        ;4
         NoiseFX Shaker_2,      Shaker_2_adr
         NoiseFX Shaker_Kick,   Shaker_2_adr, "Kick"
+        NoiseFX Shaker_D3,     Shaker_2_adr, Ds3_Tom ;Pair w/ the A3_Tom Kick
 
         NoiseFX Hat_2,         Hat_2_adr  
         NoiseFX Hat_Kick,      Hat_2_adr,    "Kick"    
+        NoiseFX Hat_D3,        Hat_2_adr,    Ds3_Tom ;Pair w/ the A3_Tom Kick
 
-        NoiseFX Rasp_c_Kick, Rasp_c_adr,     "Kick"
+        ;10
+        NoiseFX Rasp_d,      Rasp_d_adr
+        NoiseFX Rasp_c,      Rasp_c_adr
 
+        NoiseFX Rasp_2,      Rasp_w_Shaker_2_adr
         NoiseFX Rasp_2_Kick, Rasp_w_Shaker_2_adr, "Kick"
 
         ;15
@@ -193,15 +138,18 @@
             ;More than 15 NoiseFX can be defined, but not accessed all at once.
             ;Shift_Pitch instructions can change the defined window mid-song as well.
 
-    NB_Validate Star_Cave_NB ;Simple check that all NoiseFX fit in 15 window.
+    NB_Validate Default_NB ;Simple check that all NoiseFX fit in 15 window.
 
 ;============================================================
 ; Kick Types
 ;============================================================
 
     
-        Kick_Type _d50_K,   d50_Kick_adr
-        Kick_Type _d25_K,   d25_Kick_adr
-        Kick_Type _d25_tom, As3_Tom_adr
-        ;Kick_Type Unused 4th Slot
+
+
+    LUT_Kick_Ptr:
+        SFX_Byte d50_Kick_adr
+        SFX_Byte d25_Kick_adr
+        SFX_Byte As3_Tom_adr
+        ;Unused 4th slot
     ;

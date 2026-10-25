@@ -71,25 +71,22 @@
             ;Cutoff length
             ;0 and 1 both Don't Release 
 
-        atk_1  = 1
-        atk_2  = 2
-        atk_3  = 3
-        atk_4  = 4
-        atk_5  = 5
-        atk_6  = 6
-        atk_7  = 7
-        atk_8  = 8
-        atk_9  = 9
-        atk_10 = 10
-        atk_11 = 11
-        atk_12 = 12
-        atk_13 = 13
-        atk_14 = 14
-        atk_15 = 15
+        atk_1  = 2
+        atk_2  = 3
+        atk_3  = 4
+        atk_4  = 5
+        atk_5  = 6
+        atk_6  = 7
+        atk_7  = 8
+        atk_8  = 9
+        atk_9  = 10
+        atk_10 = 11
+        atk_11 = 12
+        atk_12 = 13
+        atk_13 = 14
+        atk_14 = 15
             ;Attack Length
             ;0 and 1 both have no Attack phase.
-                ;1 Uses Attack Init frame 1, then Decay Init frame 2, which are discontinuous.
-
 
         Vib_None   =  $00 << 2
         Vib_Fast =  %01 << 2
@@ -103,52 +100,176 @@
         Long_Delay  = %11 << 2 
             ;Vibrato Delay
 
-        Vib_Deep = 0
-        Vib_Shallow = 2
-        Vib_Very_Shallow = 3
 
     ;============================================================
     ;Bank 0 Primary Instruments
     ;============================================================
         Env_Bank "Init_Index", 0
 
+        ;========================================================
+        ; Lead Envs
+        ;========================================================
 
-        Env "5b", Pad_6_15_7_v12,\
-            $60, +$10, $cc, -$04, $70, \
-            _d50, atk_10, _d50, _0f, _d50, \
-            Vib_Slow, Med_Delay
+            ;50% Lead
+            Env "4b", Lead_sqr_s5_v12_1f, \
+                $90, -$14, $50, \
+                _d50, _1f, _d50, \
+                Vib_Slow, Long_Delay, \
+                dmc_d25
+
+            T_1f_v12__d25 .set Lead_sqr_s5_v12_1f
 
 
-        Env "5b", Pad_10_5_0,\
-            $a0, -$20, $50, -$08, $00, \
-            _d50, atk_2, _d50, _0f, _d50, \
-            Vib_None, No_Delay
+            ;25% Lead
+            Env "3b", Lead_12to25_s6_v12, \
+                $90, -$1c, $60, \
+                _d12, _0f, _d25, \
+                Vib_Slow, Short_Delay
+
+            ;
+
+            ;12.5% Lead
+            Env "4b", Lead_d12_s7_v8_1f, \
+                $b0, -$14, $70, \
+                _d12, _1f, _d12, \
+                Vib_Med, Long_Delay, \
+                dmc_d12
+
+            T_1f_v8__d12 .set Lead_d12_s7_v8_1f
 
 
-        Env "5b", Pad_12_7_0,\
-            $c0, +$00, $70, -$18, $00, \
-            _d50, atk_1, _d50, _0f, _d50, \
-            Vib_None, No_Delay
+        ;========================================================
+        ; Percussive Envs
+        ;========================================================
 
-            ;1f atk allows -$50 atk rate when out of range.
+            ;50%
+            Env "6b", Lead_sqr_13_0, \
+                $d0, -$20, $64, -$0c, $00, \
+                _d50, atk_4, _d50, _0f, _d50, \
+                Vib_None, No_Delay, \
+                dmc_d25
+            T_M11 .set Lead_sqr_13_0
+            ;Plays max 11 frames.
 
-        Env "5b", Lead_25to50_7_9_0,\
-            $70, +$10, $94, -$0c, $00, \
-            _d25, atk_3, _d50, _0f, _d50, \
-            Vib_Slow, Med_Delay
+            ;25%
+            Env "5b", Pad_d75_10_0, \
+                $a0, -$14, $58, -$08, $00, \
+                _d75, atk_4, _d75, _0f, _d75, \
+                Vib_None, No_Delay
+            ;
 
-        Env "4b", T_M12__F2,\
-            $c0, -$10, $00, \
-            _d50, _0f, _d50, \
-            Vib_None, No_Delay, \
-            F2
-            ;Pitch >= F2 is d25. Else < F2 is d12.
+            ;12.5%
+            Env "5b", Pad_d12_8_0, \
+                $b0, -$14, $3c, -$04, $00, \
+                _d12, atk_4, _d12, _0f, _d12, \
+                Vib_None, No_Delay
+            ;
 
-        Env "4b", T_0f_12v__d25,\
-            $10, -$04, $10, \
-            _d50, _2f, _d50, \
-            Vib_Slow, Long_Delay,\
-            dmc_d25
+        ;========================================================
+        ; Pad Envs
+        ;========================================================
+
+            ;50% Pad
+            Env "4b", Pad_sqr_s3_v8, \
+                $60, -$14, $30, \
+                _d50, _0f, _d50, \
+                Vib_Med, Long_Delay, \
+                dmc_d25
+
+            T_0f_v8__d25 .set Pad_sqr_s3_v8
+
+
+            ;25% Pad
+            Env "4b", Pad_d25_8_3_v12, \
+                $80, -$10, $30, \
+                _d25, _0f, _d25, \
+                Vib_Slow, No_Delay, \
+                dmc_d25
+
+            T_0f_v12__d25 .set Pad_d25_8_3_v12
+
+
+            ;12.5% Pad
+            Env "4b", Pad_d12_s3_v8, \
+                $60, -$10, $40, \
+                _d12, _0f, _d12, \
+                Vib_Med, Med_Delay, \
+                dmc_d12
+
+            T_0f_v8__d12 .set Pad_d12_s3_v8
+
+
+        ;========================================================
+        ; Misc Envs
+        ;========================================================
+
+            ;v6 vibrato is very fast. More SFX than musical.
+            Env "4b", Whistle_25to12_v6, \
+                $b0, -$1c, $70, \
+                _d25, _0f, _d12, \
+                Vib_Fast, Short_Delay, \
+                dmc_d25
+
+            T_0f_v6__d25 .set Whistle_25to12_v6
+
+
+            ;Example of an increasing volume Envelope
+            Env "5b", Lead_d25_3_8_6_v12, \
+                $30, +$08, $8c, -$04, $60, \
+                _d25, atk_11, _d25, _0f, _d25, \
+                Vib_Slow, Med_Delay
+
+
+        ;========================================================
+        ; Triangle / Tri-Pulse Envs
+        ;========================================================
+
+            ; Aliased Pulse Envelopes are listed here again.
+
+                ;Triangle, No Cutoff. Pick a Vibrato Speed (Ignores Duty)
+                ; Slow:   T_0f_v12__d25 from Pad_d25_8_3_v12
+                ; Medium: T_0f_v8__d25  from Pad_sqr_s4_v8
+                ; Fast:   T_0f_v6__d25  from Whistle_25to12_v6
+
+                ;Triangle, 1f Cutoff. Pick a Vibrato Speed (Ignores Duty)
+                ; Slow:   T_1f_v12__d25 from Lead_sqr_s5_v12
+                ; Medium: T_1f_v8__d12  from Lead_d12_s7_v8_1f
+                ; Fast:
+            Env "3b", T_1f_v6, \
+                $f0, -$04, $f0, \
+                _d12, _1f, _d12, \
+                Vib_Fast, Short_Delay
+            ;
+
+            ;Tri-Pulse, 25% Duty. Pick Cutoff Time. (Ignores Vibrato)
+            ;0f, 1f, or 2f
+            ; T_0f_v12__d25 from Pad_d25_8_3_v12
+            ; T_1f_v12__d25 from Lead_sqr_s5_v12
+            Env "4b", T_2f__d25, \
+                $f0, -$04, $f0, \
+                _d25, _2f, _d25, \
+                Vib_None, No_Delay, \
+                dmc_d25
+            ;
+
+            ;Tri-Pulse, 12% Duty. Pick Cutoff Time. (Ignores Vibrato)
+            ;0f, 1f, or 2f
+            ; T_0f_v8__d12  from Pad_d12_s3_v8
+            ; T_1f_v12__d25 from Lead_sqr_s5_v12
+            Env "4b", T_2f__d12, \
+                $f0, -$04, $f0, \
+                _d12, _2f, _d12, \
+                Vib_None, No_Delay, \
+                dmc_d12
+
+            ;
+
+            ; 14 / 16 Envelopes of Bank 0 are used.
+            ; The three Triangle-only Envelopes can be moved to another bank more easily to make space.
+            ; A pulse Env could also use a 2f Cutoff and have Triangle alias it.
+
+
+
 
     ;============================================================
     ; Bank 1 Noise Channel
@@ -174,8 +295,8 @@
             Vib_None, No_Delay
 
         Env "5b", Pre_Cymbal_env, \
-            $20, +$08, $40, -$10, $00, \
-            _d12, atk_6, _d12, _0f, _d12, \
+            $20, +$04, $50, -$20, $00, \
+            _d12, atk_14, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
 
@@ -242,7 +363,7 @@
 
 
             LUT_Vibrato_Delays:
-            .byte <~0, <~8, <~19, <~45
+            .byte <~0, <~8, <~15, <~28
 
     ;
 
