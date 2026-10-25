@@ -73,7 +73,7 @@
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE, "Fantastic Fist by 100th-Coin", $80
+    UI_Word _SUBTITLE, "Fantastic Fist by 100th_Coin", $80
 
     SUBTITLE_OFFSET = $02
         ; $00 - $1f to adjust text-centering.
