@@ -381,6 +381,7 @@ py_Segment Update_Music, Free
                 ;In A= MIDI
                 jsr sq_tri_calc_period ;-> C
                 sta APU_Period_High,x      
+                    ;[ERROR]: Causes clicking for Pulse SFX to write High every frame.
 
                 lda irq_tmp_1 ;tmp_period_low
                 adc #$ff ;<- C 

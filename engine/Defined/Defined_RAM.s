@@ -136,7 +136,7 @@ Normal_RAM:
 
     ;$28
     Res_5_Channels  Base_Pitch, \
-                    Alt_If_Flag, \
+                    Ignore_If_Alts_Flag, \
                     No_Reset_Env_Flag,\
                     Sweep_Speed
                     

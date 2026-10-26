@@ -71,22 +71,24 @@
             ;Cutoff length
             ;0 and 1 both Don't Release 
 
-        atk_1  = 2
-        atk_2  = 3
-        atk_3  = 4
-        atk_4  = 5
-        atk_5  = 6
-        atk_6  = 7
-        atk_7  = 8
-        atk_8  = 9
-        atk_9  = 10
-        atk_10 = 11
-        atk_11 = 12
-        atk_12 = 13
-        atk_13 = 14
-        atk_14 = 15
+
+        atk_1  = 1
+        atk_2  = 2
+        atk_3  = 3
+        atk_4  = 4
+        atk_5  = 5
+        atk_6  = 6
+        atk_7  = 7
+        atk_8  = 8
+        atk_9  = 9
+        atk_10 = 10
+        atk_11 = 11
+        atk_12 = 12
+        atk_13 = 13
+        atk_14 = 14
+        atk_15 = 15
             ;Attack Length
-            ;0 and 1 both have no Attack phase.
+            ;0 has no attack phase. 1 doesn't use Decay Rate, and discontinuous jumps to Decay Init. Frame 2
 
         Vib_None   =  $00 << 2
         Vib_Fast =  %01 << 2
@@ -100,6 +102,10 @@
         Long_Delay  = %11 << 2 
             ;Vibrato Delay
 
+
+        Vib_Deep = 0
+        Vib_Shallow = 2
+        Vib_Very_Shallow = 3
 
     ;============================================================
     ;Bank 0 Primary Instruments

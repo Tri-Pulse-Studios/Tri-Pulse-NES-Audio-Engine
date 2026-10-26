@@ -145,10 +145,9 @@
 ;============================================================
 
     
-
-
     Kick_Type _d50_K, d50_Kick_adr
     Kick_Type _d25_K, d25_Kick_adr
     Kick_Type _d25_tom, As3_Tom_adr
     ;Kick_Type Unused
-    
+
+;`
