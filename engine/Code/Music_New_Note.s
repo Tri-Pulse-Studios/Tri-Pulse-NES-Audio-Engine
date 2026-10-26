@@ -20,7 +20,7 @@ py_Segment Pre_New_Note, Free
                 sec                 ;Restore Carry
 
             @skip:
-            and #$0f                ;Required as 16th doesn't respond to If_Alt
+            and #$0f               
             sta irq_tmp_3
 
             ;Opcode
@@ -40,7 +40,7 @@ py_Segment Pre_New_Note, Free
                 ;beq @_16th_Length
                 @_16th_Length: ;CARRY MUST BE PRESERVED.
                     lda Eighth_Length       ;<-C
-                    adc #$00                ;If _8th is odd, and Sec, will round Up.
+                    adc #$00                ;If _8th is odd, and SEC, will round Up.
                     lsr                     ;Otherwise, rounds down.
 
                 jmp Store_Duration  ;bal Store_Duration, bpl  ;Not in Range
@@ -137,7 +137,7 @@ py_Segment Pre_New_Note, Free
         Inline Read_Instruction ;OUT: Y = Opcode, irq_tmp_3 = Opperand
 
         Music_Dynamic_Jump:
-        lda #>All_Music_Opcodes
+        lda #>(All_Music_Opcodes-1)
         pha
         lda LUT_Music_Opcodes_Low,y
         pha
@@ -189,6 +189,8 @@ py_Segment_End LUT_Music_Opcodes_Low
 
 py_Segment LUT_Misc_FXs_Data, Free
     LUT_Misc_FXs_Data:
+
+        ;Macros that assign Misc Effect Indicies and Data.
 
             ;SFX_Index .set $f8
         SFX_Type Init_Sweep   ;Reads (Note_Data,x)
@@ -259,7 +261,7 @@ Reset_Channel:
 
     cpx #$0c
     beq @skip ;Noise Sets Env w/ SFX Engine.
-                    ;Not only not needed. It causes a problem.
+                    ;Not only not needed. It causes a problem when a loop would corrupt a Crash's Envelope.
 
         lda (Note_Data,x)
         inc Note_Data,x     
@@ -275,17 +277,20 @@ Reset_Channel:
     lda #$01
     sta Note_Timer,x ;Set so Channel will start over on its first unpaused update.
 
+    sta Ignore_If_Alts_Flag,x  ;Ignore by Default.
+    
 
     lda #$00
-    sta Note_Volume,x ;May not be Initialized by note.
+    sta Note_Volume,x ;Noise Channel may not initialize.
 
     sta Read_by_Nibble_Flag,x ;Ensure reading whole Bytes.
     sta Repeat_Counter,x ;Ensure not Repeating.
 
     sta No_Reset_Env_Flag,x ;Ensure Volume is 100% 
 
-    sta Alt_If_Flag,x  ;Enable by Default
-                            ;Set/Clear by a bit in LUT takes too much Code.
+    
+    
+    
 
 
 ;jmp Func_Clear_Special_Effects  ;Tail-Call ;After Reset doesn't do Pre-New-Note, so must manually reset damping.
@@ -366,6 +371,20 @@ Reset_Channel:
 
 ;
 
+    Loop_Song: 
+        lsr 
+        bcc Reset_Channel ;Tail-Call
+
+            @Two_Byte_Loop:
+            lda (Note_Data,x)
+            pha
+
+            jsr Reset_Channel ;Re-init Everything.
+
+            pla
+            sta Note_Data,x ;Jump to End of Intro.
+    rts
+
 All_Music_Opcodes: 
     ;
         ;$f-:
@@ -420,7 +439,7 @@ All_Music_Opcodes:
                 ;lda #12
                 inc Vibrato_Depth,x
                 bal Octive_Pitch_Shift, bpl
-            ;
+            ;       ;Overflowing Vib_Very_Shallow is uninituitive.
 
 
             ;
@@ -430,35 +449,6 @@ All_Music_Opcodes:
 
 
     ;
-
-
-        ;$b-:
-    Shift_Base_Pitch:
-        cmp #$08
-
-            beq Set_BP_and_Vibrato_Depth ;Tail_Call
-
-        @Shift_Pitch:
-        bcc @pos ;$01..$07
-
-            ora #$f0  ;$ff..$f9
-                ;could  add $f0 -1, sec
-                    ;Problem is Octave Shifts don't follow.
-
-        @pos:
-            Octive_Pitch_Shift: ;In A = +/-12
-        add {Base_Pitch,x}
-        sta Base_Pitch,x
-        rts
-
-
-        ;$b0 = NOP (Needed for If_Alts)
-        ;$bx = Add x to BP (Range, +/- 7)
-        ;$b8, $xx = Set BP to x
-
-
-    ;
-
 
 
 
@@ -476,7 +466,7 @@ All_Music_Opcodes:
 
         ;$c-/$d-:
     Riff_Call_Medium:
-        ora #$10
+        ora #$10 ;bit 5 of operand.
 
         Riff_Call_Short:
         cmp #$02
@@ -521,52 +511,45 @@ All_Music_Opcodes:
         lda (Note_Data,x) ;Riff_jsr_address
         sta Note_Data,x 
         rts 
-
+    
             ;c0 ->    ;Loop Song
             ;c1, $yy  ;Loop Song, Intro jmp to $yy
 
             ;c2, $xx, $yy ;Read $xx Bytes at $yy
 
-            ;$c3 - $df, $yy read 3-31 Bytes at $yy 
+            ;$c3 - $df, $yy read $03-$1f Bytes at $yy 
 
 
-        Loop_Song: ;w/ Intro Handling 
-            lsr ;$c0/$c1 -> C
-            php
+    ;
 
-                lda (Note_Data,x)
-                pha
+            ;$b-:
+    Shift_Base_Pitch:
+        cmp #$08
 
-                    jsr Reset_Channel
+            beq Set_BP_and_Vibrato_Depth ;Tail_Call
 
-                pla
-            plp 
-            bcc @skip ;<- C
+        @Shift_Pitch:
+        bcc @pos ;$01..$07
 
-                sta Note_Data,x
+            ora #$f0  ;$ff..$f9
+                ;could  add $f0 -1, sec
+                    ;Problem is Octave Shifts don't follow.
 
-            @skip:
+        @pos:
+            Octive_Pitch_Shift: ;In A = +/-12
+        add {Base_Pitch,x}
+        sta Base_Pitch,x
         rts
 
-        ; Loop_Song: 
-        ;     lsr 
-        ;     jcc Reset_Channel ;Tail-Call
 
-        ;     lda (Note_Data,x)
-        ;     pha
-
-        ;     jsr Reset_Channel
-
-        ;     pla
-        ;     sta Note_Data,x
-        ; rts
-            ; One byte less code if bcc in range.
+        ;$b0 = NOP (Needed for If_Alts)
+        ;$bx = Add x to BP (Range, +/- 7)
+        ;$b8, $xx = Set BP to x
 
 
+    ;
 
 
-
- 
 
         ;$9-/$a-:
     Repeat_Instruction: ;Takes in Y=Opcode
@@ -577,7 +560,7 @@ All_Music_Opcodes:
             lda (Note_Data,x)
             inc Note_Data,x
             ; A= Repeat Count
-                ;[WARN] This decreases the Bytes repeated by One. (Cuz this Byte is included in that repeat count.)
+                ;[WARN] This decreases the Bytes repeated by One. (This Byte is included in that repeat count.)
 
         @skip:
         dec Repeat_Counter,x     
@@ -586,7 +569,8 @@ All_Music_Opcodes:
 
                 ;Decs from 0 to -1 on first encounter.
                 sta Repeat_Counter,x
-                    ;Then decs from Count to 0. -> 0 meaning done repeating.
+                    ;Then decs from Count to 0. 
+                        ; Dec -> 0 meaning done repeating.
 
             @skip_init:
             lda Note_Data,x
@@ -595,18 +579,13 @@ All_Music_Opcodes:
 
         @Done_Repeating:
         rts 
-                    ;29 Bytes. +9 Bytes vs simplest.
-                        ;Larger Max Repeat count.
-                        ;Larger Max Bytes Repeated
-                        ;But Uses 2 Opcodes.
-        @LUT_Branch_Offsets:
-        .byte $03, $05  ;Can be a 2-byte segement if it helps.
 
-            ;Y=$9, Y=$a
+        @LUT_Branch_Offsets:
+        .byte $03, $05 
+            ;Y=$9, Y=$a ; Y = Opcode
             ;2/3  4/5
 
-        ;the 4b and 5b aren't used all that much tbh
-            ;very cheap to impliment though, and it adds up.
+
     ;
 
 
@@ -617,18 +596,17 @@ All_Music_Opcodes:
         
 
         @If_Alt_Instruction:
-            lda Alt_If_Flag,x
+            lda Ignore_If_Alts_Flag,x
             lsr
             bcs @rts
 
-                tya ;<- tmp
-                ;clc
-                adc (Note_Data,x)
+                tya ;<- tmp. Alt Operand Delta.
+                add {(Note_Data,x)}, clc
                 jmp If_Alt_Read_Instruction_Insert
 
 
         @Toggle_Flag:
-            inc Alt_If_Flag,x ;inc toggles bit 0. The other 7 bits are ignored.
+            inc Ignore_If_Alts_Flag,x ;inc toggles bit 0. The other 7 bits are ignored.
                 
         @rts:
         rts
@@ -653,46 +631,44 @@ All_Music_Opcodes:
         and #%00011111
         sta Length_Nibble_Index,x
 
-        eor LUT_Read_Nibbles_Init,y ;and #%1110 0000
+        eor LUT_Read_Nibbles_Init,y ;lda, and #%1110 0000
         lsrn 4 
         sta Read_by_Nibble_Flag,x ;%---- LLL0
         ;A = Total Nibbles to read  ($2-$e)
 
         rts
         ;16 preset Length Opcodes, re-assemble full byte on the fly
-                ;RAM Usage: 2 Bytes per Channel.
-                ;Space Savings ~300 Bytes. (10-15% per song +Small Overhead)
 
         ;Notes are Normally:  $LP, $LP, $LP, $LP   ; L = Length, P = Pitch
-            ;This strips the Length Nibble out, compressing to $PP, $PP
+            ;This strips the Length Nibble out, compressing to $5X, PP, $PP
                 ;The Lengths are then fetched from a small LUT of common patterns  (ie: dqt,dqt,qtr // 8th,8th....)
 
     ;
 
-    Simplified_Duration_Mode_Init:
-        tay 
+    ; Non_LUT_Duration_Init:
+    ;     tay 
 
-        lda #$10 ;whl << 1
+    ;     lda #$10 ;whl << 1
 
-        @loop: ;div 3
-            lsr ; -> C
+    ;     @loop: ;div 3
+    ;         lsr ; -> C
 
-            deyn 3 
-            bmi @exit ; Y = -1 .. -3
+    ;         deyn 3 
+    ;         bmi @exit ; Y = -1 .. -3
 
-            bcc @loop ;On A == 0 and Y == 0, exit.
+    ;         bcc @loop ;On A == 0 and Y == 0, exit.
 
 
-        @exit:
-        sta Dur_Opcode,x ;A = 8, 4, 2, 1, or 0
+    ;     @exit:
+    ;     sta Dur_Opcode,x ;A = 8, 4, 2, 1, or 0
 
-        dey
-        tya
-        asl
-        sta Read_by_Nibble_Flag,x ;-2 .. -4 *2 (Or -1 w/ 0)
-    rts
+    ;     dey
+    ;     tya
+    ;     asl
+    ;     sta Read_by_Nibble_Flag,x ;-2 .. -4 *2 (Or -1 w/ Opcode 0)
+    ; rts
 
- ; Dur Read
+    ; Non_LUT_Duration_Read:
         ; lda Read_by_Nibble_Flag,x
         ; beq @Normal_Read        ;Should be $00 When Not active
 
@@ -719,12 +695,11 @@ All_Music_Opcodes:
         ;     bne Not_16th_Length
 
             ;14B less code
-            ; uses 25B in LUT.
+            ;25B less in LUT.
 
-            ;_111_R saves 18B
-            ;KTB Es saves 18B and 9B
+                ;Downside is limited Duration Types. 
 
-; Operand 0-f is 8x8, 6x8, 4x8, 4s, 2s, 1s, 0s, _00 = $5f
+        ; Operand 0-f is 8x8, 6x8, 4x8, 4s, 2s, 1s, 0s, _00 = $5f
 
         ;$1-/$8-:
     Add_8ths:
@@ -823,53 +798,22 @@ All_Music_Opcodes:
         dmc_rate:
             sta DMC_MIDI
 
-            ldy SFX_Timer+$10 ;If Smth playing
+            ldy SFX_Timer+$10 ;If SFX Playing, queue for restart only.
             bne Rest_RTS
 
             
+            ldy Note_Env_ID,x
+            cmp LUT_env_dmc_lowest_25_pitch,y 
 
-            ;V1 Extra Env Byte.
-                ldy Note_Env_ID,x
-                cmp LUT_env_dmc_lowest_25_pitch,y 
+            bcc @d12
+                
+                @d25:
+                add #dmc_overlap -1, sec
 
-                bcc @d12
-                    
-
-                    @d25:
-                    add #dmc_overlap -1, sec
-
-                @d12:
-                tay
-                lda LUT_dmc_rates-3,y ;-3 syncs data w/ Normal Notes' 
-                    ;13B
-            ;
-
-            ; ;V2 ATK_Init Duty  ;Better for a Final Release.  wasn't designed for it.
-                ; tay 
-                ; cpy #As1 ;lowest_d25
-                ; bcc @d12
-
-                ;     .if Emit__Unused
-                ;         cpy #C3 +1  ;highest_d12+1
-                ;         bcs @d25
-                ;     .endif
-
-                ;         lda Note_Volume+$10 ;%VVVV vvDD of ATK_Init
-                ;         and #$03 ;Duty Bits
-                ;         beq @d12 ;%00 = d12,  != d25
-
-                ;     @d25:
-                ;     lda LUT_dmc_d25_rates-$e,y ;As1-A0 -1
-                ;     bal @skip_else, bpl
-
-
-                ; @d12:
-                ; lda LUT_dmc_d12_rates-3,y ; B0-A0 -1
-
-                ; @skip_else: ;23B  (Really 19B since the C3 check likely is never taken.)
-            ;
-
-
+            @d12:
+            tay
+            lda LUT_dmc_rates-3,y ;-3 syncs data w/ Normal Notes' 
+        
             
             .if Debugging_Enabled
                 bpl @skip_debug
@@ -880,21 +824,18 @@ All_Music_Opcodes:
             
             pha
                 ora #$70 ;Loop
-                sta DMC_Rate ;Must write %01--rrrr  ;bit 7s MUST be 0 (Or IRQs. Bad.)
+                sta DMC_Rate ;Must write %01--rrrr  ;bit 7 MUST be 0 (Or IRQs. Bad.)
                                         
             pla
                 lsrn 4
-                tay
+                tay ;EDMC Sample ID
 
-            jmp Prime_DMC ;Tail-Call   bal Prime_DMC, bpl ;Not in Range.
-
-            
-            @rts:
+            jmp Prime_DMC ;bal Prime_DMC, bpl ;Not in Range.
         ;Tail-Call Returns from New_Note
 
 
         noise_sfx:
-            sta APU_Init_Noise ;Seems to just be Write To Enable. Write FX ID. Why not.
+            sta APU_Init_Noise ;Seems to just be Write Anything To Enable. Write FX ID. Why not.
 
             tay 
             lda SFX_Queued+$10  ;Needed for full game only.
@@ -904,16 +845,13 @@ All_Music_Opcodes:
                 lda LUT_DMC_SFX_Ptr-1,y 
                 bpl @Hardcoded
 
-
                     ;Kick selector
                     ldx Vibrato_Depth +$c  ;Init w/ Set_BP 0..3
                     lda LUT_Kick_Ptr,x
                     ldx #$0c ;Restore
 
-                    
-
                 @Hardcoded:
-                sta SFX_Queued+$10      
+                sta SFX_Queued+$10 ;If A = $00 Init nothing.
                 
 
             @skip_DMC:
@@ -928,7 +866,7 @@ All_Music_Opcodes:
                     dex
                     jsr Init_SFX ;[WARN] Default behavior overwrites the Note_Timer for Secondary.
                     inx
-
+                    ;Forcibly start new Musical SFX, regardless of current playing.
                 
                 rts 
 
@@ -962,9 +900,9 @@ All_Music_Opcodes:
             sta Note_Period_Low,x
             ;jmp Note_Conditional_Write_Period_High
 
-        ;Fall-Through Returns from New_Note
+    ;Fall-Through Returns from New_Note
 
-    ;
+
 
 
     Note_Conditional_Write_Period_High:
@@ -1053,6 +991,8 @@ py_Segment sq_tri_calc_period, Free
         tmp_octave_count .set -1
         tmp_period_low .set -1 ;clear_tmp
     rts
+    ;OUT A = Period High
+    ; C = Period Low Rounding.
 py_Segment_End sq_tri_calc_period
 
 

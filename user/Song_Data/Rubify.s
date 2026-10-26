@@ -127,7 +127,7 @@ Channel Rubify_Sq1
     ;
 
     _25:
-        Riff _13, _17
+        Riff _13, _17 ;Internal Repeat
         Riff _13, _17_5
 
     ;
@@ -204,8 +204,8 @@ Channel Rubify_Noise
 
         Notes qtr,Solo_Kick, 8th,Shaker_2
 
-        If_Alt Pre_Cymbal_4, rest
-        Notes 8th,Pre_Cymbal_4
+        If_Alt rest, Pre_Cymbal_4
+        Notes 8th,rest
 
         Notes qtr,Rasp_2_Kick, qtr,Shaker_2
 
