@@ -63,6 +63,17 @@
 
 
 
+### vscode Theme
+- Updates to highlight more kinds of text.
+	- Noise SFX Names with Famistudio matching tints.
+	- The Noise Period Aliases, matching Pulse piano key Aliases.
+
+- Highlighting all Macros.
+	- Possibly making a subset of macros different colors
+		- `add, lsrn`, and `Riff, Notes`, etc are proper "instructions"
+		- `Env, SFX`, their data emitters, and `Channel, Header, Loop` are fundamentally different. The classify and organize data, and aren't intructions.
+			- Maybe a slightly Redder shade of purple for them? Sorta halfway between ca65 directives and macros?
+
 ## v0.3 Plans
 
 ### Tools
@@ -93,7 +104,5 @@
 
 ### vsCode Theme
 - Releasing a more comprehensive and usable theme (or themes)
-
-- The Tri-Pulse Studios theme will support the .s file extensions and TextMate grammer, all in one package.
 	- At minimum, bundling several theme options.
 	- If possible, an additional option for fully customizable theme.

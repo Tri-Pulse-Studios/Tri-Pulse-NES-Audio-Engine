@@ -525,7 +525,7 @@
 
     .endmacro
 
-
+ 
     ;===========================================================
     ;Duration
     ;===========================================================
@@ -541,6 +541,7 @@
         .else
             .error "Duration Error: invalid Length_Pattern (Use ''Cont'' to Omit)"
             .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .out " "
             .exitmacro
         .endif
 
@@ -555,12 +556,14 @@
         .ifblank P2
         .error "Duration Error: Even number of pitches required"
         .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+        .out " "
         .exitmacro
         .endif
         
         .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
             .error "Duration Error: 'rest' must be lowercase"
             .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .out " "
             .exitmacro
         .endif
 
@@ -586,7 +589,7 @@
         .elseif .xmatch (P2, rest)
         .if .const(P1)
             .if P1 < B5
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 has Invalid BP"
+            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 out of Base Pitch Range"
             .byte (P1-BP+1)
             .else
             .byte (P2 & $0F) << 4
@@ -594,7 +597,7 @@
 
         .else
             
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 has Invalid BP"
+            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 out of Base Pitch Range"
             .byte (P1-BP+1)
         .endif
 
@@ -602,7 +605,7 @@
         
         ;Noise Handling
         .elseif .not .const(P1)
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 has Invalid BP"
+            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 out of Base Pitch Range"
 
             .if .not .const(P2)
             .byte (P1-BP+1) | ((P2-BP+1) << 4) ;Both Notes
@@ -626,7 +629,7 @@
             .endif
         .else
 
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 has Invalid BP"
+            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 out of Base Pitch Range"
 
 
             .if P2 > B5  
@@ -1122,7 +1125,7 @@
     .endmacro
 
 
-    .macro Output_All_Songs
+    .macro Output_Song
 
 
         Max_Track_Index .set (Song_Index -1)

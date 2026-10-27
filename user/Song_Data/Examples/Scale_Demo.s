@@ -9,6 +9,8 @@ Channel Scale_Demo_Sq0
     Header A0, Pad_d12_8_0
 
 
+        Notes 8th,rest
+    Repeat "1b", $3f 
 
         Notes 8th,rest
     Repeat "1b", $49 
@@ -22,8 +24,6 @@ Channel Scale_Demo_Sq0
     Shift_Pitch +1
     Repeat "2b", $3f ;To max pitch
 
-        Notes 8th,rest
-    Repeat "1b", $3f 
 
 Loop Scale_Demo_Sq0
 
@@ -34,6 +34,10 @@ Loop Scale_Demo_Sq0
 Channel Scale_Demo_Sq1
     Header A0, Lead_sqr_13_0
 
+
+        Notes 8th,rest
+    Repeat "1b", $3f 
+
         Notes 8th,rest
     Repeat "1b", $49 
 
@@ -42,8 +46,6 @@ Channel Scale_Demo_Sq1
     Repeat "2b", $3f ;To max pitch
 
 
-        Notes 8th,rest
-    Repeat "1b", $3f 
         Notes 8th,rest
     Repeat "1b", $3f 
         Notes 8th,rest
@@ -59,6 +61,10 @@ Loop Scale_Demo_Sq1
 Channel Scale_Demo_Tri
     Header A0, T_2f__d12
 
+
+        Notes 8th,rest
+    Repeat "1b", $3f 
+
         Notes 8th,rest
     Repeat "1b", $49 
         Notes 8th,rest
@@ -70,8 +76,7 @@ Channel Scale_Demo_Tri
 
         Notes 8th,rest
     Repeat "1b", $3f 
-        Notes 8th,rest
-    Repeat "1b", $3f 
+
 
 Loop Scale_Demo_Tri
 
@@ -81,6 +86,10 @@ Loop Scale_Demo_Tri
 
 Channel Scale_Demo_dmc
     Header B0, T_2f__d12
+
+
+        Notes 8th,rest
+    Repeat "1b", $3f 
 
 
     Notes 8th,B0
@@ -114,6 +123,10 @@ Loop Scale_Demo_dmc
 Channel Scale_Demo_Noise
     Noise_Header ::Default_NB, _d50_K
 
+    Notes hlf,A0
+        Shift_Pitch +1
+        Repeat "2b", $0f ;Play 16 NoiseFX. 
+
         Notes 8th,rest
     Repeat "1b", $49 
         Notes 8th,rest
@@ -123,8 +136,6 @@ Channel Scale_Demo_Noise
         Notes 8th,rest
     Repeat "1b", $3f 
 
-    Notes hlf,A0
-        Shift_Pitch +1
-        Repeat "2b", $0f ;Play 16 NoiseFX. 
+
 
 Loop Scale_Demo_Noise

@@ -204,8 +204,8 @@ Channel Rubify_Noise
 
         Notes qtr,Solo_Kick, 8th,Shaker_2
 
-        If_Alt Pre_Cymbal_4, rest
-        Notes 8th,Pre_Cymbal_4
+        If_Alt rest, Pre_Cymbal_4
+        Notes 8th,rest
 
         Notes qtr,Rasp_2_Kick, qtr,Shaker_2
 

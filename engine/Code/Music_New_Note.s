@@ -736,16 +736,18 @@ All_Music_Opcodes:
     .macro Reset_Envelope
         ldy Note_Env_ID,x
 
+        dex
+        jsr SFX_Reset_Env
+        inx
+        ; ;AT Duration
+        ;     lda LUT_Env_AT_Rate,y  
+        ;     and #$0f ;== 0 Skips Decay_Init Entirely.
+        ;     sta Note_Env_Timer,x
 
-        ;AT Duration
-            lda LUT_Env_AT_Rate,y  
-            and #$0f ;== 0 Skips Decay_Init Entirely.
-            sta Note_Env_Timer,x
-
-        ;Volume
-            lda LUT_Env_AT_Init,y 
-            and #%11110011 ;VVVV -- DD 
-            sta Note_Volume,x ;and Duty
+        ; ;Volume
+        ;     lda LUT_Env_AT_Init,y 
+        ;     and #%11110011 ;VVVV -- DD 
+        ;     sta Note_Volume,x ;and Duty
 
         ;Vibrato Delay Factor  (Noise/Dmc Never Reads This.)
             eor LUT_Env_AT_Init,y ;---- II -- 
@@ -860,7 +862,8 @@ All_Music_Opcodes:
 
 
             lda LUT_Noise_SFX_Ptr-1,y ;-1 cuz 0 is hardcoded as rest via engine. 
-            bpl @simple_sfx
+            cmp #Musical_Noise_SFX_Index
+            bcc @simple_sfx
                     ;bmi @musical_note ;as in handled by the RAM for notes, not for sfx.
 
                     ;[WARN] All Complex NoiseFX must have Sustain 0 env. (The Timer is Ignored)

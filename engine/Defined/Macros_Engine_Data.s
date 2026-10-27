@@ -11,43 +11,169 @@
     ;SFX
     ;===========================================================
 
-    .macro Simple_SFX Name, BP, Sweep, Len, Envelope
+    ; .macro Simple_SFX Name, BP, Sweep, Len, Envelope
 
-        .ident(.string(Name)):
+    ;     .ident(.string(Name)):
 
-        .byte ((BP)*2-Sweep)|$80
+    ;     .byte ((BP)*2-Sweep)|$80
 
-        .ifnblank Len
+    ;     .ifnblank Len
         
-        .byte Len+1, Envelope, (Sweep & $ff)
+    ;     .byte Len+1, Envelope, (Sweep & $ff)
 
+    ;     .endif
+    ; .endmacro
+
+
+    ; .macro Complex_SFX Name, BP, Len, Envelope ;Ironicly simpler macro. Complexity is in Music Data
+
+    ;     Name:
+    ;     ; .ident(.string(Name)):
+
+    ;     .if BP > $f 
+    ;     .byte BP|$80 ;Sq/Tri must be stored pre-dec'ed already.
+    ;     .else
+    ;     .byte ((BP-1) & $ff)|$80 ;-1 for Rate index
+    ;     .endif
+
+        
+    ;     .ifnblank Len
+    ;     .byte Len+1, Envelope
+    ;     .endif
+
+    ; .endmacro
+
+    SFX_Data_Index  .set 1 ; 0 is "No SFX"
+
+    .macro SFX Name, BP, Len, Envelope, \
+        L1, P1, L2, P2, L3, P3, L4, P4, L5, P5, L6, P6, L7, P7, L8, P8
+
+        ;-----------------------------------------------------------
+        ; Validate required arguments
+        ;-----------------------------------------------------------
+
+        .ifblank Name
+            .error "SFX Error: Missing Name"
+            .out "SFX Error: All SFX require a Name"
+            .out ""
+            .exitmacro
         .endif
-    .endmacro
+
+        .ifblank BP
+            .error "SFX Error: Missing BP"
+            .out "SFX Error: All SFX require a Base Pitch"
+            .out ""
+            .exitmacro
+        .endif
+
+        ;.assert BP <= $7F, error, "SFX Error: Base Pitch Range Error: Maximum is $7f."
+        
+        ;-----------------------------------------------------------
+        ; Validate header arguments
+        ;-----------------------------------------------------------
+
+        .ifblank Len
+            ; Pitch Only Header
+
+            Name .set SFX_Data_Index
+
+            .ident(.sprintf("SFX_Data_%02x", SFX_Data_Index)) = (BP | $80)&$ff
+
+            SFX_Data_Index .set SFX_Data_Index + 1
 
 
-    .macro Complex_SFX Name, BP, Len, Envelope ;Ironicly simpler macro. Complexity is in Music Data
-
-        Name:
-        ; .ident(.string(Name)):
-
-        .if BP > $f 
-        .byte BP|$80 ;Sq/Tri must be stored pre-dec'ed already.
         .else
-        .byte ((BP-1) & $ff)|$80 ;-1 for Rate index
+            ; Full Header
+
+            .ifblank Envelope
+                .error "SFX Error: Missing Env"
+                .out "SFX Error: Full SFX Header requires Name, BP, Len, Env, and at least one Length/Pitch pair."
+                .out ""
+                .exitmacro
+            .endif
+
+            .ifblank L1
+                .error "SFX Error: Missing Length/Pitch"
+                .out "SFX Error: Full SFX Header requires Name, BP, Len, Env, and at least one Length/Pitch pair."
+                .out ""
+                .exitmacro
+            .endif
+
+            Name .set SFX_Data_Index
+
+            .ident(.sprintf("SFX_Data_%02x", SFX_Data_Index)) = (BP | $80)&$ff
+            .ident(.sprintf("SFX_Data_%02x", SFX_Data_Index+1)) = Len + 1
+            .ident(.sprintf("SFX_Data_%02x", SFX_Data_Index+2)) = Envelope
+
+            SFX_Data_Index .set SFX_Data_Index + 3
+
+            Sub_SFX BP, L1, P1, L2, P2, L3, P3, L4, P4, L5, P5, L6, P6, L7, P7, L8, P8
+
         .endif
 
-        
-        .ifnblank Len
-        .byte Len+1, Envelope
+        .if SFX_Data_Index > $ff
+            .error "SFX Error: Too Much SFX Data"
+            .out "SFX Error: Maximum of 255 bytes of SFX Data exceeded."
+            .out ""
+            .exitmacro
         .endif
 
     .endmacro
 
+    .macro Sub_SFX BP, L1, P1, L2, P2, L3, P3, L4, P4, L5, P5, L6, P6, L7, P7, L8, P8
 
-    .macro lda_GameFX _Name
-        lda #_Name-LUT_SFX_Data + SFX_PTR_ADJUST
+        .ifblank L1
+            .exitmacro
+        .endif
+
+        .ifblank P1
+            .error "SFX Error: Missing Pitch"
+            .out "SFX Error: Missing pitch for Length/Pitch pair."
+            .out " "
+            .exitmacro
+
+        .elseif (P1 < R0) .or (P1 > R15) ;.elseif .not Noise_Period_Alias
+
+            ; Pulse pitch: must be within 0..15 of BP.
+
+            .if (P1 - BP) < 0 .or (P1 - BP) > 15
+                .error "SFX Error: Pitch out of Base Pitch Range"
+                .out "SFX Error: SFX Pitch out of Base Pitch Range."
+                .out " "
+                .exitmacro
+            .endif
+
+        .endif
+
+
+        .ident(.sprintf("SFX_Data_%02x", SFX_Data_Index)) = \
+            ((L1 << 4) | ((P1 - BP) & $0F))
+
+        SFX_Data_Index .set SFX_Data_Index + 1
+
+
+        Sub_SFX BP, L2, P2, L3, P3, L4, P4, L5, P5, L6, P6, L7, P7, L8, P8
 
     .endmacro
+
+
+    .macro Output_SFX
+
+        ; $00 is "No SFX" 
+        ; the +1 allows lda LUT,y Y=$01 to read the first byte of the table.
+
+        LUT_SFX_Data = *+1
+
+        .repeat SFX_Data_Index-1, I
+            .byte .ident(.sprintf("SFX_Data_%02x", I+1))
+        .endrepeat
+
+    .endmacro
+
+
+
+
+
 
 
     ;===========================================================
@@ -56,11 +182,6 @@
     NoiseFX_Index .set 0 ;INIT
 
     .macro NoiseFX _Name, _Noise, _Dmc 
-            ;_Tri,   disabled.
-
-        .ifndef NoiseFX_Index
-            NoiseFX_Index .set 0
-        .endif
 
         ; assign row index to provided name
         .ifdef _Name
@@ -88,41 +209,25 @@
     .endmacro
 
 
-    .macro Output_All_NoiseFX
-
-        ; .ifndef NoiseFX_Index
-        ;   NoiseFX @Empty_PlaceHolder, $00, $00 ;, $00
-        ; .endif
-
-        ;   .res 16, $AA
-        ; .align 16,$AA
-        ; LUT_Tri_SFX_Ptr:
-        ;     .repeat NoiseFX_Index, I
-        ;         .ifconst .ident(.sprintf("NoiseRow%02x_Tri", I))
-        ;             .byte .ident(.sprintf("NoiseRow%02x_Tri", I))
-        ;         .else
-        ;             .byte (.ident(.sprintf("NoiseRow%02x_Tri", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
-        ;         .endif
-        ;     .endrepeat
-
+    .macro Output_NoiseFX
 
         LUT_Noise_SFX_Ptr:
             .repeat NoiseFX_Index, I
-                .ifconst .ident(.sprintf("NoiseRow%02x_Noise", I))
+                ; .ifconst .ident(.sprintf("NoiseRow%02x_Noise", I))
                     .byte .ident(.sprintf("NoiseRow%02x_Noise", I))
-                .else
-                    .byte (.ident(.sprintf("NoiseRow%02x_Noise", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
-                .endif
+                ; .else
+                ;     .byte (.ident(.sprintf("NoiseRow%02x_Noise", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
+                ; .endif
             .endrepeat
 
         
         LUT_DMC_SFX_Ptr:
         .repeat NoiseFX_Index, I
-            .ifconst .ident(.sprintf("NoiseRow%02x_Dmc", I))
+            ;.ifconst .ident(.sprintf("NoiseRow%02x_Dmc", I))
                 .byte .ident(.sprintf("NoiseRow%02x_Dmc", I))
-            .else
-                .byte (.ident(.sprintf("NoiseRow%02x_Dmc", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
-            .endif
+            ; .else
+            ;     .byte (.ident(.sprintf("NoiseRow%02x_Dmc", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
+            ; .endif
         .endrepeat
 
     .endmacro
@@ -139,19 +244,18 @@
 
     Kick_Type_Index .set 0
 
-    .macro Kick_Type Alias, Sample_Pointer
+    .macro Kick_Type Alias, Sample_Index
 
         .if Kick_Type_Index >= 4
-            .error "Kick_Type Error"
-            .out "Error: Exceeded Maximum of 4 kick types"
+            .error "Kick_Type Error: Exceeded Maximum of 4 kick types"
+            .out "Kick_Type Error: Exceeded Maximum of 4 kick types"
             .out ""
             .exitmacro
         .endif
 
         .ident(.string(Alias)) .set Kick_Type_Index
 
-        .ident(.sprintf("Kick_Type_%02x", Kick_Type_Index)) = \
-            Sample_Pointer-LUT_SFX_Data + SFX_PTR_ADJUST
+        .ident(.sprintf("Kick_Type_%02x", Kick_Type_Index)) = Sample_Index
 
         Kick_Type_Index .set Kick_Type_Index + 1
 
@@ -322,7 +426,8 @@
 
         .if Env_Index > $FF
             .error "Env Error: Max Index exceeded (0..255)"
-            .out "        Usage: Env <Size>, <Name>, <Data ...>"
+            .out "Env Error: Max Index exceeded (0..255)"
+            .out ""
             .exitmacro
         .endif
 
@@ -468,7 +573,7 @@
     .endmacro
 
 
-    .macro Output_All_Env
+    .macro Output_Env
 
         .if first_env = -1
             .fatal "No Envelopes to emit."

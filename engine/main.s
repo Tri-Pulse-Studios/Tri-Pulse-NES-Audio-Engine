@@ -65,13 +65,21 @@ py_Segment_End __Defines
  
 
 
-py_Segment NB_Data, Free
-  NB_Data:
-  Output_All_NoiseFX  ;Macro Output Column-Major LUTs
+py_Segment User_Data, Free
+  User_Data:
+  Output_SFX
+
+  Output_NoiseFX  ;Macro Output Column-Major LUTs
 
   Output_Kick_Type ;Macro Output small Kick Type LUT
 
-  Output_All_Songs ;Macro Output Song Pointers
+  Output_Song ;Macro Output Song Pointers
+
+  Output_UI_Words
+
+  Output_UI_Text
+
+  ;Env defined below with DMC Samples.
 py_Segment_End NB_Data 
 
 
@@ -121,7 +129,7 @@ DMC_Samples:
     .incbin "engine\Data\DMC Samples\DMC_Sample_Merged_12.5%_Tri_Pulse.bin" ;All Three  12.5% Tri-Pulse
     DMC_Sample_6_81 = DMC_Sample_1_17+64 ;Shares the 65th $00 Byte.
   
-    Output_All_Env  ;Overloading $00s w/ DMC
+    Output_Env  ;Overloading $00s w/ DMC
   py_Segment_End DMC_Sample_1_17
 
     .align 64, $DC
@@ -148,9 +156,6 @@ DMC_Samples:
 
 ;
 
-
-Output_UI_Words
-Output_UI_Text
 
 
 

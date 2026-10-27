@@ -80,7 +80,7 @@ py_Segment Update_Music, Free
             ;cmp SFX_Index,x
             ;bcs @skip   ;<- Priority.  SFX w/ Smaller Index will overwrite Larger. 
 
-            jsr Init_SFX ;double-Inline doesn't work here.
+            jsr Init_SFX 
         @skip2:
 
     .endmacro
@@ -193,6 +193,8 @@ py_Segment Update_Music, Free
 
             ;Both pointers go to same table. (The header is same format too.)
     Init_SFX:
+        inc $ff
+
         .if Debugging_Enabled
             .if Emit__Unused
                 cpx #$0b
@@ -230,6 +232,9 @@ py_Segment Update_Music, Free
 
 
         @Skip_Secondary_Noise:
+        lda #$01 ;Inits like Note Timer
+        sta SFX_pitch_timer,x 
+
         tya
         sta SFX_Index,x
 
@@ -241,27 +246,17 @@ py_Segment Update_Music, Free
         cpx #$0f
         bcs Prime_DMC
 
-            ;@Noise/Sqr/Tri
-            
-                
-            ; inx
-            ; jsr SFX_Reset_Env  ;Need Trash for Vibrato_Timer,x
-            ; dex 
-
-            ;AT Duration
-            lda LUT_Env_AT_Rate,y  
-            and #$0f ;== 0 Skips Decay_Init Entirely.
-            sta SFX_ATK_Timer,x
+        SFX_Reset_Env:
+            ; AT Duration
+                lda LUT_Env_AT_Rate,y  
+                and #$0f ;== 0 Skips Decay_Init Entirely.
+                sta SFX_ATK_Timer,x
 
             ;Volume
-            lda LUT_Env_AT_Init,y 
-            and #%11110011 ;VVVV -- DD 
-            sta SFX_Volume,x ;and Duty
-
-
-
-            lda #$01 ;Inits like Note Timer
-            sta SFX_pitch_timer,x
+                lda LUT_Env_AT_Init,y 
+                and #%11110011 ;VVVV -- DD 
+                sta SFX_Volume,x ;and Duty
+            ;OUT A = Note_Volume (Note Reset eor.)
     rts
 
     ;.res 106  Max Insert Size w/o breaking.
@@ -299,19 +294,7 @@ py_Segment Update_Music, Free
 
         ;Update Pitch
         ldy SFX_Index,x
-        bmi @Musical_Sfx
 
-        @Sweep_Sfx:
-            lda LUT_SFX_Data,y ;A= Sweep Speed. 
-            add {SFX_MIDI,x}
-            sta SFX_MIDI,x ;Cumulative shift applied in incriments of half a note
-
-            lsr 
-            bal @Update_Pitch_APU, bpl
-
-
-
-        @Musical_Sfx:
             ; .if Debugging_Enabled
             ;     lda SFX_pitch_timer,x
             ;     bne @repeat_current_pitch ;Prevents endless garbage read.
