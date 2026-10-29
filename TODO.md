@@ -33,34 +33,6 @@
 
 - Likely splitting the README into multiple files, as it is rather long.
 
-### Macro Syntax
-- Simplify UI text syntax.
-	- `UI_Word` 
-	- `Song`
-
-- Removing any {}s required .
-	- `Header`
-		- The params will be re-ordered, making `{<BP>}` into `<BP>, [Vib_Depth]`
-	- `Song`
-
-- Duration Non-Note syntax.
-	- `Shift_Pitch`
-	- `Set_Env`
-
-### Names of Constants
-- Vibrato related constants are not cohesive.
-
-### Data Customizations
-- Kick Types
-- Vibrato Cycles
-- Duration Sets
-
-- Custom DMC samples.
-
-#### SFX
-- An overhaul of the SFX engine format.
-	- Noise Channel exclusively uses the SFX engine.
-
 
 
 ### vscode Theme
@@ -97,12 +69,28 @@
 		- The SPecial Volume by default uses 8, but in practice won't need that many.
 
 
+### Custom Duration Sets
+- The simpler, hardcoded set will remain the default.
+- Enabling Custom Sets will have a set of macros to define, error check, and use custom sets more easily.
+
+### Custom DMC Samples
+- The ability to load, and trigger custom DMC sfx through the SFX Engine.
+
+
+
 ### API
 - documentation to integrate the engine into a game or other user projects.
 
 - the subroutines `Update_Music`, `Init_Song`, and `Queue_SFX` will be documented and generally usable.
 
+	- This also means having an optional version the omits all the UI code and data.
+	- Also, organizing the data so all the UI code/ data is in the $8000-$bfff range and all the music code/data in $c000+ for the UI ROM would be good.
+
 ### vsCode Theme
 - Releasing a more comprehensive and usable theme (or themes)
 	- At minimum, bundling several theme options.
 	- If possible, an additional option for fully customizable theme.
+
+### Error Checking
+- Macros don't have a consistant format for error checking or printing errors.
+	- Duration macro is particularly bad.

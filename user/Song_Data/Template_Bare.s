@@ -1,17 +1,16 @@
-;See Template_Detailed.s for some explanations.
+;See Template_Annotated.s for some guidance.
 
 _8th .set -1
 
 
 .align 256
 
-
 ;============================================================
 ; Square 0
 ;============================================================
 
 Channel Song_Name_Sq0
-    Header Init_BP, Env_Name
+    Header _BP, _Env
 
     Notes whl,rest
 
@@ -23,7 +22,7 @@ Loop Song_Name_Sq0
 ;============================================================
 
 Channel Song_Name_Sq1
-    Header Init_BP, Env_Name
+    Header _BP, _Env
 
     Notes whl,rest
 
@@ -35,7 +34,7 @@ Loop Song_Name_Sq1
 ;============================================================
 
 Channel Song_Name_Tri
-    Header Init_BP, Env_Name
+    Header _BP, _Env
 
     Notes whl,rest
 
@@ -47,7 +46,7 @@ Loop Song_Name_Tri
 ;============================================================
 
 Channel Song_Name_dmc
-    Header Init_BP, Env_Name
+    Header _BP, _Env
 
     Notes whl,rest
 
@@ -59,7 +58,7 @@ Loop Song_Name_dmc
 ;============================================================
 
 Channel Song_Name_Noise
-    Noise_Header ::Song_Name_Noise_Bank, Kick_Type
+    Noise_Header ::NB, Kick_Type
         ; The "::" allows the global NoiseFX_Index variable to be read.
 
     Notes whl,rest

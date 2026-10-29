@@ -2301,6 +2301,15 @@ but probably shouldn't be attempted.
     -Defining a Songs Tempo to be more than `$20` results in the 6 cheap note lengths not being clean multiples of eachother. Who knows. Maybe there's a clever use case for a really large "Tempo".
 
 
+#### Repeat <Size>, "Inf" Abuse
+- So `Repeat <Size>, "Inf"` is more like an unconditional jump. (Specifically, its count is `$00` which is what the count is when no Repeat is initialized, so it will always jump back.)
+
+    - Really, `Repeat <Size>, "Inf"` shouldn't be used much.
+        - `Loop <Validation>, <Intro_End>` does the same thing under most cases.
+
+- Now, normally, two different Repeats cannot be used simultaniously.
+    - However, if one of them is `Repeat <Size>, "Inf"`, it can decriment the same count used by the one "normal" Repeat, but if encountered on its own doesn't set a Repeat count at all.
+
 ## Debugging
 -
 
@@ -2325,7 +2334,7 @@ There are two main culprits for single-frame drifting: custom note lengths and 1
   - For custom Duration Sets, confirm that the upper nibbles contain the same number of `$0` opcodes as the lower nibbles.
 
 
-- If you did anything in LINK Bad Ideas, you're on your own.
+- If you did anything in Bad Ideas, you're on your own.
 
 
 #### Incorrect Notes

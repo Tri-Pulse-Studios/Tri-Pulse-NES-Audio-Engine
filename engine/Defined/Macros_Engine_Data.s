@@ -4,44 +4,9 @@
 ;Sound Effects
 ;===============================================================
 
-    SFX_PTR_ADJUST .set 2   ; hardcoded offset
-        ; Honestly not sure where this offset comes from. 
-
     ;===========================================================
     ;SFX
     ;===========================================================
-
-    ; .macro Simple_SFX Name, BP, Sweep, Len, Envelope
-
-    ;     .ident(.string(Name)):
-
-    ;     .byte ((BP)*2-Sweep)|$80
-
-    ;     .ifnblank Len
-        
-    ;     .byte Len+1, Envelope, (Sweep & $ff)
-
-    ;     .endif
-    ; .endmacro
-
-
-    ; .macro Complex_SFX Name, BP, Len, Envelope ;Ironicly simpler macro. Complexity is in Music Data
-
-    ;     Name:
-    ;     ; .ident(.string(Name)):
-
-    ;     .if BP > $f 
-    ;     .byte BP|$80 ;Sq/Tri must be stored pre-dec'ed already.
-    ;     .else
-    ;     .byte ((BP-1) & $ff)|$80 ;-1 for Rate index
-    ;     .endif
-
-        
-    ;     .ifnblank Len
-    ;     .byte Len+1, Envelope
-    ;     .endif
-
-    ; .endmacro
 
     SFX_Data_Index  .set 1 ; 0 is "No SFX"
 
@@ -171,11 +136,6 @@
     .endmacro
 
 
-
-
-
-
-
     ;===========================================================
     ;Noise Bank
     ;===========================================================
@@ -213,21 +173,12 @@
 
         LUT_Noise_SFX_Ptr:
             .repeat NoiseFX_Index, I
-                ; .ifconst .ident(.sprintf("NoiseRow%02x_Noise", I))
-                    .byte .ident(.sprintf("NoiseRow%02x_Noise", I))
-                ; .else
-                ;     .byte (.ident(.sprintf("NoiseRow%02x_Noise", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
-                ; .endif
+                .byte .ident(.sprintf("NoiseRow%02x_Noise", I))
             .endrepeat
 
-        
         LUT_DMC_SFX_Ptr:
         .repeat NoiseFX_Index, I
-            ;.ifconst .ident(.sprintf("NoiseRow%02x_Dmc", I))
-                .byte .ident(.sprintf("NoiseRow%02x_Dmc", I))
-            ; .else
-            ;     .byte (.ident(.sprintf("NoiseRow%02x_Dmc", I)) - LUT_SFX_Data + SFX_PTR_ADJUST)
-            ; .endif
+            .byte .ident(.sprintf("NoiseRow%02x_Dmc", I))
         .endrepeat
 
     .endmacro
@@ -237,7 +188,7 @@
         .assert NoiseFX_Index - _Name < 16, error, "Exceeded 15 Noise_FX window"
     .endmacro
 
-
+ 
     ;============================================================
     ; Kick Types
     ;============================================================
@@ -290,7 +241,10 @@
 
     first_env .set -1 ;If first is not the start of a bank.
 
-    .macro Env Size, Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12, v13,  v14
+    .macro Env Size, _Name, v1,v2,v3,v4,v5,\
+                            v6,v7,v8,v9,v10, \
+                            v11,v12, \
+                            v13,  v14
         ; 6b = 13 user variables
         ; 5b = 12 user variables
         ; 4b = 9 user variables
@@ -335,7 +289,10 @@
                 .endif
             .endif 
 
-            Sub_Env Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12, v13
+            Sub_Env Name, v1,v2,v3,v4,v5,\
+                          v6,v7,v8,v9,v10, \
+                          v11,v12, \
+                          v13
 
         .elseif .xmatch(Size, "5b")
             .ifblank v12
@@ -359,8 +316,10 @@
             .endif
 
 
-            Sub_Env Name, v1,v2,v3,v4,v5, v6,v7,v8,v9,v10, v11,v12,  0 ;No DMC
-
+            Sub_Env Name, v1,v2,v3,v4,v5,\
+                          v6,v7,v8,v9,v10, \
+                          v11,v12, \
+                          0 ;No DMC
 
         .elseif .xmatch(Size, "4b")
             .ifblank v9
@@ -383,7 +342,10 @@
                 .endif
             .endif 
 
-            Sub_Env Name, v1,0,0,v2,v3, v4,0,0,v5,v6, v7,v8, v9 ;No Attack
+            Sub_Env Name, v1,0,0,v2,v3, \
+                          v4,0,0,v5,v6, \
+                          v7,v8, \
+                          v9 ;No Attack
 
         .elseif .xmatch(Size, "3b")
             .ifblank v8
@@ -400,16 +362,19 @@
                 last_dmc .set Env_Index
             .endif
 
-            Sub_Env Name, v1,0,0,v2,v3, v4,0,0,v5,v6, v7,v8, 0 
-                ;No Attack and No DMC
+            Sub_Env Name, v1,0,0,v2,v3, \
+                          v4,0,0,v5,v6, \
+                          v7,v8, \
+                          0 ;No DMC and No Attack
 
         .else
             .error "Invalid Env Size." ;input "6b", "5b", "4b", or "3b" with quotes.
         .endif
 
-        Name .set Env_Index
+        _Name .set Env_Index
 
         Env_Index .set Env_Index + 1
+
 
     .endmacro
 
@@ -420,126 +385,125 @@
         ; Envelope Bank / Index validation
         ;============================================================
 
-        .if (Env_Index - Env_Bank_Index) >= $10
-            .out "Env Warning: Envelope exceeds its Bank"
-        .endif
+            .if (Env_Index - Env_Bank_Index) >= $10
+                .out "Env Warning: Envelope exceeds its Bank"
+            .endif
 
-        .if Env_Index > $FF
-            .error "Env Error: Max Index exceeded (0..255)"
-            .out "Env Error: Max Index exceeded (0..255)"
-            .out ""
-            .exitmacro
-        .endif
+            .if Env_Index > $FF
+                .error "Env Error: Max Index exceeded (0..255)"
+                .out "Env Error: Max Index exceeded (0..255)"
+                .out ""
+                .exitmacro
+            .endif
 
-        _Name .set Env_Index
 
         ;============================================================
         ;Data Validation
         ;============================================================
 
-        ;Volume
-        .if (atk_vol & $0F) <> 0
-            .error "Env Error: Attack Volume must use whole values * $10"
-        .endif
-
-        .if (atk_vol < 0) .or (atk_vol > $F0)
-            .error "Env Error: Attack Volume out of range (0..15) * $10"
-        .endif
-
-
-        .if (dec_vol & $03) <> 0
-            .error "Env Error: Decay Volume must use 0.25 increments * $10"
-        .endif
-
-        .if (dec_vol < 0) .or (dec_vol > $FC)
-            .error "Env Error: Decay Volume out of range (0..15.75) * $10"
-        .endif
-
-
-        .if (sus_vol & $0F) <> 0
-            .error "Env Error: Sustain Volume must use whole values * $10"
-        .endif
-
-        .if (sus_vol < 0) .or (sus_vol > $F0)
-            .error "Env Error: Sustain Volume out of range (0..15) * $10"
-        .endif
-
-
-        ;Rate
-        .if (atk_rate & $03) <> 0
-            .error "Env Error: Attack Rate must use 0.25 increments"
-        .endif
-
-        .if (atk_rate < -$20) .or (atk_rate > $1C)
-            .error "Env Error: Attack Rate out of range (-2.00 .. +1.75)"
-        .endif
-
-
-        .if (dec_rate & $03) <> 0
-            .error "Env Error: Decay Rate must use 0.25 increments * $10"
-        .endif
-
-        .if (dec_rate < -$80) .or (dec_rate > -$04)
-            .error "Env Error: Decay Rate out of range (-8.00 .. -0.25) * $10"
-        .endif
-
-
-        ;Duty
-        .if (atk_duty) > 3 .or (atk_duty < 0)
-            .error "Env Error: Attack Duty must be 0..3"
-        .endif
-
-        .if (dec_duty) > 3 .or (dec_duty < 0)
-            .error "Env Error: Decay Duty must be 0..3"
-        .endif
-
-        .if (sus_duty) > 3 .or (sus_duty < 0)
-            .error "Env Error: Sustain Duty must be 0..3"
-        .endif
-
-
-        ;Timers
-        .if (atk_len < 0) .or (atk_len > 15)
-            .error "Env Error: Attack Length must be 1..15" 
-        .endif  
-        
-        .if (cutoff < 0) .or (cutoff > 7)
-            .error "Env Error: Cutoff must be 0..7"
-        .endif
-
-
-        ;Vibrato
-        .if (vib_spd & $F3) <> 0
-            .error "Env Error: Invalid Vibrato Speed"
-        .endif
-            ;Both are (0..3) << 2
-        .if (vib_del & $F3) <> 0
-            .error "Env Error: Invalid Vibrato Delay"
-        .endif
-
-        ;TODO tweak these values around so I can just type F2, and it does what I think.
-        ;dmc
-        .if dmc_lowest_d25 <> 0 ;Zero is placeholder
-            .if dmc_lowest_d25 < As1 
-                .error "Env Error: DMC Lowest d25 pitch too low."
-            .elseif dmc_lowest_d25 > Cs3 
-                .error "Env Error: DMC Lowest d25 pitch too high."
+            ;Volume
+            .if (atk_vol & $0F) <> 0
+                .error "Env Error: Attack Volume must use whole values * $10"
             .endif
-        .endif 
+
+            .if (atk_vol < 0) .or (atk_vol > $F0)
+                .error "Env Error: Attack Volume out of range (0..15) * $10"
+            .endif
+
+
+            .if (dec_vol & $03) <> 0
+                .error "Env Error: Decay Volume must use 0.25 increments * $10"
+            .endif
+
+            .if (dec_vol < 0) .or (dec_vol > $FC)
+                .error "Env Error: Decay Volume out of range (0..15.75) * $10"
+            .endif
+
+
+            .if (sus_vol & $0F) <> 0
+                .error "Env Error: Sustain Volume must use whole values * $10"
+            .endif
+
+            .if (sus_vol < 0) .or (sus_vol > $F0)
+                .error "Env Error: Sustain Volume out of range (0..15) * $10"
+            .endif
+
+
+            ;Rate
+            .if (atk_rate & $03) <> 0
+                .error "Env Error: Attack Rate must use 0.25 increments"
+            .endif
+
+            .if (atk_rate < -$20) .or (atk_rate > $1C)
+                .error "Env Error: Attack Rate out of range (-2.00 .. +1.75)"
+            .endif
+
+
+            .if (dec_rate & $03) <> 0
+                .error "Env Error: Decay Rate must use 0.25 increments * $10"
+            .endif
+
+            .if (dec_rate < -$80) .or (dec_rate > -$04)
+                .error "Env Error: Decay Rate out of range (-8.00 .. -0.25) * $10"
+            .endif
+
+
+            ;Duty
+            .if (atk_duty) > 3 .or (atk_duty < 0)
+                .error "Env Error: Attack Duty must be 0..3"
+            .endif
+
+            .if (dec_duty) > 3 .or (dec_duty < 0)
+                .error "Env Error: Decay Duty must be 0..3"
+            .endif
+
+            .if (sus_duty) > 3 .or (sus_duty < 0)
+                .error "Env Error: Sustain Duty must be 0..3"
+            .endif
+
+
+            ;Timers
+            .if (atk_len < 0) .or (atk_len > 15)
+                .error "Env Error: Attack Length must be 1..15" 
+            .endif  
+            
+            .if (cutoff < 0) .or (cutoff > 7)
+                .error "Env Error: Cutoff must be 0..7"
+            .endif
+
+
+            ;Vib
+            .if (vib_spd & $F3) <> 0
+                .error "Env Error: Invalid Vib Speed"
+            .endif
+                ;Both are (0..3) << 2
+            .if (vib_del & $F3) <> 0
+                .error "Env Error: Invalid Vib Delay"
+            .endif
+
+            ;TODO tweak these values around so I can just type F2, and it does what I think.
+            ;dmc
+            .if dmc_lowest_d25 <> 0 ;Zero is placeholder
+                .if dmc_lowest_d25 < As1 
+                    .error "Env Error: DMC Lowest d25 pitch too low."
+                .elseif dmc_lowest_d25 > Cs3 
+                    .error "Env Error: DMC Lowest d25 pitch too high."
+                .endif
+            .endif 
 
         ;============================================================
         ; Store values
         ;============================================================
 
-        .ident(.sprintf("Row%02x_AT_Init", Env_Index)) = atk_vol | vib_del | atk_duty
+            .ident(.sprintf("Row%02x_AT_Init", Env_Index)) = atk_vol | vib_del | atk_duty
 
-        .ident(.sprintf("Row%02x_AT_Rate", Env_Index)) = (atk_rate & $3c) << 2 | atk_len
-        .ident(.sprintf("Row%02x_Decay_Init", Env_Index)) = dec_vol | dec_duty   
+            .ident(.sprintf("Row%02x_AT_Rate", Env_Index)) = (atk_rate & $3c) << 2 | atk_len
+            .ident(.sprintf("Row%02x_Decay_Init", Env_Index)) = dec_vol | dec_duty   
 
-        .ident(.sprintf("Row%02x_Decay_Rate", Env_Index)) = (dec_rate & $7c) << 1 | cutoff
-        .ident(.sprintf("Row%02x_Sustain", Env_Index)) = sus_vol | vib_spd | sus_duty
+            .ident(.sprintf("Row%02x_Decay_Rate", Env_Index)) = (dec_rate & $7c) << 1 | cutoff
+            .ident(.sprintf("Row%02x_Sustain", Env_Index)) = sus_vol | vib_spd | sus_duty
 
-        .ident(.sprintf("Row%02x_DmcLow", Env_Index)) = dmc_lowest_d25 +1 ;Likely is off by one.
+            .ident(.sprintf("Row%02x_DmcLow", Env_Index)) = dmc_lowest_d25 +1
 
 
 
@@ -576,7 +540,8 @@
     .macro Output_Env
 
         .if first_env = -1
-            .fatal "No Envelopes to emit."
+            .error "No Envelopes to emit."
+            .exitmacro
         .endif
 
         .if first_atk = -1
@@ -676,3 +641,295 @@
 
 ;
 
+
+
+;===========================================================
+;Vibrato:
+;===========================================================
+
+
+    Vib_Delay_Index .set 0
+    .macro Vibrato_Delay Frames_to_Delay, Alias
+    
+        .if Vib_Delay_Index >= 4
+            .error "Vib_Delay Error: Exceeded Maximum of 4 delay types"
+            .out .sprintf("Vib_Delay Error: Exceeded Maximum of 4 delay types. Given: %d. Maximum: 4", Vib_Delay_Index + 1)
+            .out ""
+            .exitmacro
+        .endif
+    
+        .ident(.string(Alias)) .set (Vib_Delay_Index << 2)
+    
+        .ident(.sprintf("Vib_Delay_%02x", Vib_Delay_Index)) = Frames_to_Delay
+    
+        Vib_Delay_Index .set Vib_Delay_Index + 1
+    
+    .endmacro
+    
+    
+    .macro Output_Vibrato_Delays
+
+        LUT_Vibrato_Delays:
+            .repeat Vib_Delay_Index, I
+                .byte <~.ident(.sprintf("Vib_Delay_%02x", I))
+            .endrepeat
+
+    .endmacro
+    
+    
+    
+    
+    
+    
+    
+    Vib_Cycle_Data_Index .set 0
+    Vib_Cycle_Index .set 0
+
+    .macro Vibrato_Cycle Alias, v1,v2,v3,v4,v5,\
+            v6,v7,v8,v9,v10, \
+            v11,v12,v13,v14,v15, \
+            v16,v17,v18,v19,v20
+
+        ;validation
+            .if Vib_Cycle_Index >= 4
+                .error "Vib_Cycle Error: Exceeded Maximum of 4 cycle types."
+                .out .sprintf("Vib_Cycle Error: Exceeded Maximum of 4 cycle types. Given: %d. Maximum: 4", Vib_Cycle_Index + 1)
+                .out ""
+                .exitmacro
+
+
+            .elseif Vib_Cycle_Index = 0
+                .ifnblank v1
+                    .error "Vib_Cycle Error: Vib_None cannot have data."
+                    .out "Vib_Cycle Error: The first cycle (Vib_None) must not include data."
+                    .out ""
+                    .exitmacro
+                .endif
+
+            .elseif Vib_Cycle_Index > 0
+                .ifblank v1
+                    .error "Vib_Cycle Error: Cycle data required."
+                    .out "Vib_Cycle Error: All but the first cycle (Vib_None) must have data."
+                    .out ""
+                    .exitmacro
+                .endif
+            .endif
+
+        ;
+
+        .ident(.string(Alias)) .set (Vib_Cycle_Index << 2)
+
+        .ident(.sprintf("Vib_Cycle_Start_%02x", Vib_Cycle_Index)) = Vib_Cycle_Data_Index
+
+        Sub_Vibrato_Cycle v1,v2,v3,v4,v5,\
+                v6,v7,v8,v9,v10, \
+                v11,v12,v13,v14,v15, \
+                v16,v17,v18,v19,v20
+
+
+        Vib_Cycle_Index .set Vib_Cycle_Index + 1
+
+    .endmacro
+
+
+    .macro Sub_Vibrato_Cycle v1,v2,v3,v4,v5,\
+                v6,v7,v8,v9,v10, \
+                v11,v12,v13,v14,v15, \
+                v16,v17,v18,v19,v20
+
+        .ifblank v1
+            .exitmacro
+        .endif
+
+        .if (v1 > $3f) .or (v1 < -$40)
+            .error "Vib_Cycle Error: Invalid Period Delta"
+            .out "Vib_Cycle Error: Invalid Period Delta. Valid Range: -$40..$3f"
+            .out "    The input delta's are used by Vib_Deep."
+            .out ""
+            .exitmacro
+        .endif
+
+        .ident(.sprintf("Vib_Cycle_Data_%02x", Vib_Cycle_Data_Index)) = (v1 << 1) & $ff
+
+        Vib_Cycle_Data_Index .set Vib_Cycle_Data_Index + 1
+
+        Sub_Vibrato_Cycle v2,v3,v4,v5,\
+                v6,v7,v8,v9,v10, \
+                v11,v12,v13,v14,v15, \
+                v16,v17,v18,v19,v20
+    .endmacro
+
+
+
+
+
+    .macro Output_Vibrato_Cycles
+
+        LUT_Vibrato_Period_Deltas:
+            .repeat Vib_Cycle_Data_Index, I
+                .byte .ident(.sprintf("Vib_Cycle_Data_%02x", I))
+            .endrepeat
+
+
+        .byte $ff, $fe, $fd
+
+        LUT_Start_Vib_Index = * -1 ;Index 0 is None, and Not used.
+        LUT_End_Vib_Index = * ;End = Start of next.
+
+            .repeat Vib_Cycle_Index - 1, I
+                .byte .ident(.sprintf("Vib_Cycle_Start_%02x", I + 1))
+            .endrepeat
+
+            .byte Vib_Cycle_Data_Index ;End of last Cycle
+
+    .endmacro
+
+
+;
+
+
+;===========================================================
+;Custom Duration Sets
+;===========================================================
+
+    ;If this flag is set: Enable_Custom_Duration_Sets = 0
+        ;These macros will do nothing. 
+
+    Duration_Set_Index .set $50
+    Duration_Set_Data_Index .set 0
+
+    .macro Duration_Set Name, Size, v1,v2,v3,v4,\
+            v5,v6,v7,v8, \
+            v9,v10,v11,v12,\
+            v13,v14,v15,v16
+
+        .if !Enable_Custom_Duration_Sets
+            .exitmacro
+        .endif
+
+        ;validation
+            .if .defined(Name)
+                .error "Dur_Set Error: Name is already defined."
+                .out .sprintf("Duration_Set Error: Name is already defined. Value: '%s' ", .string(Name))
+                .out ""
+                .exitmacro
+            .endif
+
+            .if (Size < 1) .or (Size > 7)
+                .error "Duration_Set Error: Invalid Size."
+                .out .sprintf("Duration_Set Error: Size must be in the range 1..8. Given: %d", Size)
+                .out "      Size is the number of bytes, not number of nibbles read."
+                .out ""
+                .exitmacro
+            .endif
+
+            .if Duration_Set_Index > $5f
+                .error "Dur_Set Error: Exceeded maximum number of sets."
+                .out .sprintf("Duration_Set Error: Invalid Set Index: $%02x. Maximum: $5f", Duration_Set_Index)
+                .out ""
+                .exitmacro
+            .endif
+
+            .if Duration_Set_Data_Index > $1f
+                .error "Dur_Set Error: Data start index out of range."
+                .out .sprintf("Duration_Set Error: Invalid Starting Data Index: $%02x. Maximum start index: $1f", Duration_Set_Data_Index)
+                .out ""
+                .exitmacro
+            .endif
+
+        ;
+
+        ; Record the set's size and data start.
+        .ident(.string(Name)) .set Duration_Set_Index
+
+        .ident(.sprintf("Duration_Set_Info_%02x", Duration_Set_Index)) = (Size << 5) | Duration_Set_Data_Index
+
+        ; Collect opcode nibbles.
+        Sub_Duration_Set v1,v2,v3,v4,\
+            v5,v6,v7,v8, \
+            v9,v10,v11,v12,\
+            v13,v14,v15,v16
+
+        Duration_Set_Index .set Duration_Set_Index + 1
+
+    .endmacro
+
+
+    .macro Sub_Duration_Set v1,v2,v3,v4,\
+            v5,v6,v7,v8, \
+            v9,v10,v11,v12,\
+            v13,v14,v15,v16
+
+        .ifblank v1
+            .exitmacro
+        .endif
+
+        .ifblank v2
+            .error "Duration_Set Error: Incomplete opcode pair."
+            .out "Duration_Set Error: Duration Opcodes must be supplied in pairs."
+            .out ""
+            .exitmacro
+        .endif
+
+        Dur_Opcode_Calc v1, v1_opcode
+        Dur_Opcode_Calc v2, v2_opcode
+
+        .ident(.sprintf("Duration_Set_Data_%02x", Duration_Set_Data_Index)) = (v2_opcode << 4) | v1_opcode
+
+        Duration_Set_Data_Index .set Duration_Set_Data_Index + 1
+
+        Sub_Duration_Set v3,v4,\
+            v5,v6,v7,v8, \
+            v9,v10,v11,v12,\
+            v13,v14,v15,v16 ;Recurse Pairs
+
+
+    .endmacro
+
+    .macro Dur_Opcode_Calc Opcode, Return_Var
+        .if .xmatch(Opcode, 16th)
+            Return_Var .set $0
+        .elseif .xmatch(Opcode, 8th)
+            Return_Var .set $1
+        .elseif .xmatch(Opcode, qtr)
+            Return_Var .set $2
+        .elseif .xmatch(Opcode, dqt)
+            Return_Var .set $3
+        .elseif .xmatch(Opcode, hlf)
+            Return_Var .set $4
+        .elseif .xmatch(Opcode, dhf)
+            Return_Var .set $6
+        .elseif .xmatch(Opcode, whl)
+            Return_Var .set $8
+        .else
+            .if Opcode > $ff
+                .error "Duration_Set Error: Invalid Opcode Value."
+                .out "Duration_Set Error: Duration Opcodes is either Note mnemonics, `16th`, or raw byte like `$b0`."
+                .out ""
+                .exitmacro
+            .endif
+            Return_Var .set (Opcode >> 4)
+        .endif
+    .endmacro
+
+
+
+    .macro Output_Duration_Sets
+        .if !Enable_Custom_Duration_Sets
+            .exitmacro
+        .endif
+
+        LUT_Read_Nibbles_Init:
+            .repeat Duration_Set_Index - $50, I
+                .byte .ident(.sprintf("Duration_Set_Info_%02x", I + $50))
+            .endrepeat
+
+        LUT_Length_Nibbles:
+            .repeat Duration_Set_Data_Index, I
+                .byte .ident(.sprintf("Duration_Set_Data_%02x", I))
+            .endrepeat
+
+    .endmacro
+
+
+;

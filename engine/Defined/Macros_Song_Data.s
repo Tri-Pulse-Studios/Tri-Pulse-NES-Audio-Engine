@@ -25,7 +25,7 @@
 
 
   .macro Define_Pitches
-      Octave = $40 ;???   Its needed.
+      Octave = $40 ;Old Data Format.
 
       A0  = $00
       As0 = $01  ; Bb0
@@ -160,12 +160,6 @@
     Repeat_x6 = ($91 + (6<<1))
     Repeat_x7 = ($91 + (7<<1))
 
-
-    d50_Kick .set 0
-    d25_Kick .set 1
-    As3_Tom .set 2
-    d12_Tom .set 3
-
   .endmacro
 
   Define_Pitches ;Define them Globally.
@@ -177,28 +171,72 @@
 
  
 
-  .macro Header Base_Pitch, Enveleope, Cont_Tag
+  .macro Header _BP, _Env, Vib_Depth, Cont_Tag
+
+    .ifblank _Env
+        .error "Header Error: Missing Env Param."
+        .out "Header Error: Missing Env Param."
+        .out ""
+    .endif 
+
+    .ifblank _BP
+        .error "Header Error: Missing BP Param."
+        .out "Header Error: Missing BP Param."
+        .out ""
+    .endif
 
 
     .if .xmatch(Cont_Tag, "Cont")
-    .else
-      Set_Pitch_Header Base_Pitch
-      .byte Enveleope
-    .endif 
+        ;pass
+    .elseif .not .blank (Cont_Tag)
+        .error "Header Error: Invalid Cont Tag."
+        .out "Header Error: Invalid Cont Tag. Expects the string \"Cont\" "
+        .out ""
 
-    current_env_bank = Enveleope
-    Set_BP Base_Pitch
+    .elseif .xmatch(Vib_Depth, "Cont")
+        .ifnblank Cont_Tag
+            .error "Header Error: Inccorect inputs. Cont tag must be last param."
+            .out "Header Error: Inccorect inputs. Cont tag must be last param."
+            .out ""
+        .endif
+    .else
+      Set_Pitch_Data _BP, Vib_Depth
+      .byte _Env
+
+    .endif 
+ 
+
+
+    EB .set ::_Env & $f0
+        ;Envelope Bank
+
+    BP .set _BP
+        ;Base Pitch
 
   .endmacro
 
+
   .macro Noise_Header Noise_Bank, Kick_Type, Cont_Tag
-    .if .xmatch(Cont_Tag, "Cont")
-    .else
-      Set_Pitch_Header Noise_Bank, Kick_Type
-      ;.byte Enveleope
+
+    .ifblank Noise_Bank
+        .error "Header Error: Missing NB Param."
+        .out "Header Error: Missing Noise Bank Param."
+        .out ""
     .endif 
 
-    Set_BP Noise_Bank, Kick_Type
+
+    .if .xmatch(Cont_Tag, "Cont")
+        ;pass
+    .elseif .not .blank (Cont_Tag)
+        .error "Header Error: Invalid Cont Tag."
+        .out "Header Error: Invalid Cont Tag. Expects the string \"Cont\" "
+        .out ""
+    .else
+        Set_Pitch_Data Noise_Bank, Kick_Type
+
+    .endif 
+
+    BP .set Noise_Bank
 
   .endmacro
 
@@ -232,21 +270,22 @@
     .macro Notes L1,P1, L2,P2, L3,P3, L4,P4, L5,P5, L6,P6, L7,P7, L8,P8, L9,P9, L10,P10
 
 
+
         .ifblank L1
             .exitmacro
         .endif
 
         .if .xmatch(P1, Rest)
-            .error "Notes Error: 'rest' must be lowercase"
+            .error "Notes Error: `rest` must be lowercase"
             .out"        Usage: Notes <Length>,<Pitch>, <Length>,<Pitch>, ..."
             .exitmacro
         .endif
 
 
         .if .xmatch(L1, 8th)
-        Sub_Note 1,P1
+            Sub_Note 1,P1
         .elseif .xmatch(L1, qtr)
-        Sub_Note 2,P1
+            Sub_Note 2,P1
         .elseif .xmatch(L1, dqt)
             Sub_Note 3,P1
         .elseif .xmatch(L1, hlf)
@@ -279,13 +318,15 @@
 
 
         .if .xmatch (Pitch, rest)
-        .byte Length << 4 ;Rest
+            .byte Length << 4 ;Rest
 
-        .else ;Valid
-        .byte (Length << 4) | (Pitch - BP + 1)
-        
-        .assert (Pitch >= A0) && (Pitch <= B5), error, "Notes Error: Pitch out of valid range (A0 to B5)"
-        .assert ((Pitch - BP + 1) >= 1) && ((Pitch - BP + 1) <= $0F), error, "Notes Error: Pitch out of BP's current range (1...15)" ;Can Output the Pitch value, cuz it isn't constant. For petes...
+
+        .else
+            Assert_Valid_Pitch ::Pitch, "Notes Pitch Error"
+
+            .byte (Length << 4) | (Pitch - BP + 1)
+
+
 
         .endif
 
@@ -298,8 +339,8 @@
 ;===============================================================
 
 
-  ; Format:  ;Repeat "4b", 3 to repeat 4 bytes, 3 times.
-  ; Alt:     Repeat _Label, 3  to jump back to _Label 3 times
+    ; Format:  ;Repeat "4b", 3 to repeat 4 bytes, 3 times.
+    ; Alt:     Repeat _Label, 3  to jump back to _Label 3 times
     .macro Repeat Size, Count
 
         .if .xmatch(Size, "5b") ;Hard-coded versions.
@@ -327,19 +368,19 @@
             .error "Repeat Error: Unrecognized Label or Malformed Tag."
             .out "Repeat Error: Unrecognized Label or Malformed Tag."
             .out "    Usage: Repeat <Label>, <Count>  (Size = * - Label)"  
-            .out "           Repeat ''xb'',  <Count>  (valid: 5b..1b in Qutoes)"
+            .out "           Repeat \"xb\",  <Count>  (valid: 5b..1b in Qutoes)"
         .endif
 
-        .endmacro
+    .endmacro
 
 
 
-        .macro Sub_Repeat Size, Count
+    .macro Sub_Repeat Size, Count
 
         .ifblank Count
             .error "Repeat Error: Missing Repeat Count."
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
             .exitmacro
         ;
@@ -347,27 +388,27 @@
         .elseif .xmatch(Count, "Inf")
             .if Size > 4
                 .error .sprintf("Repeat Error: Long repeat count >= 8 only valid for Size 1..4 (Input Size: %d)", Size)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
                 .exitmacro
             .endif
 
-        .byte $80 + (((Size+1) & 6) << 3) + (((Size+1) ^ 1) & 1), $ff 
+        .byte $80 + (((Size+1) & 6) << 3) + (((Size+1) ^ 1) & 1), $00
             ;Infinite Repeats read as negetive values.
 
         .elseif Size = 1
             .if Count < 3
-                .warning .sprintf("Repeat Warning: Count %d is too small for '1b' Repeat (use Count >= 3 or unroll).", Count)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .warning .sprintf("Repeat Warning: Count %d is too small for \"1b\" Repeat (use Count >= 3 or unroll).", Count)
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
             .endif
 
             .if Count > 128
-                .error .sprintf("Repeat Error: Repeat count must be <= 128 or 'Inf' (Input Count: %d)", Count)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .error .sprintf("Repeat Error: Repeat count must be <= 128 or \"Inf\" (Input Count: %d)", Count)
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
                 
             .endif
@@ -378,17 +419,17 @@
         .elseif Count >= 8
 
             .if Count > 128
-                .error .sprintf("Repeat Error: Repeat count must be <= 128 or 'Inf' (Input Count: %d)", Count)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .error .sprintf("Repeat Error: Repeat count must be <= 128 or \"Inf\" (Input Count: %d)", Count)
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
                 
             .endif
 
             .if Size > 4
                 .error .sprintf("Repeat Error: Long repeat count >= 8 only valid for Size 1..4 (Input Size: %d)", Size)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
                 .exitmacro
             .endif
@@ -403,8 +444,8 @@
 
             .if Size > 5
                 .error .sprintf("Repeat Error: Short repeat count < 8 only valid for Size 2..5 (Input Size: %d)", Size)
-                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or 'Inf'>"  
-                .out"               Repeat <Size 2..4>, <Count 8..128 or 'Inf'>"
+                .out"        Usage: Repeat <Size 1>,    <Count 3..128 or \"Inf\">"  
+                .out"               Repeat <Size 2..4>, <Count 8..128 or \"Inf\">"
                 .out"               Repeat <Size 2..5>, <Count 1..7>"
                 .exitmacro
             .endif
@@ -419,42 +460,42 @@
     .macro Riff id, Length, Explicit_Type
         .ifblank Length
             .error "Riff Error: Missing Length/End label"
-            .out "    Usage: Riff <Start_Label>, <End_Label> [, ''3b'']"
+            .out "    Usage: Riff <Start_Label>, <End_Label> [, \"3b\"]"
             .out "           Legacy: Riff <Length>, <End_Label>  ;raw byte count"
+            .out ""
             .exitmacro
         .endif
 
         .assert (>* = >(id)), warning, "Riff Warning: Page Crossed"
 
-        .if .const (Length) ;Number Version
-        .if Length < 32
-            .byte $c0|Length, <(id) ;Can make it length -1 and replace the add Length  w/ sec, adc.
+        .if .const (Length) ;Raw Number Version
+            .if Length < 32
+                .byte $c0|Length, <(id) ;Can make it length -1 and replace the add Length  w/ sec, adc.
 
-            .if Length <= 2
-            .error "Riff Error: Re-read length must be 3..255 bytes."
-            .out  "  Usage: Riff <Start_label>, <End_label>"
-            .out  "  Usage: Riff <Start_label>, <Length (3..255)>"
+                .if Length <= 2
+                    .error "Riff Error: Re-read length must be 3..255 bytes."
+                    .out  "  Usage: Riff <Start_label>, <End_label>"
+                    .out  "  Usage: Riff <Start_label>, <Length (3..255)>"
+                    .out ""
+                .endif
+
+            .else
+                .byte $c2, Length, <(id)
             .endif
 
-        .else
-            .byte $c2, Length, <(id)
-        .endif
+        .else ;Two Labels Version
+            .ifblank Explicit_Type
+                .byte $c0|((Length)-(id)), <(id)
+                .assert ((Length)-(id) < 32), error, "Riff Error: Explicit 3-Byte marker Required"
 
-        .else ;Label Version
-        .ifblank Explicit_Type
-            .byte $c0|((Length)-(id)), <(id)
-            .assert ((Length)-(id) < 32), error, "Riff Error: Explicit 3-Byte marker is required here"
-            .assert ((Length)-(id) < 32), error, "     Usage: Riff <Start_label>, <End_label>, <''3b''>"
+                .assert ((Length)-(id) >= 3), error, "Riff Error: Re-read length must be 3..255 bytes."
 
-            .assert ((Length)-(id) >= 3), error, "Riff Error: Re-read length must be 3..255 bytes."
-            .assert ((Length)-(id) >= 3), error, "     Usage: Riff <Start_label>, <End_label>"
+            .else
+                .byte $c2, (Length)-(id), <(id)
+                .assert ((Length)-(id) >= 32), warning, "Riff Warning: Explicit 3-Byte marker is not needed here"
 
-        .else
-            .byte $c2, (Length)-(id), <(id)
-            .assert ((Length)-(id) >= 32), warning, "Riff Warning: Explicit 3-Byte marker is not needed here"
-            .assert ((Length)-(id) >= 32), warning, "     Usage: Riff <Start_label>, <End_label>"
-
-        .endif
+                .assert ((Length)-(id) >= 3), error, "Riff Error: Re-read length must be 3..255 bytes."
+            .endif
         .endif
     .endmacro
 
@@ -476,7 +517,7 @@
 
             ; .error "If_Alt Error: Invalid syntax"
             ; .out   "    Usage: If_Alt <Unmodified>, <Modified>"
-            ; .out   "           If_Alt 'Toggle'"
+            ; .out   "           If_Alt \"Toggle\""
             
             .exitmacro
 
@@ -484,14 +525,14 @@
 
         .elseif .xmatch(_Old,rest)
             .byte $70 | ((_New - BP + 1) & $f)
-            Assert_Valid_Pitch _New
+            Assert_Valid_Pitch ::_New, "If_Alt _New Pitch Error"
             .exitmacro
 
                 
 
         .elseif .xmatch(_New,rest)
             .byte $70 | ((-1 * (_Old - BP + 1) )& $f) ;The Negetive may be backward
-            Assert_Valid_Pitch _Old
+            Assert_Valid_Pitch ::_Old, "If_Alt _Old Pitch Error"
 
             .exitmacro
 
@@ -500,7 +541,7 @@
             .if _Old = _New
                 .error "If_Alt Error: Delta is zero (conflicts with Toggle command)"
                 .out   "    Usage: If_Alt <Unmodified>, <Modified>"
-                .out   "           If_Alt 'Toggle'"
+                .out   "           If_Alt \"Toggle\""
                 .exitmacro
             .endif
 
@@ -515,13 +556,21 @@
 
     .endmacro
 
-    .macro Assert_Valid_Pitch Pitch
+    .macro Assert_Valid_Pitch Pitch, Error_Message
 
-        ; .assert ((Pitch - BP) >= 0) && ((Pitch - BP) <= $0F), error, .sprintf("If_Alt Error: Note out of BP Range. Note:%d  BP:%d", Pitch, BP
-        ; .assert (Pitch >= A0) && (Pitch <= B5), error, .sprintf("If_Alt Error: Invalid pitch. Note:$%02X  (Valid range: A0–B5)", _New)
+        .if (Pitch < A0) || (Pitch > B5)
+                .error "Pitch Error: Invalid Pitch"
+                .out Error_Message
+                .out .sprintf("    Pitch out of valid range: A0 (0.8) to B5 (5.11). Given Pitch: %d.%d.", (Pitch+9) / 12, (Pitch+9) .mod 12)
+                .out ""
+        
+        .elseif ((Pitch - BP + 1) < 1) || ((Pitch - BP + 1) > $0F)
+            .error "Pitch Error: Pitch out of BP's Range."
+            .out Error_Message
+            .out .sprintf("    Pitch out of BP's range. Given Pitch: %d.%d. BP Range: %d.%d to %d.%d", (Pitch+9) / 12, (Pitch+9) .mod 12,   (BP+9) / 12, (BP+9) .mod 12,   ((BP+9) + 14) / 12, ((BP+9) + 14) .mod 12)   
+            .out ""
 
-        .assert ((Pitch - BP) >= 0) && ((Pitch - BP) <= $0F), error, "If_Alt Error: Note out of BP range. Add 'F' to Force a non-note If_Alt"
-        .assert (Pitch >= A0) && (Pitch <= B5), error, "If_Alt Error: Invalid pitch (valid range: A0–B5). Add 'F' to Force a non-note If_Alt"
+        .endif
 
     .endmacro
 
@@ -539,7 +588,7 @@
             Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
         .else
-            .error "Duration Error: invalid Length_Pattern (Use ''Cont'' to Omit)"
+            .error "Duration Error: Invalid Length_Pattern (Use \"Cont\" to Omit)"
             .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
             .out " "
             .exitmacro
@@ -548,104 +597,208 @@
     .endmacro
 
 
+
     .macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
         .ifblank P1
-        .exitmacro
+            .exitmacro
         .endif
         
         .ifblank P2
-        .error "Duration Error: Even number of pitches required"
-        .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
-        .out " "
-        .exitmacro
-        .endif
-        
-        .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
-            .error "Duration Error: 'rest' must be lowercase"
-            .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .error "Duration Error: Even number of pitches required"
+            .out "       Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
             .out " "
             .exitmacro
         .endif
+        
+        .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
+            .error "Duration Error: `rest` must be lowercase"
+            .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .out " "
+            .exitmacro
 
-        .if .xmatch (P1, rest) .and .xmatch (P2, rest)  ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
-        .byte $00
+            ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
+        .endif
 
+        ;The `.if .not .const(P1)` guards against needing to check ::P1 vs Local P1
+
+
+        .if .xmatch (P1, rest) .and .xmatch (P2, rest)              
+            .byte $00
 
 
         .elseif .xmatch (P1, rest)
-        .if .const(P2);P2 < C6
 
-            .if P2 < B5
-            .byte (P2-BP+1) << 4 ;Noise
+            .if .not .const(P2) 
+                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
+            .elseif P2 < B5
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
+                .byte (P2-BP+1) << 4 ;Note
+
             .else
-            .byte (P2 & $0F) << 4
-            .endif
-        
-        .else
+                .byte (P2 & $0F) << 4  ;Non-Note
 
-            .byte (P2-BP+1) << 4 ;[RANGE ERROR] Means BP was wrong
-        .endif
+            .endif
+
+    
 
         .elseif .xmatch (P2, rest)
-        .if .const(P1)
-            .if P1 < B5
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 out of Base Pitch Range"
-            .byte (P1-BP+1)
-            .else
-            .byte (P2 & $0F) << 4
-            .endif
 
-        .else
+            .if .not .const(P1) ;If Raw Hex.
+                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
+            .elseif P1 < B5
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+                .byte (P1-BP+1) << 4 ;Note
+
+            .else
+                .byte (P1 & $0F) << 4  ;Non-Note
+
+            .endif
             
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration P1 out of Base Pitch Range"
-            .byte (P1-BP+1)
-        .endif
+        .else ;Neither are Rests.
 
+            .if (.not .const(P2)) .and (.not .const(P1)) 
+                Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
-        
-        ;Noise Handling
-        .elseif .not .const(P1)
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 out of Base Pitch Range"
+            .elseif .not .const(P2) 
+                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
-            .if .not .const(P2)
-            .byte (P1-BP+1) | ((P2-BP+1) << 4) ;Both Notes
+            .elseif .not .const(P1)
+                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
             .else
-            .byte (P1-BP+1)| ((P2 & $0F) << 4) ;P1 Note
-            .endif
+                .if (P1 < B5) .and (P2 < B5) ;Both Notes
+                    Assert_Valid_Pitch P1, "Duration P1 Error:"
+                    Assert_Valid_Pitch P2, "Duration P2 Error:"
 
-        .elseif .not .const(P2)
-            .byte ((P1 & $0F)) | ((P2-BP+1) << 4) ;P2 Note
-        ;
+                    .byte ((P2-BP+1) << 4)  | (P1-BP+1)
 
-        ;Neither are Rests
-        .elseif P1 > B5
-            .if P2 > B5 
-            .byte (P1 & $0F) | ((P2 & $0F) << 4) ;Both Non-Note
+                .elseif P1 < B5
+                    Assert_Valid_Pitch P1, "Duration P1 Error:"
 
-            .else
-            .byte ((P1 & $0F)) | ((P2-BP+1) << 4) ;P2 Note
+                    .byte ((P2 & $0F) << 4) | (P1-BP+1)
 
-            .endif
-        .else
+                .elseif P2 < B5
+                    Assert_Valid_Pitch P2, "Duration P2 Error:"
 
-            .assert ((P1 - BP + 1) >= 1) && ((P1 - BP + 1) <= $0F) || (P1 >= C6), error, "Duration Exception: P1 out of Base Pitch Range"
+                    .byte ((P2-BP+1) << 4)  | (P1 & $0F)
 
+                .else ;Both Non-Notes
+                    .byte ((P2 & $0F) << 4) | (P1 & $0F)
 
-            .if P2 > B5  
-            .byte (P1-BP+1)| ((P2 & $0F) << 4) ;P1 Note
+                .endif
 
-            .else
-
-
-            .byte (P1-BP+1) | ((P2-BP+1) << 4) ;Both Notes
-                ;
             .endif
         .endif
 
 
         Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
     .endmacro
+
+
+
+
+    ;.macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ; .ifblank P1
+        ;     .exitmacro
+        ; .endif
+        
+        ; .ifblank P2
+        ;     .error "Duration Error: Even number of pitches required"
+        ;     .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+        ;     .out " "
+        ;     .exitmacro
+        ; .endif
+        
+        ; .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
+        ;     .error "Duration Error: `rest` must be lowercase"
+        ;     .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+        ;     .out " "
+        ;     .exitmacro
+
+        ;     ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
+        ; .endif
+
+
+
+        ; .if .const(P1) .and .const(P2)
+        ;     .out "2"
+
+        ; .elseif .const(P1)
+        ;     Sub_Duration P1,(::P2),P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
+        ; .elseif .const(P2)
+        ;     Sub_Duration (::P1),P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
+        ; .else
+        ;     .out "1"
+        ;     Sub_Duration (::P1),(::P2),P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
+        ; .endif
+
+        ; .if (P1 = -1) .and (P2 = -1);(.xmatch (P1, rest)) .and (.xmatch (P2, rest))              
+        ;     .byte $00
+
+        ;     .out ":)"
+
+
+        ; .elseif .xmatch (P1, rest)
+        ;     .out ":("
+        ;         .if P2 < B5
+        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
+        ;             .byte (P2-BP+1) << 4 ;Note
+
+        ;         .else
+        ;             .byte (P2 & $0F) << 4  ;Non-Note
+
+        ;         .endif
+
+
+        ; .elseif .xmatch (P2, rest)
+
+        ;         .if P1 < B5
+        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
+        ;             .byte (P1-BP+1) << 4 ;Note
+
+        ;         .else
+        ;             .byte (P1 & $0F) << 4  ;Non-Note
+
+        ;         .endif
+
+
+
+
+        ; .else ;Neither are Rests.
+
+        ;         .if (P1 < B5) .and (P2 < B5) ;Both Notes
+        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
+        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+        ;             .byte ((P2-BP+1) << 4)  | (P1-BP+1)
+
+        ;         .elseif P1 < B5
+        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
+
+        ;             .byte ((P2 & $0F) << 4) | (P1-BP+1)
+
+        ;         .elseif P2 < B5
+        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+        ;             .byte ((P2-BP+1) << 4)  | (P1 & $0F)
+
+        ;         .else ;Both Non-Notes
+        ;             .byte ((P2 & $0F) << 4) | (P1 & $0F)
+
+        ;         .endif
+
+        ; .endif
+
+
+        ; Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
+    ;.endmacro
+
+
 
     .macro Duration_List DoMacro
         Dur_Index .set 0
@@ -693,13 +846,13 @@
 
 
     .macro Emit_LUT Name, Size
-      .if Size < 0 || Size > 7
-        .error "Duration_List Error: Pattern Length Out of Range (0..7)"
-        .out"        Usage: Duration_List <Macro_To_Invoke>, <Pattern_Length>, <Length>"
-        .exitmacro  ;0 Can mean stop playing Nibble mode. (Useful for the idea to have shift pitch and start another Duration start for 1 Byte total instead of 1 byte each.) (Or for odd ones, entirely save a byte starting another duration if np BP needed.)
-      .endif
-      .byte ((Size << 5) | (.ident(.concat("adr", .string(Name))) - LUT_Length_Nibbles))
-      Set_Name Name
+        .if Size < 0 || Size > 7
+            .error "Duration_List Error: Pattern Length Out of Range (0..7)"
+            .out"        Usage: Duration_List <Macro_To_Invoke>, <Pattern_Length>, <Length>"
+            .exitmacro  ;0 Can mean stop playing Nibble mode. (Useful for the idea to have shift pitch and start another Duration start for 1 Byte total instead of 1 byte each.) (Or for odd ones, entirely save a byte starting another duration if np BP needed.)
+        .endif
+        .byte ((Size << 5) | (.ident(.concat("adr", .string(Name))) - LUT_Length_Nibbles))
+        Set_Name Name
     .endmacro
 
     .macro Set_Name Name, _ 
@@ -742,30 +895,37 @@
     ;Enveleope
     ;===========================================================
 
-    .macro Set_Env new_pointer, Supress_Warning
+    .macro Set_Env _Env
 
-        .ifblank Supress_Warning
-        
-        .assert new_pointer^current_env_bank <= 15, warning, "Env in different bank. Requires Set_Env_Bank.  Set_Env <env>, 'F'  to supress warning."
-        
+
+        .if (::_Env & $F0) <> EB
+            .error "Set_Env Error: Env in different bank."
+            .out .sprintf("Set_Env Error: Env in different bank. Use Set_Env_Bank Instead. Given Env: $%02X. Current Bank: $%02X", ::_Env, EB)
+            .out "    A Riff/Repeat re-reading a previous Set_Env_Bank may require a manual `EB .set <_Env> & $f0` line."
+            .out ""
         .endif
-        
-        .byte $e0 | (new_pointer & $f)
+
+
+        .byte $e0 | (_Env & $f)
     .endmacro 
 
-    .macro Set_Env_Bank new_pointer ;ERROR  current_env_bank  is not updated.  .set  makes it non-.const -> errors.
+    .macro Set_Env_Bank _Env 
 
-        ;current_env_bank = new_pointer
+        .byte Set_Env_Bank_Byte, _Env  ;$f9, <id>
 
-        .byte Set_Env_Bank_Byte, new_pointer  ;$f9, <id>
+        EB .set (_Env & $f0)
 
     .endmacro
 
 
         ;Legacy macro Name support. Depreciate.
-    .macro Env_Change new_pointer, Supress_Warning
+    .macro Env_Change _Env, Supress_Warning
 
-        Set_Env new_pointer, Supress_Warning
+        .warning "Set_Env Warning: Legacy Syntax Used."
+        .out "Set_Env Warning: Legacy Syntax Used. Use Set_Env <_Env> instead."
+        .out ""
+
+        Set_Env _Env, Supress_Warning
 
     .endmacro 
 
@@ -834,70 +994,42 @@
 
     .macro Set_Pitch pitch, vibrato_depth
 
-        .ifblank pitch
-        .error "Set_Pitch Error: Missing pitch param"
-        .exitmacro
-        .elseif pitch > $3f
-        .error "Set_Pitch Error: Pitch out of Range A0..B5"
-        .exitmacro
-        .endif
-
-        .ifblank vibrato_depth
-
-        .byte $b8, ( (pitch<<2) |1) ;Default depth is 1
-
-        .elseif .xmatch(vibrato_depth, +Octave)
-        .byte $b8, ( (pitch<<2) |2) ;2 is 0.5x Normal
-
-        .elseif .xmatch(vibrato_depth, -Octave)
-        .byte $b8, ( (pitch<<2) |0) ;0 is 2x Normal
-
-        .elseif vibrato_depth <= 3 ;3 just alternates 0 and -1
-
-        .byte $b8, ( (pitch<<2) |vibrato_depth)
-
-        .else
-            .error "Set_Pitch Error: Vibrato Depth out of Range 0..3"
-            .exitmacro
-        .endif
-
-        Set_BP (pitch)
+        .byte $b8
+        Set_Pitch_Data pitch, vibrato_depth
 
     .endmacro
 
 
-    .macro Set_Pitch_Header pitch, vibrato_depth
+    .macro Set_Pitch_Data pitch, vibrato_depth
         .ifblank pitch
-            .error "Header Error: Missing pitch param"
+            .error "Header Error: Missing BP param"
+            .out "Header Error: Missing BP param"
+            .out ""
             .exitmacro
 
         .elseif pitch > $3f
-            .error "Header Error: Pitch out of Range A0..B5"
+            .error "Header Error: BP out of Range."
+            .out "Header Error: Base Pitch out of Range A0..B5"
+            .out ""
             .exitmacro
         .endif
 
         .ifblank vibrato_depth
             .byte ( (pitch<<2) |1) ;Default depth is 1 or "Medium"
 
-        .elseif .xmatch(vibrato_depth, +Octave) ;Depreciate this syntax.
-            .byte ( (pitch<<2) |2) ;2 is 0.5x Normal
-
-        .elseif .xmatch(vibrato_depth, -Octave)
-            .byte ( (pitch<<2) |0) ;0 is 2x Normal
-
-        .else 
+        .elseif ::vibrato_depth < 4
             .byte ( (pitch<<2) |vibrato_depth)
-            .assert vibrato_depth <= 3, error, "Header Error: Vibrato Depth out of Range 0..3"
+
+        .else
+            .error "Header Error: Vibrato Depth out of Range"
+            .out .sprintf("Header Error: Vibrato Depth out of Range. Given: %d. Valid Range: 0..3", vibrato_depth)
+            .out ""
 
         .endif
 
-        Set_BP (pitch)
+        BP .set (pitch)
     .endmacro
 
-    .macro Set_BP pitch, ignored_octave_flags
-        BP .set pitch
-
-    .endmacro
 
 
 
@@ -1028,13 +1160,12 @@
 
 
 
-    .ifndef Song_Index ;Init
-        Song_Index .set 0
+    ;Init
+    Song_Index .set 0
 
-        UI_Text_Index .set 0 
-        UI_Word_Index .set 0
-        UI_Word_Text_Index .set 0
-    .endif
+    UI_Text_Index .set 0 
+    UI_Word_Index .set 0
+    UI_Word_Text_Index .set 0
 
 
     .macro Song Name, Len, v1, v2, v3, v4, v5, \
@@ -1055,7 +1186,7 @@
             ; Guard
             .elseif .defined(.ident(.concat(.string(Name), "_SongDefined")))
                 .error "Song Error"
-                .out .sprintf("Error: Song Name '%s' is already defined.", .string(Name))
+                .out .sprintf("Error: Song Name: `%s` is already defined.", .string(Name))
                 .out ""
                 .exitmacro
             .endif
@@ -1102,31 +1233,7 @@
     .endmacro
 
 
-    .macro Song_Silence
-
-        
-        ; write fixed pointers
-        .ident(.sprintf("Song%02x_Sq0",   Song_Index)) = Inf_Wait-2
-        .ident(.sprintf("Song%02x_Sq1",   Song_Index)) = Inf_Wait-2
-        .ident(.sprintf("Song%02x_Tri",   Song_Index)) = Inf_Wait-2
-        .ident(.sprintf("Song%02x_Noise", Song_Index)) = Inf_Wait-1
-        .ident(.sprintf("Song%02x_Dmc",   Song_Index)) = Inf_Wait-2
-
-        ; length = 0
-        .ident(.sprintf("Song%02x_Len", Song_Index)) = 0
-
-        ;Store nothing, but let the index exist.
-        .ident(.sprintf("Song%02x_UI_Start", Song_Index)) = UI_Text_Index
-        Collect_UI_Text
-
-        ; advance index
-        Song_Index .set Song_Index + 1
-
-    .endmacro
-
-
     .macro Output_Song
-
 
         Max_Track_Index .set (Song_Index -1)
 

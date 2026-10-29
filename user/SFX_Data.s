@@ -45,19 +45,20 @@
 
     ;Musical Noise SFX 
     @non_musical_Noise:
-    SFX Hat_4_sfx, R4
-    SFX Hat_2_sfx, R2, 1, Hat_env,\
-        0,R2
+        SFX Hat_4_sfx, R4
+        SFX Hat_2_sfx, R2, 1, Hat_env,\
+            0,R2
 
-    SFX Rasp_d_sfx, R13
-    SFX Rasp_c_sfx, R12, 1, Shaker_env, \
-        0,R12
+        SFX Rasp_d_sfx, R13
+        SFX Rasp_c_sfx, R12, 1, Shaker_env, \
+            0,R12
 
-    SFX Shaker_7_sfx, R7
-    SFX Shaker_5_sfx, R5
-    SFX Shaker_4_sfx, R4
-    SFX Shaker_2_sfx, R2, 3, Shaker_env,\
-        1,R1, 1,R2, 0,R3
+        SFX Shaker_5_sfx, R5
+        SFX Shaker_4_sfx, R4
+        SFX Shaker_2_sfx, R2, 3, Shaker_env,\
+            1,R1, 1,R2, 0,R3
+
+    ;
 
     Musical_Noise_SFX_Index .set SFX_Data_Index
         ;Above SFX queued by Noise Channel play via in-game SFX slots.
@@ -96,7 +97,7 @@
         SFX Rasp_w_Shaker_2_sfx, R2, -1, Shaker_env, \
             1,R12, 0,R2
 
-
+    ;
 
 ;============================================================
 ; Noise Bank

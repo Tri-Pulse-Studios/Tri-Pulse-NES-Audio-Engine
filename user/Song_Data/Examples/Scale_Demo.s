@@ -1,13 +1,13 @@
 _8th .set 7+6
 
 .align 256
+
 ;============================================================
 ; Square 0
 ;============================================================
 
 Channel Scale_Demo_Sq0
     Header A0, Pad_d12_8_0
-
 
         Notes 8th,rest
     Repeat "1b", $3f 
@@ -84,6 +84,7 @@ Loop Scale_Demo_Tri
 ; DMC
 ;============================================================
 
+
 Channel Scale_Demo_dmc
     Header B0, T_2f__d12
 
@@ -98,6 +99,8 @@ Channel Scale_Demo_dmc
 
     Set_Env T_2f__d25
     Set_Pitch B0
+
+    ;Set_Env $11
 
     Notes 8th,B0
     Shift_Pitch +1
@@ -139,3 +142,6 @@ Channel Scale_Demo_Noise
 
 
 Loop Scale_Demo_Noise
+
+
+

@@ -452,7 +452,7 @@ py_Segment Update_Music, Free
             beq @init ;inf Loop Warning.
 
             tay
-            lda LUT_Vibrato_NonRel_Data,y ;2's comp
+            lda LUT_Vibrato_Period_Deltas,y ;2's comp
             
             ldy Vibrato_Depth,x  
             @loop:

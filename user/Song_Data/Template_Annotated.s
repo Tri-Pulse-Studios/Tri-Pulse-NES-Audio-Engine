@@ -10,7 +10,7 @@
 ;   ie: Song Fanfare, <Tempo>, <UI_text>
 ;       matches
 ;       Channel Fanfare_Sq0
-;          Header <BP>, <Env>
+;          Header <_BP>, <_Env>,  [<Vib_Depth>]
 ;
 ; Channel syntax:
 ;   Channel <Name>_channel_type, [<Global_Designator>]
@@ -69,8 +69,8 @@ _8th .set -1
 ;============================================================
 
 Channel Song_Name_Sq0
-    Header Initial_Base_Pitch, Envelope_Name
-        ;ie Header A3, Lead_sqr_v12
+    Header <Init_Base_Pitch>, <Init_Envelope_Name>, [<Optional_Vibrato_Depth>]
+        ;ie Header Lead_sqr_v12, A3
 
     Notes whl,rest
 
@@ -82,7 +82,7 @@ Loop Song_Name_Sq0
 ;============================================================
 
 Channel Song_Name_Sq1
-    Header Init_BP, Env_Name
+    Header <_BP>, <_Env>,  [<Vib_Depth>]
 
     Notes whl,rest
 
@@ -94,7 +94,7 @@ Loop Song_Name_Sq1
 ;============================================================
 
 Channel Song_Name_Tri
-    Header Init_BP, Env_Name
+    Header <_BP>, <_Env>,  [<Vib_Depth>]
 
     Notes whl,rest
 
@@ -106,7 +106,7 @@ Loop Song_Name_Tri
 ;============================================================
 
 Channel Song_Name_dmc
-    Header Init_BP, Env_Name
+    Header <_BP>, <_Env>
 
     Notes whl,rest
 
