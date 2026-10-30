@@ -46,17 +46,8 @@
     ;Musical Noise SFX 
     @non_musical_Noise:
         SFX Hat_4_sfx, R4
-        SFX Hat_2_sfx, R2, 1, Hat_env,\
-            0,R2
-
-        SFX Rasp_d_sfx, R13
-        SFX Rasp_c_sfx, R12, 1, Shaker_env, \
-            0,R12
-
-        SFX Shaker_5_sfx, R5
-        SFX Shaker_4_sfx, R4
-        SFX Shaker_2_sfx, R2, 3, Shaker_env,\
-            1,R1, 1,R2, 0,R3
+        SFX Hat_2_sfx, R2, 2, Hat_env,\
+            1,R4, 0,R2
 
     ;
 
@@ -65,18 +56,8 @@
         ;Below play via Music-Only slot. in-game is prioritized.
 
     @dmc:
-        SFX A2_Tom_sfx, R6            ;2-semitone for BC
-
-        SFX F4_Tom_sfx, R14
-        SFX A3_Tom_sfx, R12      ;The three 3-semitone intervals
-        SFX D3_Tom_sfx, R9, 2, DMC_d25_9_81, \
-            1,R9, 0,R8 ;Volume 18
-
-        SFX d25_Kick_sfx, R9, 3, DMC_d25_9_81, \
-            1,R9, 1,R5, 0,R3 ;Volume 18
-
         SFX d50_Kick_sfx, R9, 2, DMC_Tri, \     
-            1,R9, 0,R4 ;Volume 34
+            1,R9, 1,R6, 0,R3 ;Volume 34
 
     ;
 
@@ -85,17 +66,12 @@
         SFX Crash_7_sfx, R7, -1, Crash_env, \
             1,R14, 2,R10, 3,R9, 5,R8, 0,R7
 
-
-        SFX Snare_8_sfx, R8
         SFX Snare_6_sfx, R6, -1, Snare_env, \
-            1,R10, 0,R6
+            1,R12, 0,R6
 
-        SFX Pre_Cymbal_4_sfx, R4, -1, Pre_Cymbal_env, \
-            0,R4
-
-        SFX Rasp_w_Shaker_3_sfx, R3
-        SFX Rasp_w_Shaker_2_sfx, R2, -1, Shaker_env, \
-            1,R12, 0,R2
+        SFX Wash_5_sfx, R5
+        SFX Wash_8_sfx, R8, -1, Wash_env, \
+            2,R7, 0,R8
 
     ;
 
@@ -103,39 +79,30 @@
 ; Noise Bank
 ;============================================================
 
-    Default_NB .set NoiseFX_Index 
 
-        ;0
-        NoiseFX Crash_3,       Crash_3_sfx,  "Kick"
-        NoiseFX Crash_7,       Crash_7_sfx,  "Kick" 
+    Overworld_NB .set NoiseFX_Index
+    Khevari_NB .set NoiseFX_Index
+        NoiseFX Crash_3,      Crash_3_sfx, "Kick"
+        NoiseFX Crash_7,      Crash_7_sfx, "Kick"
+    
+        NoiseFX Snare_6,      Snare_6_sfx
+        NoiseFX Snare_6_Kick, Snare_6_sfx, "Kick"
 
-        NoiseFX Snare_6,       Snare_6_sfx   
-        NoiseFX Snare_6_Kick,  Snare_6_sfx,  "Kick"
+        NoiseFX Hat_2,        Hat_2_sfx
+        NoiseFX Hat_2_Kick,   Hat_2_sfx,   "Kick"
+        NoiseFX Hat_4,        Hat_4_sfx
+        NoiseFX Hat_4_Kick,   Hat_4_sfx,   "Kick"
 
-        ;4
-        NoiseFX Shaker_2,      Shaker_2_sfx
-        NoiseFX Shaker_Kick,   Shaker_2_sfx, "Kick"
-        NoiseFX Shaker_D3,     Shaker_2_sfx, D3_Tom_sfx ;Pair w/ the A3_Tom Kick
-
-        NoiseFX Hat_2,         Hat_2_sfx  
-        NoiseFX Hat_Kick,      Hat_2_sfx,    "Kick"    
-        NoiseFX Hat_D3,        Hat_2_sfx,    D3_Tom_sfx ;Pair w/ the A3_Tom Kick
-
-        ;10
-        NoiseFX Rasp_d,      Rasp_d_sfx
-        NoiseFX Rasp_c,      Rasp_c_sfx
-
-        NoiseFX Rasp_2,      Rasp_w_Shaker_2_sfx
-        NoiseFX Rasp_2_Kick, Rasp_w_Shaker_2_sfx, "Kick"
-
-        ;15
-        NoiseFX Pre_Cymbal_4,  Pre_Cymbal_4_sfx
-
-
+        NoiseFX Wash_5,       Wash_5_sfx
+        NoiseFX Wash_5_Kick,  Wash_5_sfx,  "Kick"
+        NoiseFX Wash_8,       Wash_8_sfx
+        NoiseFX Wash_8_Kick,  Wash_8_sfx,  "Kick"
+        
+        NoiseFX Solo_Kick,    $00,         "Kick"
             ;More than 15 NoiseFX can be defined, but not accessed all at once.
             ;Shift_Pitch instructions can change the defined window mid-song as well.
 
-    NB_Validate Default_NB ;Simple check that all NoiseFX fit in 15 window.
+    NB_Validate Khevari_NB ;Simple check that all NoiseFX fit in 15 window.
 
 ;============================================================
 ; Kick Types
@@ -143,8 +110,8 @@
 
     
     Kick_Type _d50_K, d50_Kick_sfx
-    Kick_Type _d25_K, d25_Kick_sfx
-    Kick_Type _d25_tom, A3_Tom_sfx
+    ;Kick_Type Unused
+    ;Kick_Type Unused
     ;Kick_Type Unused
 
 ;`

@@ -492,8 +492,7 @@ All_Music_Opcodes:
                 cmp #$07
                 bcc @valid ;Riff Depth 1..6,  0 = In Root.
                                 ;Can Expand to 1..8 just needs a different check.
-                cmp $800c
-                .byte $02 ;Riff Depth Overflow
+                    Runtime_Exception "Runtime Exception: Riff Stack Overflow. A Riff was called at the maximum recursion depth."
 
                 @valid:
             pla
@@ -526,7 +525,9 @@ All_Music_Opcodes:
     Shift_Base_Pitch:
         cmp #$08
 
-            beq Set_BP_and_Vibrato_Depth ;Tail_Call
+            jeq Set_BP_and_Vibrato_Depth ;Tail_Call
+                ;Debugging Enabled requires jeq.
+                    ;Auto-Switches beq 
 
         @Shift_Pitch:
         bcc @pos ;$01..$07
@@ -624,6 +625,8 @@ All_Music_Opcodes:
 
         ;$5:
     Duration_Mode_Init:
+        inc $ff
+
         tay
         lda LUT_Read_Nibbles_Init,y
 
@@ -802,6 +805,20 @@ All_Music_Opcodes:
         dmc_rate:
             sta DMC_MIDI
 
+            .if Debugging_Enabled
+                cmp #B0
+                bcc @Error
+
+                cmp #Cs4
+                bcs @valid
+          
+                    @Error:
+                    Runtime_Exception "Runtime Exception: DMC Pitch Range Error. Valid Range: B0 .. Cs4"
+
+                @valid:
+            .endif
+
+
             ldy SFX_Timer+$10 ;If SFX Playing, queue for restart only.
             bne Rest_RTS
 
@@ -819,12 +836,7 @@ All_Music_Opcodes:
             lda LUT_dmc_rates-3,y ;-3 syncs data w/ Normal Notes' 
         
             
-            .if Debugging_Enabled
-                bpl @skip_debug
-                .byte $02 ;stp. Bit 7 must be clear. (Read either garbage, or the hole at C#4)
-                cmp $6005
-                @skip_debug:
-            .endif
+
             
             pha
                 ora #$70 ;Loop
@@ -919,27 +931,22 @@ All_Music_Opcodes:
                 lda SFX_Timer,x
                 beq @valid
 
-                    .byte $02
-                    cmp $800f
+                    Runtime_Exception "Runtime_Exception: Unimplimented Feature. SFXs cannot be played thorugh Pulse or Triangle Channels yet."
 
                 @valid:
-        .else
+        .endif
  
         lda Note_Period_High,x
         sta APU_Period_High,x ;Only if Sfx isn't playing. ( doesn't have sqr/tri)
 
-        .endif 
+         
 
-
-
-            .if Debugging_Enabled
-                cmp #$08
-                bcc @debugskip
-                .byte $02 ;STP. Overflowed Max Period.
-
-                cmp $800a
-                @debugskip:
-            .endif
+        .if Debugging_Enabled
+            cmp #$08
+            bcc @debugskip
+                Runtime_Exception "Runtime_Exception. Period Range Error. A Pulse or Triangle pitch sweep overflowing is the likely cause."
+            @debugskip:
+        .endif
 
         @rts:
         rts ;Return from New_Note

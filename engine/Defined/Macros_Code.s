@@ -1,4 +1,12 @@
 ;===============================================================
+;Debugging
+;===============================================================
+    .macro Runtime_Exception Error_Msg
+        .assert Debugging_Crash_Address <> *, error, Error_Msg
+        .byte $02
+    .endmacro
+
+;===============================================================
 ;Math
 ;===============================================================
 
@@ -18,13 +26,10 @@
         .elseif .xmatch(mode, clc)
 
             .if Debugging_Enabled
+                bcc :+
+                    Runtime_Exception "Runtime Exception: ADD w/ Omitted clc Error. The syntax `add <Var>, clc` assumes Carry is guarenteed to be clear, but Carry was set. Debug the previous instructions."
 
-                bcc *+6 ;skip if valid
-
-                .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
-                cmp *
-                .byte $02
-
+                :
             .endif
 
             adc arg
@@ -32,11 +37,10 @@
 
             .if Debugging_Enabled
 
-                bcs *+6 ;skip if valid
+                bcs :+
+                    Runtime_Exception "Runtime Exception: ADD w/ Omitted sec Error. The syntax `add <Var>, sec` assumes Carry is guarenteed to be set, but Carry was clear. Debug the previous instructions."
 
-                .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
-                cmp *
-                .byte $02
+                :
 
             .endif
 
@@ -60,11 +64,10 @@
 
             .if Debugging_Enabled
 
-                bcc *+6 ;skip if valid
+                bcc :+
+                    Runtime_Exception "Runtime Exception: SUB w/ Omitted clc Error. The syntax `sub <Var>, clc` assumes Carry is guarenteed to be clear, but Carry was set. Debug the previous instructions."
 
-                .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
-                cmp *
-                .byte $02
+                :
 
             .endif
 
@@ -73,11 +76,10 @@
 
             .if Debugging_Enabled
 
-                bcs *+6 ;skip if valid
+                bcs :+
+                    Runtime_Exception "Runtime Exception: SUB w/ Omitted sec Error. The syntax `sub <Var>, sec` assumes Carry is guarenteed to be set, but Carry was clear. Debug the previous instructions."
 
-                .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
-                cmp *
-                .byte $02
+                :
 
             .endif
 
@@ -448,9 +450,7 @@
         .endif
 
         .if Debugging_Enabled
-
-            .assert * <> Debugging_Crash_Address, error, "Debugging_Crash_Address Here: "
-            .byte $02
+            Runtime_Exception "Runtime Exception: BAL Error. `bal` is intended to always branch, but execution failed to branch. Debug the branch condition and preceding instructions."
 
         .endif
     .endmacro

@@ -94,3 +94,7 @@
 ### Error Checking
 - Macros don't have a consistant format for error checking or printing errors.
 	- Duration macro is particularly bad.
+
+	- Without Duration "Cont", use the `, \` multiline syntax.
+		- Then, Duration can validate it has the correct number of args. Possibly. ca65 needs a LUT. 
+

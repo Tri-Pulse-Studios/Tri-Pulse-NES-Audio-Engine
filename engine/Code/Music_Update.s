@@ -32,18 +32,6 @@ py_Segment Update_Music, Free
 
     .macro Update_Sweep
             lda Sweep_Speed,x
-
-                .if Debugging_Enabled
-                    beq :+
-
-                    cpx #$C
-                    bcc :+
-
-                    cmp $9010
-                    .byte $02
-
-                    :
-                .endif
             ;beq @rts ;2b saves  ~30/cc every frame.
 
                 add {Note_Period_Low,x} ;2's comp
@@ -193,15 +181,12 @@ py_Segment Update_Music, Free
 
             ;Both pointers go to same table. (The header is same format too.)
     Init_SFX:
-        inc $ff
 
         .if Debugging_Enabled
             .if Emit__Unused
                 cpx #$0b
                 bcs @valid2  ;Only Noise and DMC sfx are supported in  build
-
-                    .byte $02
-                    cmp $8010
+                    Runtime_Exception "Runtime_Exception: Unimplimented Feature. SFXs cannot be played thorugh Pulse or Triangle Channels yet."
 
                 @valid2:
             .endif
@@ -328,12 +313,11 @@ py_Segment Update_Music, Free
 
                     bne @valid
                     pha
-                        lda SFX_Volume ;If un-muted, crash
+                        lda SFX_Volume,x ;If un-muted, crash
                         and #$f0
                         beq :+
 
-                        .byte $02 ;Need rest
-                        lda $800d
+                        Runtime_Exception "Runtime Exception. SFX Error. Garbage Data is read while the Noise Channel is unmuted."
 
                         :
                         pla
@@ -380,8 +364,7 @@ py_Segment Update_Music, Free
                     cpx #$0b ;Cant bcs/beq cuz Noise is both $0b and $0c
                     bcs @Update_Noise 
 
-                        .byte $02 ;STP  I actually need above.
-                        cmp $800b
+                        Runtime_Exception "Runtime_Exception: Unimplimented Feature. SFXs cannot be played thorugh Pulse or Triangle Channels yet."
         .endif
 
 
@@ -414,8 +397,7 @@ py_Segment Update_Music, Free
 
         .if Debugging_Enabled
             bpl :+
-            .byte $02 ;STP
-            cmp $8003
+            Runtime_Exception "Runtime_Exception: DMC IRQs: The DMC is configured to use IRQs, when it should. Bad LUT data or index is the likely cause."
             :
         .endif
     rts
@@ -443,12 +425,12 @@ py_Segment Update_Music, Free
             bne @skip_init ;==0 Delay Timer Expired.
 
                 @init:
-                lda LUT_Start_Vib_Index-1,y
+                lda LUT_Start_Vib_Index,y
                 sta Vibrato_Timer,x
 
             @skip_init:
             lda Vibrato_Timer,x
-            cmp LUT_End_Vib_Index -3,y 
+            cmp LUT_End_Vib_Index,y 
             beq @init ;inf Loop Warning.
 
             tay
@@ -503,8 +485,7 @@ py_Segment Update_Music, Free
                     lda SFX_Timer,x
                     beq @Update_Low
 
-                    .byte $02
-                    cmp $800e  ;SqTri SFX
+                        Runtime_Exception "Runtime_Exception: Unimplimented Feature. SFXs cannot be played thorugh Pulse or Triangle Channels yet."
 
         .endif
 

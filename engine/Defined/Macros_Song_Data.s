@@ -5,7 +5,7 @@
 ;===============================================================
 
 
-
+ 
 
    ;LOTS of errors?  Likely ended a scope w/o starting one or vice versa
   .macro Channel Label, Scope_Name
@@ -18,7 +18,6 @@
 
 
     Define_Pitches ;a0 = 0, as0 = 1 ,etc
-    Duration_List Set_Name ;redefine Durations in scope
 
   .endmacro
 
@@ -210,7 +209,7 @@
     EB .set ::_Env & $f0
         ;Envelope Bank
 
-    BP .set _BP
+    BP .set ::_BP
         ;Base Pitch
 
   .endmacro
@@ -236,7 +235,7 @@
 
     .endif 
 
-    BP .set Noise_Bank
+    BP .set ::Noise_Bank
 
   .endmacro
 
@@ -583,7 +582,7 @@
         .if .xmatch(Length_Pattern, "Cont")
             Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12  ;Riffs can start a Duration, then return partway through Duration
 
-        .elseif ((Length_Pattern >= $50) .and (Length_Pattern <= $5f))
+        .elseif ((::Length_Pattern >= $50) .and (::Length_Pattern <= $5f))
             .byte Length_Pattern
             Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
@@ -603,6 +602,7 @@
             .exitmacro
         .endif
         
+
         .ifblank P2
             .error "Duration Error: Even number of pitches required"
             .out "       Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
@@ -649,10 +649,10 @@
 
             .elseif P1 < B5
                 Assert_Valid_Pitch P1, "Duration P1 Error:"
-                .byte (P1-BP+1) << 4 ;Note
+                .byte (P1-BP+1) ;Note
 
             .else
-                .byte (P1 & $0F) << 4  ;Non-Note
+                .byte (P1 & $0F)  ;Non-Note
 
             .endif
             
@@ -660,12 +660,15 @@
 
             .if (.not .const(P2)) .and (.not .const(P1)) 
                 Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+                .exitmacro
 
             .elseif .not .const(P2) 
                 Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+                .exitmacro
 
             .elseif .not .const(P1)
                 Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+                .exitmacro ;.exit here turns above into a JMP, vs a JSR
 
             .else
                 .if (P1 < B5) .and (P2 < B5) ;Both Notes
@@ -695,6 +698,7 @@
 
         Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
     .endmacro
+
 
 
 
@@ -740,7 +744,6 @@
         ; .if (P1 = -1) .and (P2 = -1);(.xmatch (P1, rest)) .and (.xmatch (P2, rest))              
         ;     .byte $00
 
-        ;     .out ":)"
 
 
         ; .elseif .xmatch (P1, rest)
@@ -800,88 +803,6 @@
 
 
 
-    .macro Duration_List DoMacro
-        Dur_Index .set 0
-        Dur_Opcode .set $50
-
-        DoMacro _00, 1 ;$50
-        DoMacro _0000, 2
-        DoMacro _6x0, 3
-        DoMacro _8x0, 4
-
-        DoMacro _1111, 2 ;$54
-        DoMacro _6x1, 3
-        DoMacro _8x1, 4 
-
-        DoMacro _2222, 2 ;$57
-        DoMacro _6x2, 3
-        DoMacro _8x2, 4
-
-
-        DoMacro _6x8, 3 ;%5a
-        DoMacro _8x8, 4
-
-        DoMacro _111_R, 2 ;\ For YV.
-        ;DoMacro _4444, 2  ;/
-
-        ; DoMacro _0_00_0_Es, 4   ;\ For KTB
-        ; DoMacro _00_0_0_4_Es, 5 ;/
-
-
-          ;Khevari
-        ;DoMacro _332_x2, 3
-        ;DoMacro _111_221, 3
-        ;DoMacro _111_2_111_b, 4
-        
-        ;DoMacro _11_100_x2, 5
-        ;DoMacro _f_0000_f_1001, 5
-        
-
-      .if Dur_Index > $10
-        .error "Duration_List Error: Limit of 16 Length Patterns Exceeded"
-        .out"        Usage: Duration_List DoMacro, <Length_Pattern Name>, <Length>"
-        .exitmacro
-      .endif
-    .endmacro
-
-
-    .macro Emit_LUT Name, Size
-        .if Size < 0 || Size > 7
-            .error "Duration_List Error: Pattern Length Out of Range (0..7)"
-            .out"        Usage: Duration_List <Macro_To_Invoke>, <Pattern_Length>, <Length>"
-            .exitmacro  ;0 Can mean stop playing Nibble mode. (Useful for the idea to have shift pitch and start another Duration start for 1 Byte total instead of 1 byte each.) (Or for odd ones, entirely save a byte starting another duration if np BP needed.)
-        .endif
-        .byte ((Size << 5) | (.ident(.concat("adr", .string(Name))) - LUT_Length_Nibbles))
-        Set_Name Name
-    .endmacro
-
-    .macro Set_Name Name, _ 
-      .ident(.string(Name)) .set (Dur_Index + Dur_Opcode)
-      Dur_Index .set Dur_Index + 1
-
-    .endmacro
-
-
-  ; .macro Duration_Emit_LUT Name, Size
-    .macro Duration_Lengths Name, Size
-        .ifndef Dur_Index
-            Dur_Index .set $50
-        .endif
-
-        .byte ((Size << 5) | (.ident(.concat("adr", .string(Name))) - LUT_Length_Nibbles))
-        .ident(.string(Name)) .set Dur_Index
-
-        ;.ident(.sprintf("DurLen%02x", EnvCDur_Indexount)) = _Name
-
-        Dur_Index .set Dur_Index + 1
-
-        .if Dur_Index > $5f
-            .error "Duration_List Error: Limit of 16 Length Patterns Exceeded"
-            .out"        Usage: Duration_List DoMacro, <Length_Pattern Name>, <Length>"
-            .exitmacro
-        .endif
-
-    .endmacro
 
 
 
@@ -1007,7 +928,7 @@
             .out ""
             .exitmacro
 
-        .elseif pitch > $3f
+        .elseif ::pitch > $3f
             .error "Header Error: BP out of Range."
             .out "Header Error: Base Pitch out of Range A0..B5"
             .out ""
@@ -1027,7 +948,7 @@
 
         .endif
 
-        BP .set (pitch)
+        BP .set (::pitch)
     .endmacro
 
 
@@ -1136,16 +1057,25 @@
     ;===========================================================
 
 
-    .macro Inc_Page Label, Scoped
+    .macro Inc_Page Label, tmp_BP, tmp_EB
         .assert (>* +1) = >Label, error, "Inc_Page Error: Destination Label not in the next page."
+
+        
+
+        ; ::Label .set BP
+        .if .blank(tmp_BP) .or .blank(tmp_EB)
+            .error "Inc_Page Error: Missing Params"
+            .out "Supply temporary variables for Base Pitch and Envelope Bank to be restored in the Continuation Channel."
+            .out "    Usage: `Inc_Page <jmp_label>, <tmp_BP>, <tmp_EB>`"
+            .out ""
+        .endif
 
         .byte Inc_Page_Byte, <Label
 
-        ; ::Label .set BP
-        .ifnblank Scoped
-            .ident(.sprintf("%s_BP", .string(Label))) .set BP
-            .endscope
-        .endif
+        ::tmp_BP .set BP
+        ::tmp_EB .set EB ;Globally defined, using the local BP var.
+
+        .endscope
 
     .endmacro
 

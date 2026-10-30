@@ -14,9 +14,9 @@
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE, " ", $80
+    UI_Word _SUBTITLE, "Heritage: A Dragon's Tale        By: Elite Ferrex ", $80
 
-    SUBTITLE_OFFSET = $02
+    SUBTITLE_OFFSET = $03
         ; $00 - $1f to adjust text-centering.
         
 
@@ -42,8 +42,8 @@
     ;       matches
     ;       Channel Fanfare_Sq0
 
-    .include "user/Song_Data/Examples/Scale_Demo.s"
-    Song Scale_Demo, 12, "Scale Demo"
+    .include "user/Song_Data/Overworld.s"
+    Song Overworld, 9, "Overworld"
 
         ;I type 6+7 to mean 16ths of length 6 and 7.
             ;Some songs compress better when "8th" length is functionally 16th, denoted as just Tempo = 6

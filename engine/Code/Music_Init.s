@@ -4,11 +4,10 @@ py_Segment Song_Init, Free
 
 Song_Init:
     .if Debugging_Enabled
-        cmp #(256/5)
+        cmp #(256/5)+1
         bcc :+
 
-            cmp $810a
-            .byte $02 ;Too big song ID
+            Runtime_Exception "Runtime Exception: `Song_Init` Range Error: Input song index out of range. Valid Range: 0..51 ($00..$33) "
         :
     .endif
 

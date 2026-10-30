@@ -54,6 +54,19 @@
 
 
 nmi:
+    .if Debugging_Enabled
+        
+
+        lda Spinning_Flag
+        beq @skip
+
+            Runtime_Exception "Runtime Exception: Frame Overrun. NMI fired before the previous frame finished. Debug the code that hung."
+        
+        @skip:
+        lda #$01
+        sta Spinning_Flag
+    .endif
+
     lda Pressed_Button
     and #up+down ;And left/right?
     beq @skip_UD
@@ -123,6 +136,11 @@ nmi:
     Inline OAM_DMA_Controller_Read
 
     jsr Update_Music
+
+    .if Debugging_Enabled
+        lda #$00
+        sta Spinning_Flag
+    .endif
 rti ;go back to inf-wait in reset.
 
  

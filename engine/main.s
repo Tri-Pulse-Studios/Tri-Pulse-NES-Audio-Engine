@@ -23,16 +23,6 @@
 .segment "CODE"; Main code segment for the program
 
 
-test .set 0
-
-.if !test
-  .out ":)"
-.endif
-
-test .set 1
-.if !test
-  .out ":("
-.endif
 
 
 ;.out .sprintf("Var = $%02x", Var)
@@ -137,9 +127,10 @@ py_Segment irq, Free
   
   irq: 
   .if Debugging_Enabled
-    .byte $02
-    cmp $8070
-    rti ;Crash on Interupt.
+
+    Runtime_Exception "Runtime Exception: Unexpected IRQ. Debug the source of the interrupt."
+    rti 
+
   .endif
 py_Segment_End irq
 
@@ -197,6 +188,16 @@ DMC_Samples:
   .error "Unclosed py_Ignore"
 .endif
 
+.if Debugging_Crash_Address <> -1
+    .out .sprintf("Attempting to fetch Runtime Exception error message associated with Address: $%04x ...", Debugging_Crash_Address)
+    .out "      - Build will fail if a matching error message is found."
 
+    .if (Debugging_Crash_Address < $8000) .or (Debugging_Crash_Address > $ffff)
+        .out .sprintf("    Address: $%04x is not a ROM address.", Debugging_Crash_Address)
+    .endif
+
+    .out ""
+
+.endif
 
 

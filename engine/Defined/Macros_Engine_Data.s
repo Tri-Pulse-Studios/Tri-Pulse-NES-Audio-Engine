@@ -874,6 +874,7 @@
         Dur_Opcode_Calc v1, v1_opcode
         Dur_Opcode_Calc v2, v2_opcode
 
+        
         .ident(.sprintf("Duration_Set_Data_%02x", Duration_Set_Data_Index)) = (v2_opcode << 4) | v1_opcode
 
         Duration_Set_Data_Index .set Duration_Set_Data_Index + 1
