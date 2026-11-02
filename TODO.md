@@ -76,7 +76,9 @@
 ### Custom DMC Samples
 - The ability to load, and trigger custom DMC sfx through the SFX Engine.
 
-
+### Customizable Misc Effects.
+- I have more ideas for misc effects than will fit in the 16 available slots.
+	- The ability to omit unused ones to make space for used one would be helpful.
 
 ### API
 - documentation to integrate the engine into a game or other user projects.

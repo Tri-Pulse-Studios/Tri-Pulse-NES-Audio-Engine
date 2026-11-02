@@ -878,12 +878,11 @@ Channel Overworld_Noise
             Riff _35, _39
 
         _47:
-            Riff _3, _5
+            Riff _3, _4
 
-            ; Notes qtr,Crash_3
-            ; Riff _6_1, _7 -2
-            ; Duration "Cont", Hat_2, \
-            ; Snare_7, Hat_2, Hat_2
-    ;
+            Notes qtr,Crash_3
+            Riff _6_1, _7 -2
+            Duration "Cont", Hat_2, \
+              Hat_4, Hat_2, Hat_2
 
 Loop Overworld_Noise

@@ -30,14 +30,11 @@
     UI_Word _Hex, ": $", $80
 
 
-    UI_Word _2026, "2026", $80
-
 ;============================================================
 ; Song Registry
 ;============================================================
 
-    ; Usage:   Song <Internal_Name>, <Tempo>, <{_U, _I, _spc, _T, _E, _X, _T}>, 
-        ;Curly braces around UI_Text are needed.
+    ; Usage:   Song <Internal_Name>, <Tempo>, <"UI Text">, 
 
     ;Internal name must match that used in Channels
     ;   ie: Song Fanfare, <Tempo>, <UI_text>

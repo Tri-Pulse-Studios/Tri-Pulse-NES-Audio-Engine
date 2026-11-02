@@ -1,12 +1,17 @@
 
 ;Stats
-;Sq0 59 + 124
+;Total Size: 463 Bytes
+;Sq0 183 
 ;Sq1 94
 
 ;Tri 57
 ;DMC 66
 
 ;Noise 66
+
+
+
+
 
 _8th .set 6+6
 

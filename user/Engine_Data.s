@@ -116,7 +116,7 @@
         atk_14 = 14
         atk_15 = 15
             ;Attack Length
-            ;0 has no attack phase. 1 doesn't use Decay Rate, and discontinuous jumps to Decay Init. Frame 2
+            ;0 has no attack phase. 1 doesn't use Decay Rate, and discontinuous jumps to Decay Init on frame 2
 
 
 
