@@ -188,25 +188,9 @@ py_Segment_End LUT_Music_Opcodes_Low
 
 
 py_Segment LUT_Misc_FXs_Data, Free
-    LUT_Misc_FXs_Data:
-
-        ;Macros that assign Misc Effect Indicies and Data.
-
-            ;SFX_Index .set $f8
-        SFX_Type Init_Sweep   ;Reads (Note_Data,x)
-        SFX_Type Set_Env_Bank_Byte
-
-                SFX_Type_Offset .set (SFX_Type_Index & $0f)
-
-        SFX_Type Tie_Next_Note, $40
-        SFX_Type Clear_Special_Effects, 0
-
-        SFX_Type Plus_Octave, 12
-        SFX_Type Minus_Octave, <-12
 
             ;Common_FadeOut
-        SFX_Type Common_Fade_Out,    13 << 3 | Vol_12
-        SFX_Type Inc_Page_Byte ;manual lda (Note_Data,x)
+
         
 
 
@@ -348,9 +332,8 @@ Reset_Channel:
 
 
 
-    Func_Inc_Page: ;$ff
-        jsr Riff_Jmp_To ;lda (Note_Data,x) ;
-                        ;sta Note_Data,x 
+    Func_Inc_Page:
+        sta Note_Data,x 
 
         inc Note_Data_High,x
     rts
@@ -371,6 +354,16 @@ Reset_Channel:
 
 ;
 
+    Func_8th_Cont_Sweep:
+        sta Sweep_Speed,x
+        
+        lda Eighth_Length
+        sta Note_Timer,x
+
+        pla
+        pla 
+    rts ;return from New_Note
+
     Loop_Song: 
         lsr 
         bcc Reset_Channel ;Tail-Call
@@ -390,30 +383,30 @@ All_Music_Opcodes:
         ;$f-:
     Misc_FXs:
 
-        tay
-        ;beq Func_Clear_Special_Effects ;Idea
+        tay  ;beq Func_Clear_Special_Effects ;Idea for extra $f effect. $f0 is set Vol 100.
         lda LUT_Misc_FXs_Data - SFX_Type_Offset,y ;Only the last few need data.
 
 
-        cpy #(Common_Fade_Out & $f)
-            beq Common_Fade_Out_Code ;$fe
-            bcs Func_Inc_Page ;$ff
-
+        cpy #(Tie_Next_Note & $f)
+            beq @Tie_Next_Note ;$fe
+            bcs Func_Clear_Special_Effects ;$ff
+        
         cpy #(Plus_Octave & $f)
             beq @Up_Octave ;$fc
             bcs @Down_Octave ;$fd
 
-        cpy #(Tie_Next_Note & $f)
-            beq @Tie_Next_Note ;$fa
-            bcs Func_Clear_Special_Effects ;$fb
-        
 
         lda (Note_Data,x)
         inc Note_Data,x
 
+        cpy #(_8th_Cont_Sweep & $f); (Common_Fade_Out & $f)
+            beq Func_8th_Cont_Sweep ;$fa
+            bcs Func_Inc_Page ;$fb
+
         cpy #(Init_Sweep & $f)
             bcc Set_Volume_w_Custom_Ramp ;$f0-$f7
             
+
             bne Func_Set_Env_Bank ;$f9
             ;beq @Init_Sweep ;$f8
 

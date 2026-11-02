@@ -1944,7 +1944,7 @@ Repeat "2b", <Count>
 **Example:**
 ```asm
 Duration _8x1,   Shaker_Kick, Shaker_2, Hat_2,   Hat_2
-Duration "Cont", Shaker_Kick, rest,     Snare_6, Hat_2
+Duration "Cont", Shaker_Kick, rest,     Snare_7, Hat_2
 ```
 - Where `_8x1` is shorthand for eight 8th Notes.
 

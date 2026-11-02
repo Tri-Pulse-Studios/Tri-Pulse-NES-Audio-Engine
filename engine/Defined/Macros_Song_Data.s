@@ -585,6 +585,7 @@
         .elseif ((::Length_Pattern >= $50) .and (::Length_Pattern <= $5f))
             .byte Length_Pattern
             Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+            
 
         .else
             .error "Duration Error: Invalid Length_Pattern (Use \"Cont\" to Omit)"
@@ -657,6 +658,36 @@
             .endif
             
         .else ;Neither are Rests.
+
+            ;error check
+            .if .not .const(P1) 
+                .if .not .defined(P1)
+                    .if .not .defined(::P1)
+                        .error "Duration Error. Unrecognized Symbol"
+                        .out ""
+                        .out "Duration Error. P1 is not defined, or unrecognizable. Skipping Pair"
+                        .out ""
+
+
+                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+                        .exitmacro
+                    .endif
+                .endif
+            .endif
+
+            .if .not .const(P2) 
+                .if .not .defined(P2)
+                    .if .not .defined(::P2)
+                        .error "Duration Error. Unrecognized Symbol"
+                        .out ""
+                        .out "Duration Error. P2 is not defined, or unrecognizable. Skipping Pair"
+                        .out ""
+
+                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+                        .exitmacro
+                    .endif
+                .endif
+            .endif
 
             .if (.not .const(P2)) .and (.not .const(P1)) 
                 Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
@@ -1036,17 +1067,28 @@
 
     .endmacro
 
-    .macro Set_Volume Volume
+    .macro Set_Volume Volume, Supress_Warnings
 
-        .byte $f0|Volume,  0 << 3 | Volume
+        .byte $f0|Volume,  Volume
         ;Set Volumes are still Two Bytes, and they must specify the Volume Twice.
         ;It also disables f-effect reseting.
 
         .if Volume > 7
-            .error .sprintf("Volume_Set Error: Start Volume out of range (0..7) (got: %d)", Volume)
-            .out   "    Usage: Volume_Set  <Volume>"
-            .out   "       ie: Volume_Set   Vol_12"
+            .error "Set_Volume Error: Start Volume out of range"
+            .out .sprintf("Set_Volume Error: Start Volume out of range (0..7) (got: %d)", Volume)
+            .out   "    Usage: Set_Volume  <Volume>"
+            .out   "       ie: Set_Volume   Vol_12"
             .exitmacro
+        .endif
+
+        .ifblank Supress_Warnings
+            .if Volume = Vol_100
+                .warning "Set_Volume Warning: `Set_Volume  Vol_100` is pointless."
+                .out ""
+                .out   "Set_Volume Warning: `Set_Volume  Vol_100` is redunandant with `.byte Clear_Special_Effects`"
+                .out   "    To Set the No Reset Special Effects flag, supress this warning with `Set_Volume  Vol_100, \"F\"`"
+                .out   ""
+            .endif
         .endif
 
     .endmacro

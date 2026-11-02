@@ -24,14 +24,14 @@
 
     ;
     Vibrato_Cycle Vib_None
-    Vibrato_Cycle Vib_Fast,     -4,-6,-4,      4,6,4
+    Vibrato_Cycle Vib_Fast,     4,6,4, -4,-6,-4
     Vibrato_Cycle Vib_Med,      -4,-6,-6,-4,   4,6,6,4
     Vibrato_Cycle Vib_Slow, -2,-4,-6,-6,-4,-2, 2,4,6,6,4,2
 
 
     Vibrato_Delay 0, No_Delay
-    Vibrato_Delay 10, Short_Delay
-    Vibrato_Delay 15, Med_Delay
+    Vibrato_Delay 4, Short_Delay
+    Vibrato_Delay 10, Med_Delay
     Vibrato_Delay 28, Long_Delay
 
 
@@ -61,14 +61,14 @@
     ;============================================================
     ; Envelope Optimization
     ;============================================================
-    ; This attempts to omit unused envelope data.
-    ;       WARNING: This should be a final step.
-    ;       It easy to mess up, hard to debug, and leaves the Env organization brittle.
-    ;
-    ; See the README for Envelope Optimization.
+        ; This attempts to omit unused envelope data.
+        ;       WARNING: This should be a final phase.
+        ;       It easy to mess up, hard to debug, and leaves the Env organization brittle.
+        ;
+        ; See the README for Envelope Optimization.
 
-        Enable_Env_Optimization = 0
-        Suppress_Env_Optimization_Warnings = 1
+            Enable_Env_Optimization = 0
+            Suppress_Env_Optimization_Warnings = 1
 
 
     ;============================================================
@@ -134,12 +134,12 @@
             Env "3b", Lead_d12_s9_v8, \
                 $d0, -$0c, $90, \
                 _d12, _0f, _d12, \
-                Vib_Med, Short_Delay
+                Vib_Med, Med_Delay
 
             Env "3b", Lead_d25_12_s9_v12, \
-                $d0, -$20, $90, \
+                $f0, -$40, $90, \
                 _d25, _0f, _d12, \
-                Vib_Slow, Short_Delay
+                Vib_Slow, Med_Delay
 
 
 
@@ -148,13 +148,13 @@
             Env "3b", Lead_d12_25_s8_v8, \
                 $d0, -$30, $80, \
                 _d12, _0f, _d25, \
-                Vib_Med, Short_Delay
+                Vib_Med, Med_Delay
 
 
 
             ;d50
             Env "3b", Lead_sqr_s6_v12, \
-                $d0, -$60, $60, \
+                $f0, -$38, $60, \
                 _d50, _0f, _d50, \
                 Vib_Slow, Long_Delay
 
@@ -167,10 +167,13 @@
 
 
             Env "5b", Pad_d25_8_5_0, \
-                $80, -$18, $50, -$14, $00, \
-                _d25, atk_5, _d25, _0f, _d25, \
+                $80, -$20, $48, -$08, $00, \
+                _d25, atk_4, _d25, _0f, _d25, \
                 Vib_None, No_Delay
 
+                ;
+
+            T_M12 .set Pad_d25_8_5_0
 
             
             ;Tri
@@ -198,12 +201,12 @@
             Env "3b", Lead_d12_s9_v6, \
                 $f0, -$80, $90, \
                 _d25, _0f, _d12, \
-                Vib_Fast, No_Delay   
+                Vib_Fast, Short_Delay   
 
             Env "3b", Lead_sqr_s5_v8, \
                 $d0, -$30, $50, \
                 _d50, _0f, _d50, \
-                Vib_Fast, No_Delay  
+                Vib_Med, No_Delay  
 
             Env "5b", Pad_d25_v12, \
                 $80, -$0c, $80, -$0c, $40, \
@@ -211,10 +214,10 @@
                 Vib_Slow, No_Delay
 
 
-            Env "4b", T_1f__E2, \
+            Env "4b", T_2f__E2, \
                 $d0, -$30, $50, \
-                _d50, _0f, _d50, \
-                Vib_Fast, No_Delay,\
+                _d50, _2f, _d50, \
+                Vib_None, No_Delay,\
                 E2 
     ;============================================================
     ; Bank 1 Noise Channel
@@ -307,7 +310,7 @@
         Duration_Set _2121, 2, qtr,8th, qtr,8th
 
         Duration_Set _332_x2, 3, dqt,dqt,qtr, dqt,dqt,qtr
-        Duration_Set _11_100_x2, 5, 8th,8th,8th, 16th,16th,  8th,8th,8th;, 16th,16th
+        Duration_Set _f_0000_f_1001, 5, $f0, 16th,16th,16th,16th, $f0, 8th, 16th,16th, 8th
         
         ;Index $50:
         Duration_Set _00,   1
@@ -375,4 +378,30 @@
 
 ;
 
+;============================================================
+; Misc Effects
+;============================================================
 
+    ;WARNING. This is unfinished. 
+
+
+    LUT_Misc_FXs_Data:
+
+        ;Macros that assign Misc Effect Indicies and Data.
+
+            ;SFX_Index .set $f8
+        SFX_Type Init_Sweep   ;Reads (Note_Data,x)
+        SFX_Type Set_Env_Bank_Byte
+
+        SFX_Type _8th_Cont_Sweep ;SFX_Type Common_Fade_Out,    13 << 3 | Vol_12
+        SFX_Type Inc_Page_Byte ;manual lda (Note_Data,x)
+
+                SFX_Type_Offset .set (SFX_Type_Index & $0f)
+
+        SFX_Type Plus_Octave, 12
+        SFX_Type Minus_Octave, <-12
+
+        SFX_Type Tie_Next_Note, $40
+        SFX_Type Clear_Special_Effects, 0
+
+;

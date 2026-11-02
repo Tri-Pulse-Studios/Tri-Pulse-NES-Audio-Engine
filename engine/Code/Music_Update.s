@@ -120,6 +120,7 @@ py_Segment Update_Music, Free
         Loop_All_Channels:
 
             jsr Update_Volume 
+            Inline Update_Sweep 
 
             dec Note_Timer,x
             bne @skip
@@ -129,7 +130,6 @@ py_Segment Update_Music, Free
             @skip:
 
             Inline Update_Fade
-            Inline Update_Sweep 
             Inline Check_Init_SFX
             
             

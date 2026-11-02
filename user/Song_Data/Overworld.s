@@ -1,24 +1,18 @@
-;See Template_Annotated.s for some guidance.
-
-;10-29-26 23:11
-
 ;Statistics:
 
-;Total Size: 695 Bytes
+;Total Size: 698 Bytes
 
-;Sq0: 219  ;153 -4 + 79 -9
-;Sq1: 147  ;40 +4 + 94 +9
-    ;The 14 If_Alt Bytes in Sq0's data are considered Sq1's data.
+;Sq0: 219 Bytes  ;153 -4 + 79 -9
+;Sq1: 147 Bytes  ;40 +4 + 94 +9
+    ;The 13 If_Alt Bytes in Sq0's data are considered Sq1's data.
 
 ;Tri: 190 Bytes
 ;DMC: 26 Bytes
     ;The 5 If_Alt Bytes in Tri's data are considered DMC's data.
 
-;Noise: 113 Bytes
+;Noise: 116 Bytes
 
 _8th .set 9
-_BP .set 0
-_Env .set 0
 
 .align 256
 
@@ -635,6 +629,7 @@ Channel Overworld_Tri, OW_Tri
             Duration _6x1, F1,rest, F1,F1,F1,F1
 
             Shift_Pitch Ds1, A1
+            Set_Env T_1f__d25
 
             _34_5:
             Duration _6x1, F2,A1,F2,Ds2,Cs2,C2
@@ -642,7 +637,7 @@ Channel Overworld_Tri, OW_Tri
         ;
 
     ;BP = A1
-    Set_Env T_1f__d25
+    
 
     _35:
         If_Alt As1, As2
@@ -758,14 +753,14 @@ Channel Overworld_Noise
             Riff _6_1, _6_5
 
             _3_5:
-            Notes qtr,Snare_6_Kick
+            Notes qtr,Snare_7_Kick
             Riff _6_1, _6_5
 
 
         _4:
             Riff _6, _7 -2
             Duration "Cont", Hat_2, \
-            Hat_4, Hat_2, Hat_2
+              Hat_4, Hat_2, Hat_2
 
         _5:
             Notes qtr,Hat_4_Kick
@@ -780,8 +775,8 @@ Channel Overworld_Noise
                 Notes 8th,Hat_2, 8th,Hat_2
 
             _6_5:
-            Duration _6x1, Snare_6_Kick, Hat_2, Hat_2, \
-                        Snare_6_Kick, Hat_2, Hat_2
+            Duration _6x1, Snare_7_Kick, Hat_2, Hat_2, \
+                           Snare_7_Kick, Hat_2, Hat_2
 
 
         _7:
@@ -798,7 +793,7 @@ Channel Overworld_Noise
         Notes qtr, Crash_3  ;Riff _3, _3_2
         _9_1:
             Duration _00, Hat_2, Hat_2 
-            Notes 8th,Snare_6, 8th,Hat_2, 8th,Hat_2
+            Notes 8th,Snare_7, 8th,Hat_2, 8th,Hat_2
 
         _9_5:
         Notes qtr,Hat_4_Kick
@@ -828,17 +823,17 @@ Channel Overworld_Noise
             _20:
                 Riff _22,  _22_3
                 _20_3:
-                Notes dqt,Snare_6, qtr,Hat_2, 8th,Hat_2 
+                Notes dqt,Snare_7, qtr,Hat_2, 8th,Hat_2 
 
             _21:
                 Notes hlf,Crash_3, 8th,Hat_2, 8th,Hat_2
                 _21_3:
-                Notes qtr,Snare_6, qtr,Hat_2, 8th,Hat_2, 8th,Hat_2
+                Notes qtr,Snare_7, qtr,Hat_2, 8th,Hat_2, 8th,Hat_2
 
             _22:
                 Notes hlf,Hat_2, 8th,Hat_2, 8th,Hat_2 ;Riff _20,  _20_3
                 _22_3:
-                Duration _2121, Snare_6,Hat_2, Snare_6,Hat_2
+                Duration _2121, Snare_7,Hat_2, Snare_7,Hat_2
 
             _23:
             Riff _19, _20 ; +1
@@ -850,7 +845,7 @@ Channel Overworld_Noise
 
             _25:
             Riff _21, _21_3
-            Notes hlf,Snare_6, 8th,Hat_2, 8th,Hat_2 
+            Notes hlf,Snare_7, 8th,Hat_2, 8th,Hat_2 
         ;
 
         _26:
@@ -883,13 +878,12 @@ Channel Overworld_Noise
             Riff _35, _39
 
         _47:
-            Riff _3, _4
+            Riff _3, _5
 
-            Notes qtr,Crash_3
-            Riff _6_1, _7
-
+            ; Notes qtr,Crash_3
+            ; Riff _6_1, _7 -2
+            ; Duration "Cont", Hat_2, \
+            ; Snare_7, Hat_2, Hat_2
     ;
 
 Loop Overworld_Noise
-
-.align 1024 ;Massive padding just for clarity.

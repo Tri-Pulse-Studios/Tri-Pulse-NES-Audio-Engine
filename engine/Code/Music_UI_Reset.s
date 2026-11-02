@@ -49,25 +49,29 @@ sty Track_Index ;Overflow to $00 for Title
 ;ldx #$00 ;I Want $2d. Its a tad darker.
 stx $2007
 
+
 lda #$30
 sta $2007
 
 ;Permanent Text
-    ldx #$e9
-    lda #_CURRENT_TRACK__
-    jsr Set_PPU_ADDR_Display_Word
-
-    ldx #$07
+    ldx #$a7
+    ldy #$20
     lda #_LOGO
+    jsr Set_16bit_PPU_ADDR_Display_Word
+
+    ldx #SUBTITLE_HI_OFFSET
+    lda #_SUBTITLE_HI
     jsr Set_PPU_ADDR_Display_Word
 
-    ldx #($20 + SUBTITLE_OFFSET)
-    lda #_SUBTITLE
+    ldx #($20 + SUBTITLE_LOW_OFFSET)
+    lda #_SUBTITLE_LOW
     jsr Set_PPU_ADDR_Display_Word
         ;A = $80 | _B  or $8c
             ;I want to store $0c to $2001, and $80 just is BLue Emphasis
 
-
+    ldx #$e9
+    lda #_CURRENT_TRACK__
+    jsr Set_PPU_ADDR_Display_Word
 
 lda #%000001110 ;Enable bkgrd, disable Sprites
 sta $2001

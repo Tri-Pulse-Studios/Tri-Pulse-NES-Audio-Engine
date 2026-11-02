@@ -66,8 +66,8 @@
         SFX Crash_7_sfx, R7, -1, Crash_env, \
             1,R14, 2,R10, 3,R9, 5,R8, 0,R7
 
-        SFX Snare_6_sfx, R6, -1, Snare_env, \
-            1,R12, 0,R6
+        SFX Snare_7_sfx, R6, -1, Snare_env, \
+            1,R12, 0,R7
 
         SFX Wash_5_sfx, R5
         SFX Wash_8_sfx, R8, -1, Wash_env, \
@@ -85,8 +85,8 @@
         NoiseFX Crash_3,      Crash_3_sfx, "Kick"
         NoiseFX Crash_7,      Crash_7_sfx, "Kick"
     
-        NoiseFX Snare_6,      Snare_6_sfx
-        NoiseFX Snare_6_Kick, Snare_6_sfx, "Kick"
+        NoiseFX Snare_7,      Snare_7_sfx
+        NoiseFX Snare_7_Kick, Snare_7_sfx, "Kick"
 
         NoiseFX Hat_2,        Hat_2_sfx
         NoiseFX Hat_2_Kick,   Hat_2_sfx,   "Kick"
