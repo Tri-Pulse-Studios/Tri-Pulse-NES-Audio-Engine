@@ -14,10 +14,11 @@
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE, " ", $80
+    UI_Word _SUBTITLE_HI, "Heritage: A Dragon's Tale", $80
+    UI_Word _SUBTITLE_LOW, "By: EliteFerrex", $80
 
-    SUBTITLE_OFFSET = $02
-        ; $00 - $1f to adjust text-centering.
+        SUBTITLE_HI_OFFSET = $03
+        SUBTITLE_LOW_OFFSET = $08
         
 
     UI_Word _Sq0, "Sq0", $80
@@ -34,8 +35,8 @@
 ; Song Registry
 ;============================================================
 
-    ; Usage:   Song <Internal_Name>, <Tempo>, <{_U, _I, _spc, _T, _E, _X, _T}>, 
-        ;Curly braces around UI_Text are needed.
+    ; Usage:   Song <Internal_Name>, <Tempo>, <"UI Text">, 
+
 
     ;Internal name must match that used in Channels
     ;   ie: Song Fanfare, <Tempo>, <UI_text>

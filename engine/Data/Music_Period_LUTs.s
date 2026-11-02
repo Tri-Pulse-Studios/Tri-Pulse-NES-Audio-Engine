@@ -116,9 +116,3 @@
     ;
 
     
-
-    ;likely exmpale:
-    ;.byte $02,$04,$05
-    ;.byte $01,$00,$01 ;Lots of data overlap in the 12.5%
-;
-

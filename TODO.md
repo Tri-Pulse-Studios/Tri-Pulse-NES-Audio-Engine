@@ -76,7 +76,9 @@
 ### Custom DMC Samples
 - The ability to load, and trigger custom DMC sfx through the SFX Engine.
 
-
+### Customizable Misc Effects.
+- I have more ideas for misc effects than will fit in the 16 available slots.
+	- The ability to omit unused ones to make space for used one would be helpful.
 
 ### API
 - documentation to integrate the engine into a game or other user projects.
@@ -94,3 +96,7 @@
 ### Error Checking
 - Macros don't have a consistant format for error checking or printing errors.
 	- Duration macro is particularly bad.
+
+	- Without Duration "Cont", use the `, \` multiline syntax.
+		- Then, Duration can validate it has the correct number of args. Possibly. ca65 needs a LUT. 
+

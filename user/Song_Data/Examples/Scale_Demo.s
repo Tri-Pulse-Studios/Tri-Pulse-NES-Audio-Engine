@@ -124,7 +124,7 @@ Loop Scale_Demo_dmc
 ;============================================================
 
 Channel Scale_Demo_Noise
-    Noise_Header ::Default_NB, _d50_K
+    Noise_Header Default_NB, _d50_K
 
     Notes hlf,A0
         Shift_Pitch +1

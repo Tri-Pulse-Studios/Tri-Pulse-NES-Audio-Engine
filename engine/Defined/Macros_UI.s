@@ -122,7 +122,7 @@
 
     .macro Output_UI_Words
         UI_Word _LOGO, "Tri-Pulse Studios", $80
-        
+        ;UI_Word _LOGO, "TRI-PULSE STUDIOS", $80
 
 
         LUT_Words_Text:
