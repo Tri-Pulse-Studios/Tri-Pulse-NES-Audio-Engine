@@ -1,16 +1,5 @@
 
 
- 
-
-;The idea
-
-;Just hardcode a location in the middle of the screen
-    ;Display Track XX
-            ;<Track Name>
-            
-            ;If I can splurge, a
-                ;Current/Total Time  counter would be fun.
-
 .macro OAM_DMA_Controller_Read
   ;Copy OAM
   ldx #OAM_Buffer_Page 
@@ -51,16 +40,28 @@
 
  
 
-
-
 nmi:
+    .if Debugging_Enabled
+        
+
+        lda Spinning_Flag
+        beq @skip
+
+            Runtime_Exception "Runtime Exception: Frame Overrun. NMI fired before the previous frame finished. Debug the code that hung."
+        
+        @skip:
+        lda #$01
+        sta Spinning_Flag
+    .endif
+
     lda Pressed_Button
-    and #up+down ;And left/right?
+    and #up+down+left+right 
     beq @skip_UD
 
-        and #up
+        and #up+right
         beq @up
 
+            ;else down or left.
 
             @down:
             dec Track_Index
@@ -123,6 +124,11 @@ nmi:
     Inline OAM_DMA_Controller_Read
 
     jsr Update_Music
+
+    .if Debugging_Enabled
+        lda #$00
+        sta Spinning_Flag
+    .endif
 rti ;go back to inf-wait in reset.
 
  
@@ -131,7 +137,7 @@ rti ;go back to inf-wait in reset.
 Update_Now_Playing:
     lda #$22
     sta $2006
-    lda #$0a ;Set PPU can't Display a Song Name.
+    lda #CURRENT_PLAYING_OFFSET ;Set PPU can't Display a Song Name.
     sta $2006
 
     ldx Song_ID
@@ -141,7 +147,7 @@ Update_Now_Playing:
 
     ;In A= Display Index (+1 of Song Index)
 Update_Track_Cursor:
-    ldx #$83
+    ldx #$80 + TRACK_OFFSET
     lda #_TRACK__
     jsr Set_PPU_ADDR_Display_Word ;OUT X= Track Index
 

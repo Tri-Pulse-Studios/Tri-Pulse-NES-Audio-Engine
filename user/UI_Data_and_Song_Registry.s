@@ -10,15 +10,20 @@
 
     UI_Word _CURRENT_TRACK__, "CURRENT "
     UI_Word _TRACK__, "TRACK ", $80
-
+        TRACK_OFFSET = 6
+            ;Affects the `TRACK 01 - <Song_Name>` Centering
+                            
+        CURRENT_PLAYING_OFFSET = TRACK_OFFSET + 5
+            ;Affects the `<Song_Name>` Centering under `CURRENT TRACK`
+                ;Track +5 Keeps simular H Center, but customize however.
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE_HI, "Heritage: A Dragon's Tale", $80
-    UI_Word _SUBTITLE_LOW, "By: EliteFerrex", $80
+    UI_Word _SUBTITLE_HI, "Custom Subtitle", $80
+    UI_Word _SUBTITLE_LOW, "Goes Here", $80
 
-        SUBTITLE_HI_OFFSET = $03
-        SUBTITLE_LOW_OFFSET = $08
+        SUBTITLE_HI_OFFSET = 8
+        SUBTITLE_LOW_OFFSET = 11
         
 
     UI_Word _Sq0, "Sq0", $80
