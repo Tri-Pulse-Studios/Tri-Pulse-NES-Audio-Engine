@@ -599,10 +599,10 @@
 
 
     .macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
         .ifblank P1
             .exitmacro
         .endif
-        
 
         .ifblank P2
             .error "Duration Error: Even number of pitches required"
@@ -610,130 +610,254 @@
             .out " "
             .exitmacro
         .endif
-        
+
         .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
             .error "Duration Error: `rest` must be lowercase"
-            .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .out "        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
             .out " "
             .exitmacro
-
-            ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
         .endif
 
-        ;The `.if .not .const(P1)` guards against needing to check ::P1 vs Local P1
+
+        .if .xmatch(P1, rest) .and .xmatch(P2, rest)
+            Sub_Pair_Duration P1,P2
 
 
-        .if .xmatch (P1, rest) .and .xmatch (P2, rest)              
-            .byte $00
+        .elseif .xmatch(P1, rest)
 
-
-        .elseif .xmatch (P1, rest)
-
-            .if .not .const(P2) 
-                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-
-            .elseif P2 < B5
-                Assert_Valid_Pitch P2, "Duration P2 Error:"
-                .byte (P2-BP+1) << 4 ;Note
-
+            .if .not .const(P2)
+                Sub_Pair_Duration P1, ::P2
             .else
-                .byte (P2 & $0F) << 4  ;Non-Note
-
+                Sub_Pair_Duration P1, P2
             .endif
 
-    
+        .elseif .xmatch(P2, rest)
 
-        .elseif .xmatch (P2, rest)
-
-            .if .not .const(P1) ;If Raw Hex.
-                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-
-            .elseif P1 < B5
-                Assert_Valid_Pitch P1, "Duration P1 Error:"
-                .byte (P1-BP+1) ;Note
-
+            .if .not .const(P1)
+                Sub_Pair_Duration ::P1,P2
             .else
-                .byte (P1 & $0F)  ;Non-Note
-
-            .endif
-            
-        .else ;Neither are Rests.
-
-            ;error check
-            .if .not .const(P1) 
-                .if .not .defined(P1)
-                    .if .not .defined(::P1)
-                        .error "Duration Error. Unrecognized Symbol"
-                        .out ""
-                        .out "Duration Error. P1 is not defined, or unrecognizable. Skipping Pair"
-                        .out ""
-
-
-                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                        .exitmacro
-                    .endif
-                .endif
+                Sub_Pair_Duration P1,P2
             .endif
 
-            .if .not .const(P2) 
-                .if .not .defined(P2)
-                    .if .not .defined(::P2)
-                        .error "Duration Error. Unrecognized Symbol"
-                        .out ""
-                        .out "Duration Error. P2 is not defined, or unrecognizable. Skipping Pair"
-                        .out ""
 
-                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                        .exitmacro
-                    .endif
-                .endif
-            .endif
+        .else ;Neither rests.
 
-            .if (.not .const(P2)) .and (.not .const(P1)) 
-                Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro
+            .if (.not .const(P2)) .and (.not .const(P1))
+                Sub_Pair_Duration ::P1, ::P2
 
-            .elseif .not .const(P2) 
-                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro
+            .elseif .not .const(P2)
+                Sub_Pair_Duration P1, ::P2
 
             .elseif .not .const(P1)
-                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro ;.exit here turns above into a JMP, vs a JSR
+                Sub_Pair_Duration ::P1, P2
 
             .else
-                .if (P1 < B5) .and (P2 < B5) ;Both Notes
-                    Assert_Valid_Pitch P1, "Duration P1 Error:"
-                    Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-                    .byte ((P2-BP+1) << 4)  | (P1-BP+1)
-
-                .elseif P1 < B5
-                    Assert_Valid_Pitch P1, "Duration P1 Error:"
-
-                    .byte ((P2 & $0F) << 4) | (P1-BP+1)
-
-                .elseif P2 < B5
-                    Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-                    .byte ((P2-BP+1) << 4)  | (P1 & $0F)
-
-                .else ;Both Non-Notes
-                    .byte ((P2 & $0F) << 4) | (P1 & $0F)
-
-                .endif
+                Sub_Pair_Duration P1, P2
 
             .endif
         .endif
 
+        ;Recurse Next Pair.
+        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
-        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
     .endmacro
 
 
 
+    .macro Sub_Pair_Duration P1,P2
+
+        .if .xmatch(P1, rest) .and .xmatch(P2, rest)
+            .byte $00
+
+        .elseif .xmatch(P1, rest)
+
+            .if P2 < B5
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
+                .byte (P2-BP+1) << 4
+
+            .else
+                .byte (P2 & $0F) << 4
+            .endif
+
+        .elseif .xmatch(P2, rest)
+
+            .if P1 < B5
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+                .byte (P1-BP+1)
+
+            .else
+                .byte (P1 & $0F)
+            .endif
+
+        .else
+
+            .if (P1 < B5) .and (P2 < B5)
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+                .byte ((P2-BP+1) << 4) | (P1-BP+1)
+
+            .elseif P1 < B5
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+
+                .byte ((P2 & $0F) << 4) | (P1-BP+1)
+
+            .elseif P2 < B5
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+                .byte ((P2-BP+1) << 4) | (P1 & $0F)
+
+            .else
+                .byte ((P2 & $0F) << 4) | (P1 & $0F)
+
+            .endif
+        .endif
+
+    .endmacro
 
 
+
+    ;V3
+    ;.macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ; .ifblank P1
+        ;     .exitmacro
+        ; .endif
+        
+
+        ; .ifblank P2
+        ;     .error "Duration Error: Even number of pitches required"
+        ;     .out "       Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+        ;     .out " "
+        ;     .exitmacro
+        ; .endif
+        
+
+
+        ; .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
+        ;     .error "Duration Error: `rest` must be lowercase"
+        ;     .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+        ;     .out " "
+        ;     .exitmacro
+
+        ;     ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
+        ; .endif
+
+        ; ;The `.if .not .const(P1)` guards against needing to check ::P1 vs Local P1
+
+
+        ; .if .xmatch (P1, rest) .and .xmatch (P2, rest)              
+        ;     .byte $00
+
+
+        ; .elseif .xmatch (P1, rest)
+
+        ;     .if .not .const(P2) 
+        ;         Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;         .exitmacro
+
+        ;     .elseif P2 < B5
+        ;         Assert_Valid_Pitch P2, "Duration P2 Error:"
+        ;         .byte (P2-BP+1) << 4 ;Note
+
+        ;     .else
+        ;         .byte (P2 & $0F) << 4  ;Non-Note
+
+        ;     .endif
+
+    
+
+        ; .elseif .xmatch (P2, rest)
+
+        ;     .if .not .const(P1) ;If Raw Hex.
+        ;         Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;         .exitmacro
+
+        ;     .elseif P1 < B5
+        ;         Assert_Valid_Pitch P1, "Duration P1 Error:"
+        ;         .byte (P1-BP+1) ;Note
+
+        ;     .else
+        ;         .byte (P1 & $0F)  ;Non-Note
+
+        ;     .endif
+            
+        ; .else ;Neither are Rests.
+
+        ;     ;error check
+        ;     .if .not .const(P1) 
+        ;         .if .not .defined(P1)
+        ;             .if .not .defined(::P1)
+        ;                 .error "Duration Error. Unrecognized Symbol"
+        ;                 .out ""
+        ;                 .out "Duration Error. P1 is not defined, or unrecognizable. Skipping Pair"
+        ;                 .out ""
+
+
+        ;                 Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;                 .exitmacro
+        ;             .endif
+        ;         .endif
+        ;     .endif
+
+        ;     .if .not .const(P2) 
+        ;         .if .not .defined(P2)
+        ;             .if .not .defined(::P2)
+        ;                 .error "Duration Error. Unrecognized Symbol"
+        ;                 .out ""
+        ;                 .out "Duration Error. P2 is not defined, or unrecognizable. Skipping Pair"
+        ;                 .out ""
+
+        ;                 Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;                 .exitmacro
+        ;             .endif
+        ;         .endif
+        ;     .endif
+
+        ;     .if (.not .const(P2)) .and (.not .const(P1)) 
+        ;         Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;         .exitmacro
+
+        ;     .elseif .not .const(P2) 
+        ;         Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;         .exitmacro
+
+        ;     .elseif .not .const(P1)
+        ;         Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        ;         .exitmacro ;.exit here turns above into a JMP, vs a JSR
+
+        ;     .else
+        ;         .if (P1 < B5) .and (P2 < B5) ;Both Notes
+        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
+        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+        ;             .byte ((P2-BP+1) << 4)  | (P1-BP+1)
+
+        ;         .elseif P1 < B5
+        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
+
+        ;             .byte ((P2 & $0F) << 4) | (P1-BP+1)
+
+        ;         .elseif P2 < B5
+        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
+
+        ;             .byte ((P2-BP+1) << 4)  | (P1 & $0F)
+
+        ;         .else ;Both Non-Notes
+        ;             .byte ((P2 & $0F) << 4) | (P1 & $0F)
+
+        ;         .endif
+
+        ;     .endif
+        ; .endif
+
+
+        ; Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
+    ;.endmacro
+
+
+
+
+    ;V2
     ;.macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
         ; .ifblank P1
         ;     .exitmacro

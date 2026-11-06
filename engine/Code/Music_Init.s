@@ -3,6 +3,8 @@
 py_Segment Song_Init, Free
 
 Song_Init:
+    inc $ff
+
     .if Debugging_Enabled
         cmp #(256/5)+1
         bcc :+

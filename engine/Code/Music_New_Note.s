@@ -266,15 +266,6 @@ Reset_Channel:
 
 ;Misc Effect branch backs.
 
-    Func_8th_Cont_Sweep: ;Unused 
-        sta Sweep_Speed,x
-        
-        lda Eighth_Length
-        sta Note_Timer,x
-
-        pla
-        pla 
-    rts ;return from New_Note
 
     Func_Clear_Special_Effects:
         ;lda #$00 ;Max Vol
@@ -287,6 +278,17 @@ Reset_Channel:
         sta Note_Volume_Damped,x
         sta Volume_Target,x
     rts
+
+
+    Func_8th_Cont_Sweep: ;Unused 
+        sta Sweep_Speed,x
+        
+        lda Eighth_Length
+        sta Note_Timer,x
+
+        pla
+        pla 
+    rts ;return from New_Note
 
 
     ;In A= (Note_Data,x)
@@ -504,7 +506,7 @@ All_Music_Opcodes:
     Shift_Base_Pitch:
         cmp #$08
 
-            beq Set_BP_and_Vibrato_Depth ;Tail_Call
+            jeq Set_BP_and_Vibrato_Depth ;Tail_Call
 
         @Shift_Pitch:
         bcc @pos ;$01..$07

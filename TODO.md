@@ -10,6 +10,9 @@
 
 ## Known Issues and Limitations
 
+- **NTSC Only:** There is currently no PAL support. At present, there are no plans to support PAL. 
+	- The DMC rates are different on PAL. I have not looked into whether the Tri-Pulse samples for NTSC are usuable on PAL.
+
 - **Song Data Page Confinement:** Each Song's Channel must fit within individual 256-byte ROM pages. Support for handling more than 256-byte is current extremely limited.
 
 - **Assembly Macro Complexity:** Some macros are not convienent to use.
@@ -22,6 +25,9 @@
 
 ## v0.2 Plans 
 
+### Minor Bugs
+- Templates has outdated Global tag markers.
+
 ### README Updates
 
 -  Refine README organization and presentation.
@@ -33,7 +39,10 @@
 
 - Likely splitting the README into multiple files, as it is rather long.
 
-
+### Deterministic Start
+- RAM, Stack Pointer, and Frame Start are currently all non-deterministic.
+	- This project was build to be highly minimal, and many shortcuts were taken for a specific project. Details TBA.
+- The general build on GitHub needs these shortcuts removed. 
 
 ### vscode Theme
 - Updates to highlight more kinds of text.
