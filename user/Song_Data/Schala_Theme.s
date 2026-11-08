@@ -2,11 +2,11 @@
 ; Song Statistics
 ;============================================================
 ;Song Size: 146 Bytes
-;   -Sq0: 8 B
-;   -Sq1: 11 B
-;   -Tri: 72 B
-;   -DMC: 27 B
-;   -Noise:= 28 B
+;   - Sq0: 8 B
+;   - Sq1: 11 B
+;   - Tri: 72 B
+;   - DMC: 27 B
+;   - Noise: 28 B
 
 
 _8th .set 11
