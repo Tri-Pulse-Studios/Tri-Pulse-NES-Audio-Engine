@@ -266,15 +266,6 @@ Reset_Channel:
 
 ;Misc Effect branch backs.
 
-    Func_8th_Cont_Sweep: ;Unused 
-        sta Sweep_Speed,x
-        
-        lda Eighth_Length
-        sta Note_Timer,x
-
-        pla
-        pla 
-    rts ;return from New_Note
 
     Func_Clear_Special_Effects:
         ;lda #$00 ;Max Vol
@@ -289,12 +280,24 @@ Reset_Channel:
     rts
 
 
+    Func_8th_Cont_Sweep: ;Unused 
+        sta Sweep_Speed,x
+        
+        lda Eighth_Length
+        sta Note_Timer,x
+
+        pla
+        pla 
+    rts ;return from New_Note
+
+
     ;In A= (Note_Data,x)
         ;Y = Opperand
     Set_Volume_w_Custom_Ramp:
 
         sec
         rol No_Reset_F_Effects_Flag,x ; != 0 Activates. (Disables Reseting for Multi-Note Fades.)
+            ;Not simply inc, as 256 Incs unexpectedly fails to work.
 
         ;sty Note_Volume_Damped,x 
         .if Note_Volume_Damped < $100 
@@ -312,12 +315,18 @@ Reset_Channel:
 
 
         Common_Fade_Out_Code: ;<- Auto Clears at Note's End
-        tay
+        pha
             and #$07
             sta Volume_Target,x
 
-        tya
+        pla
             lsrn 3
+            bne @skip
+            
+                lda (Note_Data,x)
+                inc Note_Data,x
+
+            @skip:
             sta Volume_Timer_Reload,x
             sta Volume_Timer,x
     @rts:
@@ -504,7 +513,7 @@ All_Music_Opcodes:
     Shift_Base_Pitch:
         cmp #$08
 
-            beq Set_BP_and_Vibrato_Depth ;Tail_Call
+            jeq Set_BP_and_Vibrato_Depth ;Tail_Call
 
         @Shift_Pitch:
         bcc @pos ;$01..$07

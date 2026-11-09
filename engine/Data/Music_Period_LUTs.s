@@ -106,11 +106,13 @@
         .byte <(DMC_Sample_Tri_Kick/64) ;$50%, Double Volume
         .byte <(Zero_Sample_Addr/64)
 
-        DMC_d25_9_81 = 0
-        DMC_d12_4_65 = 3 
-        DMC_d12_1_17 = 5
-        DMC_Tri =      6 
-        Zero_Sample =  7
+        DMC_d25_V18 = 0 ;DMC_d25_9_81 = 0
+        DMC_d25_V17 = 1 ;DMC_d25_2_17 = 1
+        ;
+        DMC_d12_V17 = 5 ;DMC_d12_1_17 = 5
+
+        DMC_d50_V34 = 6 ;DMC_Tri =      6 
+        Zero_Sample = 7
 
         py_Segment_End LUT_dmc_addr
     ;

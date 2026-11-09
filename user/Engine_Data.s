@@ -345,7 +345,7 @@
 ;============================================================
 
     Enable_Custom_Duration_Sets = 1
-        ;Disabling is Only Half-Implimented at present.
+        ;Disabling is not currently implimented.
 
 
     ; WARNING. Custom Duration Sets are an advanced feature.
@@ -358,54 +358,8 @@
     ;   You are on your own until a future update.
 
 
-    .if .not Enable_Custom_Duration_Sets
-        ;These are the aliases for the Simple, Hardcoded Duration Sets
-            ;Rename if desired, but their function is hardcoded.
+    .if Enable_Custom_Duration_Sets
 
-
-        ; Naming Convention:
-        ;   _XXXX    Four repetitions of a note length.
-        ;   _6xX     Six repetitions of a note length.
-        ;   _8xX     Eight repetitions of a note length.
-        ;
-        ;   X = Length type:
-        ;       0 = 16th note.
-        ;       1,2,4,8 = X * 8th-note length.
-        ;
-        ;   _00 = Two 16th notes.
-
-
-        ;16th x2, x4, x6, x8
-        _00    = $5f
-        _0000  = $5e
-        _6x0   = $5d
-        _8x0   = $5c
-
-        ;8th x4, x6, x8
-        _1111  = $5b
-        _6x1   = $5a
-        _8x1   = $59
-
-        ;qtr x4, x6, x8
-        _2222  = $58
-        _6x2   = $57
-        _8x2   = $56
-
-        ;hlf x4, x6, x8
-        _4444  = $55
-        _6x4   = $54
-        _8x4   = $53
-
-        ;whl x4, x6, x8
-        _8888  = $52
-        _6x8   = $51
-        _8x8   = $50
-
-        ;Usage
-            ;Duration <Set_Alias>, <Pitch>,<Pitch>, <Pitch>,<Pitch>, ...
-            ;ie Duration _00, As3,B3
-
-    .elseif Enable_Custom_Duration_Sets
         ;Sets are defined with the Opcodes: 16th, 8th, qtr, dqt, hlf, dhf, whl, or by the raw byte that instruction encodes.
             ;ie $e0 = Set_Env,  $b0 = Shift_Pitch
                 ;See `Bad Ideas` in the README for the other instructions.
@@ -436,6 +390,56 @@
         Duration_Set _332_x2, 3, dqt,dqt,qtr, dqt,dqt,qtr
         Duration_Set _111_2_111_b, 4, 8th,8th,8th, qtr, 8th,8th,8th, $b0 ;$b0 for Shift_Pitch
         Duration_Set _11_100_x2, 5, 8th,8th,8th, 16th,16th,  8th,8th,8th, 16th,16th
+
+
+        ;These are the aliases for the Simple, Hardcoded Duration Sets
+            ;Rename if desired, but their function is hardcoded.
+
+
+        ; Naming Convention:
+        ;   _XXXX    Four repetitions of a note length.
+        ;   _6xX     Six repetitions of a note length.
+        ;   _8xX     Eight repetitions of a note length.
+        ;
+        ;   X = Length type:
+        ;       0 = 16th note.
+        ;       1,2,4,8 = X * 8th-note length.
+        ;
+        ;   _00 = Two 16th notes.
+    ;
+
+    .else ;Hardcoded Set
+
+        ;16th x2, x4, x6, x8
+        _00    = $5f
+        _0000  = $5e
+        _6x0   = $5d
+        _8x0   = $5c
+
+        ;8th x4, x6, x8
+        _1111  = $5b
+        _6x1   = $5a
+        _8x1   = $59
+
+        ;qtr x4, x6, x8
+        _2222  = $58
+        _6x2   = $57
+        _8x2   = $56
+
+        ;hlf x4, x6, x8
+        _4444  = $55
+        _6x4   = $54
+        _8x4   = $53
+
+        ;whl x4, x6, x8
+        _8888  = $52
+        _6x8   = $51
+        _8x8   = $50
+
+        ;Usage
+            ;Duration <Set_Alias>, <Pitch>,<Pitch>, <Pitch>,<Pitch>, ...
+            ;ie Duration _00, As3,B3
+    ;
 
     .endif
 ;

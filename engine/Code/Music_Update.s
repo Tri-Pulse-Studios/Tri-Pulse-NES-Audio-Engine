@@ -598,6 +598,14 @@ py_Segment Write_APU_Volume, Free
             Write_APU_Volume_Noise_LDY_BEQ_RELIANT: ;SFX
         beq Write_APU_Volume_no_dampen
 
+            .if Debugging_Enabled
+                cpy #$08
+                bcc :+
+                    Runtime_Exception "Runtime Exception: Invalid Volume Damper. Valid Range 0..7."
+                :
+
+            .endif
+
                 ;%_Damping
 
             ;In Y= Damp level 1-7

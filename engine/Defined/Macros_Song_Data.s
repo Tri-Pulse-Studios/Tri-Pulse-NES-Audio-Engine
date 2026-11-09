@@ -243,8 +243,7 @@
 
   .macro Loop Pointer, Intro_Ptr
 
-    .assert ( (>Pointer = >*) .or (<* = $00) ), error, "Channel Overflowing Page"
-        
+    
     .ifblank Intro_Ptr
       .byte $c0
 
@@ -255,6 +254,8 @@
       .byte $c1, <Intro_Ptr
       
     .endif
+
+    .assert ( (>Pointer = >*) .or (<* = $00) ), error, "Channel Overflowing Page"
 
     .endscope
 
@@ -599,10 +600,10 @@
 
 
     .macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+
         .ifblank P1
             .exitmacro
         .endif
-        
 
         .ifblank P2
             .error "Duration Error: Even number of pitches required"
@@ -610,229 +611,110 @@
             .out " "
             .exitmacro
         .endif
-        
+
         .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
             .error "Duration Error: `rest` must be lowercase"
-            .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
+            .out "        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
             .out " "
             .exitmacro
-
-            ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
         .endif
 
-        ;The `.if .not .const(P1)` guards against needing to check ::P1 vs Local P1
+
+        .if .xmatch(P1, rest) .and .xmatch(P2, rest)
+            Sub_Pair_Duration P1,P2
 
 
-        .if .xmatch (P1, rest) .and .xmatch (P2, rest)              
-            .byte $00
+        .elseif .xmatch(P1, rest)
 
-
-        .elseif .xmatch (P1, rest)
-
-            .if .not .const(P2) 
-                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-
-            .elseif P2 < B5
-                Assert_Valid_Pitch P2, "Duration P2 Error:"
-                .byte (P2-BP+1) << 4 ;Note
-
+            .if .not .const(P2)
+                Sub_Pair_Duration P1, ::P2
             .else
-                .byte (P2 & $0F) << 4  ;Non-Note
-
+                Sub_Pair_Duration P1, P2
             .endif
 
-    
+        .elseif .xmatch(P2, rest)
 
-        .elseif .xmatch (P2, rest)
-
-            .if .not .const(P1) ;If Raw Hex.
-                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-
-            .elseif P1 < B5
-                Assert_Valid_Pitch P1, "Duration P1 Error:"
-                .byte (P1-BP+1) ;Note
-
+            .if .not .const(P1)
+                Sub_Pair_Duration ::P1,P2
             .else
-                .byte (P1 & $0F)  ;Non-Note
-
-            .endif
-            
-        .else ;Neither are Rests.
-
-            ;error check
-            .if .not .const(P1) 
-                .if .not .defined(P1)
-                    .if .not .defined(::P1)
-                        .error "Duration Error. Unrecognized Symbol"
-                        .out ""
-                        .out "Duration Error. P1 is not defined, or unrecognizable. Skipping Pair"
-                        .out ""
-
-
-                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                        .exitmacro
-                    .endif
-                .endif
+                Sub_Pair_Duration P1,P2
             .endif
 
-            .if .not .const(P2) 
-                .if .not .defined(P2)
-                    .if .not .defined(::P2)
-                        .error "Duration Error. Unrecognized Symbol"
-                        .out ""
-                        .out "Duration Error. P2 is not defined, or unrecognizable. Skipping Pair"
-                        .out ""
 
-                        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                        .exitmacro
-                    .endif
-                .endif
-            .endif
+        .else ;Neither rests.
 
-            .if (.not .const(P2)) .and (.not .const(P1)) 
-                Sub_Duration ::P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro
+            .if (.not .const(P2)) .and (.not .const(P1))
+                Sub_Pair_Duration ::P1, ::P2
 
-            .elseif .not .const(P2) 
-                Sub_Duration P1,::P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro
+            .elseif .not .const(P2)
+                Sub_Pair_Duration P1, ::P2
 
             .elseif .not .const(P1)
-                Sub_Duration ::P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-                .exitmacro ;.exit here turns above into a JMP, vs a JSR
+                Sub_Pair_Duration ::P1, P2
 
             .else
-                .if (P1 < B5) .and (P2 < B5) ;Both Notes
-                    Assert_Valid_Pitch P1, "Duration P1 Error:"
-                    Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-                    .byte ((P2-BP+1) << 4)  | (P1-BP+1)
-
-                .elseif P1 < B5
-                    Assert_Valid_Pitch P1, "Duration P1 Error:"
-
-                    .byte ((P2 & $0F) << 4) | (P1-BP+1)
-
-                .elseif P2 < B5
-                    Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-                    .byte ((P2-BP+1) << 4)  | (P1 & $0F)
-
-                .else ;Both Non-Notes
-                    .byte ((P2 & $0F) << 4) | (P1 & $0F)
-
-                .endif
+                Sub_Pair_Duration P1, P2
 
             .endif
         .endif
 
+        ;Recurse Next Pair.
+        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
 
-        Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
     .endmacro
 
 
 
+    .macro Sub_Pair_Duration P1,P2
 
+        .if .xmatch(P1, rest) .and .xmatch(P2, rest)
+            .byte $00
 
-    ;.macro Sub_Duration P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
-        ; .ifblank P1
-        ;     .exitmacro
-        ; .endif
-        
-        ; .ifblank P2
-        ;     .error "Duration Error: Even number of pitches required"
-        ;     .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
-        ;     .out " "
-        ;     .exitmacro
-        ; .endif
-        
-        ; .if .xmatch(P1, Rest) .or .xmatch(P2, Rest)
-        ;     .error "Duration Error: `rest` must be lowercase"
-        ;     .out"        Usage: Duration <Length_Pattern>, <Pitch>, <Pitch>, ..."
-        ;     .out " "
-        ;     .exitmacro
+        .elseif .xmatch(P1, rest)
 
-        ;     ;.xmatch case sensitive may be fixable w/ .case -  to remove case senstiivity. (Then restore after .macros w/ .case +)
-        ; .endif
+            .if P2 < B5
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
+                .byte (P2-BP+1) << 4
 
+            .else
+                .byte (P2 & $0F) << 4
+            .endif
 
+        .elseif .xmatch(P2, rest)
 
-        ; .if .const(P1) .and .const(P2)
-        ;     .out "2"
+            .if P1 < B5
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+                .byte (P1-BP+1)
 
-        ; .elseif .const(P1)
-        ;     Sub_Duration P1,(::P2),P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+            .else
+                .byte (P1 & $0F)
+            .endif
 
-        ; .elseif .const(P2)
-        ;     Sub_Duration (::P1),P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+        .else
 
-        ; .else
-        ;     .out "1"
-        ;     Sub_Duration (::P1),(::P2),P3,P4,P5,P6,P7,P8,P9,P10,P11,P12
+            .if (P1 < B5) .and (P2 < B5)
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
 
-        ; .endif
+                .byte ((P2-BP+1) << 4) | (P1-BP+1)
 
-        ; .if (P1 = -1) .and (P2 = -1);(.xmatch (P1, rest)) .and (.xmatch (P2, rest))              
-        ;     .byte $00
+            .elseif P1 < B5
+                Assert_Valid_Pitch P1, "Duration P1 Error:"
 
+                .byte ((P2 & $0F) << 4) | (P1-BP+1)
 
+            .elseif P2 < B5
+                Assert_Valid_Pitch P2, "Duration P2 Error:"
 
-        ; .elseif .xmatch (P1, rest)
-        ;     .out ":("
-        ;         .if P2 < B5
-        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
-        ;             .byte (P2-BP+1) << 4 ;Note
+                .byte ((P2-BP+1) << 4) | (P1 & $0F)
 
-        ;         .else
-        ;             .byte (P2 & $0F) << 4  ;Non-Note
+            .else
+                .byte ((P2 & $0F) << 4) | (P1 & $0F)
 
-        ;         .endif
+            .endif
+        .endif
 
-
-        ; .elseif .xmatch (P2, rest)
-
-        ;         .if P1 < B5
-        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
-        ;             .byte (P1-BP+1) << 4 ;Note
-
-        ;         .else
-        ;             .byte (P1 & $0F) << 4  ;Non-Note
-
-        ;         .endif
-
-
-
-
-        ; .else ;Neither are Rests.
-
-        ;         .if (P1 < B5) .and (P2 < B5) ;Both Notes
-        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
-        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-        ;             .byte ((P2-BP+1) << 4)  | (P1-BP+1)
-
-        ;         .elseif P1 < B5
-        ;             Assert_Valid_Pitch P1, "Duration P1 Error:"
-
-        ;             .byte ((P2 & $0F) << 4) | (P1-BP+1)
-
-        ;         .elseif P2 < B5
-        ;             Assert_Valid_Pitch P2, "Duration P2 Error:"
-
-        ;             .byte ((P2-BP+1) << 4)  | (P1 & $0F)
-
-        ;         .else ;Both Non-Notes
-        ;             .byte ((P2 & $0F) << 4) | (P1 & $0F)
-
-        ;         .endif
-
-        ; .endif
-
-
-        ; Sub_Duration P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 ;Recurse
-    ;.endmacro
-
-
+    .endmacro
 
 
 
@@ -999,79 +881,72 @@
         .define Vol_25  6
         .define Vol_12  7
 
-    ;.define is the only way to make these vars constant for .if's
+    ;.define is the only way to make these vars constant for .if
+        ; Should be able to redefine .set in each local scope.
 
     .macro Vol_Fade_In Start, Target, f_Delay
-
-        .byte $f0|Start,  f_Delay << 3 | Target
-
-            ; Range checks
         .if Start > 7
-            .error .sprintf("Fade_In Error: Start Volume out of range (0..7) (got: %d)", Start)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+                .error .sprintf("Fade_In Error: Start Volume out of range (0..7) (got: %d)", Start)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
 
-        .elseif Target > 7
-            .error .sprintf("Fade_In Error: Target Volume out of range (0..7) (got: %d)", Target)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+            .elseif Target > 7
+                .error .sprintf("Fade_In Error: Target Volume out of range (0..7) (got: %d)", Target)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
 
-        .elseif f_Delay > 31 .or f_Delay=0
-            .error .sprintf("Fade_In Error: Frame_Delay out of range (1..31) (got: %d)", f_Delay)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
-
-        .elseif Start < Target
-            .error .sprintf("Fade_In Error: Recieved Fade_Out Data (got: %d to %d)", Start, Target)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+            .elseif Start < Target
+                .error .sprintf("Fade_In Error: Recieved Fade_Out Data (got: %d to %d)", Start, Target)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
         .endif
-      ;
+
+
+        .if f_Delay > 31
+            .byte $f0|Start, Target, f_Delay
+        .else 
+            .byte $f0|Start, f_Delay << 3 | Target
+        .endif
 
     .endmacro
 
     .macro Vol_Fade_Out Start, Target, f_Delay
-
-        .byte $f0|Start,  f_Delay << 3 | Target
-
-        ; Range checks
         .if (Start < 0) .or (Start > 7)
-            .error .sprintf("Fade_Out Error: Start Volume out of range (0..7) (got: %d)", Start)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+                .error .sprintf("Fade_Out Error: Start Volume out of range (0..7) (got: %d)", Start)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
 
-        .elseif (Target < 0) .or (Target > 7)
-            .error .sprintf("Fade_Out Error: Target Volume out of range (0..7) (got: %d)", Target)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+            .elseif (Target < 0) .or (Target > 7)
+                .error .sprintf("Fade_Out Error: Target Volume out of range (0..7) (got: %d)", Target)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
 
-        .elseif f_Delay > 31 .or f_Delay=0
-            .error .sprintf("Fade_Out Error: Frame_Delay out of range (1..31) (got: %d)", f_Delay)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+            .elseif Start > Target
+                .error .sprintf("Fade_Out Error: Recieved Fade_In Data (got: %d to %d)", Start, Target)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
+        .endif
 
-        ; Direction check (quieter)
-        .elseif Start > Target
-            .error .sprintf("Fade_Out Error: Recieved Fade_In Data (got: %d to %d)", Start, Target)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+
+        .if f_Delay > 31
+            .byte $f0|Start, Target, f_Delay
+        .else 
+            .byte $f0|Start, f_Delay << 3 | Target
         .endif
 
     .endmacro
 
     .macro Set_Volume Volume, Supress_Warnings
 
-        .byte $f0|Volume,  Volume
+        .byte $f0|Volume,  $f0|Volume
         ;Set Volumes are still Two Bytes, and they must specify the Volume Twice.
-        ;It also disables f-effect reseting.
+            ;It also disables f-effect reseting.
 
         .if Volume > 7
             .error "Set_Volume Error: Start Volume out of range"
