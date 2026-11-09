@@ -243,8 +243,7 @@
 
   .macro Loop Pointer, Intro_Ptr
 
-    .assert ( (>Pointer = >*) .or (<* = $00) ), error, "Channel Overflowing Page"
-        
+    
     .ifblank Intro_Ptr
       .byte $c0
 
@@ -255,6 +254,8 @@
       .byte $c1, <Intro_Ptr
       
     .endif
+
+    .assert ( (>Pointer = >*) .or (<* = $00) ), error, "Channel Overflowing Page"
 
     .endscope
 
@@ -1123,79 +1124,72 @@
         .define Vol_25  6
         .define Vol_12  7
 
-    ;.define is the only way to make these vars constant for .if's
+    ;.define is the only way to make these vars constant for .if
+        ; Should be able to redefine .set in each local scope.
 
     .macro Vol_Fade_In Start, Target, f_Delay
-
-        .byte $f0|Start,  f_Delay << 3 | Target
-
-            ; Range checks
         .if Start > 7
-            .error .sprintf("Fade_In Error: Start Volume out of range (0..7) (got: %d)", Start)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+                .error .sprintf("Fade_In Error: Start Volume out of range (0..7) (got: %d)", Start)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
 
-        .elseif Target > 7
-            .error .sprintf("Fade_In Error: Target Volume out of range (0..7) (got: %d)", Target)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+            .elseif Target > 7
+                .error .sprintf("Fade_In Error: Target Volume out of range (0..7) (got: %d)", Target)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
 
-        .elseif f_Delay > 31 .or f_Delay=0
-            .error .sprintf("Fade_In Error: Frame_Delay out of range (1..31) (got: %d)", f_Delay)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
-
-        .elseif Start < Target
-            .error .sprintf("Fade_In Error: Recieved Fade_Out Data (got: %d to %d)", Start, Target)
-            .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
-            .exitmacro
+            .elseif Start < Target
+                .error .sprintf("Fade_In Error: Recieved Fade_Out Data (got: %d to %d)", Start, Target)
+                .out   "    Usage: Vol_Fade_In <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_In  Vol_12,  Vol_100,  15"
+                .exitmacro
         .endif
-      ;
+
+
+        .if f_Delay > 31
+            .byte $f0|Start, Target, f_Delay
+        .else 
+            .byte $f0|Start, f_Delay << 3 | Target
+        .endif
 
     .endmacro
 
     .macro Vol_Fade_Out Start, Target, f_Delay
-
-        .byte $f0|Start,  f_Delay << 3 | Target
-
-        ; Range checks
         .if (Start < 0) .or (Start > 7)
-            .error .sprintf("Fade_Out Error: Start Volume out of range (0..7) (got: %d)", Start)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+                .error .sprintf("Fade_Out Error: Start Volume out of range (0..7) (got: %d)", Start)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
 
-        .elseif (Target < 0) .or (Target > 7)
-            .error .sprintf("Fade_Out Error: Target Volume out of range (0..7) (got: %d)", Target)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+            .elseif (Target < 0) .or (Target > 7)
+                .error .sprintf("Fade_Out Error: Target Volume out of range (0..7) (got: %d)", Target)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
 
-        .elseif f_Delay > 31 .or f_Delay=0
-            .error .sprintf("Fade_Out Error: Frame_Delay out of range (1..31) (got: %d)", f_Delay)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+            .elseif Start > Target
+                .error .sprintf("Fade_Out Error: Recieved Fade_In Data (got: %d to %d)", Start, Target)
+                .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
+                .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
+                .exitmacro
+        .endif
 
-        ; Direction check (quieter)
-        .elseif Start > Target
-            .error .sprintf("Fade_Out Error: Recieved Fade_In Data (got: %d to %d)", Start, Target)
-            .out   "    Usage: Vol_Fade_Out <Start>, <Target>, <Frame_Delay>"
-            .out   "       ie: Vol_Fade_Out  Vol_100,  Vol_12,  15"
-            .exitmacro
+
+        .if f_Delay > 31
+            .byte $f0|Start, Target, f_Delay
+        .else 
+            .byte $f0|Start, f_Delay << 3 | Target
         .endif
 
     .endmacro
 
     .macro Set_Volume Volume, Supress_Warnings
 
-        .byte $f0|Volume,  Volume
+        .byte $f0|Volume,  $f0|Volume
         ;Set Volumes are still Two Bytes, and they must specify the Volume Twice.
-        ;It also disables f-effect reseting.
+            ;It also disables f-effect reseting.
 
         .if Volume > 7
             .error "Set_Volume Error: Start Volume out of range"

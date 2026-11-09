@@ -26,13 +26,13 @@
     Vibrato_Cycle Vib_None
     Vibrato_Cycle Vib_Fast,     4,6,4,      -4,-6,-4
     Vibrato_Cycle Vib_Med,    4,6,6,4,      -4,-6,-6,-4
-    Vibrato_Cycle Vib_Slow, -2,-4,-6,-6,-4,-2,2,4,6,6,4,2, 
+    Vibrato_Cycle Vib_Slow, 2,4,6,6,4,2, -2,-4,-6,-6,-4,-2,
 
 
     Vibrato_Delay 0, No_Delay
     Vibrato_Delay 12, Short_Delay
-    ;Vibrato_Delay 15, Med_Delay
-    Vibrato_Delay 44, Long_Delay
+    Vibrato_Delay 15, Med_Delay
+    Vibrato_Delay 27, Long_Delay
 
 
 ;
@@ -130,28 +130,55 @@
     ;============================================================
         Env_Bank "Init_Index", 0
 
+        Env "5b", Lead_sqr_2_10_4_v12, \
+            $20, +$08, $a0, -$04, $30, \
+            _d50, atk_15, _d50, _0f, _d50, \
+            Vib_Slow, Long_Delay
 
-        Env "5b", Pad_d50_6_3_1, \
-            $60, -$08, $3c, -$04, $10, \
-            _d50, atk_10, _d50, _0f, _d50, \
-            Vib_None, No_Delay
+        T_0f_v12 .set Lead_sqr_2_10_4_v12
 
-        Env "4b", T_12v_0f__d25, \
-            $10, -$04, $10, \
-            _d12, _0f, _d12, \
-            Vib_Slow, Short_Delay, \
+
+        Env "6b", Lead_d25_13_0, \
+            $d0, -$20, $80, -$10, $00, \
+            _d25, atk_3, _d25, _0f, _d25, \
+            Vib_None, No_Delay, \
             dmc_d25
 
-        Env "4b", T_0f__d12, \
-            $10, -$04, $10, \
-            _d12, _0f, _d12, \
-            Vib_None, No_Delay, \
-            dmc_d12
+        T_M11__d25 .set Lead_d25_13_0
 
-        Env "3b", T_12v_3f_m3, \
-            $30, -$10, $10, \
-            _d12, _3f, _d12, \
-            Vib_Slow, Long_Delay
+        Env "4b", T_M6__d25, \
+            $60, -$10, $00, \
+            _d25, _0f, _d25, \
+            Vib_None, No_Delay, \
+            dmc_d25
+
+
+
+        Env "4b", Pad_d75_8_1, \
+            $80, -$08, $10, \
+            _d25, _0f, _d25, \
+            Vib_None, No_Delay, \
+            dmc_d25
+        T_0f__d25 .set Pad_d75_8_1
+
+
+        Env "4b", Pad_d12_s4_2f, \
+            $60, -$10, $40, \
+            _d12, _2f, _d12, \
+            Vib_Slow, Long_Delay, \
+            dmc_d12
+        T_2f_v12__d12 .set Pad_d12_s4_2f
+
+
+
+
+
+        Env "3b", Pad_d25_s3, \
+            $50, -$04, $30, \
+            _d25, _1f, _d25, \
+            Vib_None, No_Delay, \
+
+
 
     ;============================================================
     ; Bank 1 Noise Channel
@@ -165,15 +192,21 @@
         ;All Noise Envs should end with a sustain volume of Zero.
             ;Otherwise, it's unintuitive when the channel is silenced.
 
-        Env "5b", Tamb_env, \
-            $a0, -$20, $58, -$04, $00, \
+        Env "5b", Timpani_env, \
+            $b0, -$20, $68, -$04, $00, \
             _d12, atk_3, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
 
-        Env "5b", Hat_env, \
-            $70, -$00, $30, -$10, $00, \
-            _d12, atk_1, _d12, _0f, _d12, \
+        Env "5b", Snare_env, \
+            $60, -$08, $20, -$80, $00, \
+            _d12, atk_5, _d12, _0f, _d12, \
+            Vib_None, No_Delay
+
+
+        Env "3b", Hat_env, \
+            $80, -$80, $00, \
+            _d12, _0f, _d12, \
             Vib_None, No_Delay
     
 ;
@@ -221,9 +254,7 @@
             Duration_Set _6x2,  3
             Duration_Set _8x2,  4, qtr,qtr, qtr,qtr, qtr,qtr, qtr,qtr
 
-            Duration_Set _4444, 2
-            Duration_Set _6x4,  3
-            Duration_Set _8x4,  4, hlf,hlf, hlf,hlf, hlf,hlf, hlf,hlf
+            Duration_Set _111_221, 3, 8th,8th,8th, qtr,qtr, 8th
 
             Duration_Set _8888, 2
             Duration_Set _6x8,  3
@@ -297,7 +328,7 @@
     .endif
 ;
 
-
+ 
 ;============================================================
 ; Misc Effects
 ;============================================================

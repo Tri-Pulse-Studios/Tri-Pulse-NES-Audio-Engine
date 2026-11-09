@@ -25,6 +25,9 @@
 
 ## v0.2 Plans 
 
+### Misc FX
+- A macro for the Misc effects is needed.
+
 ### Minor Bugs
 - Templates has outdated Global tag markers.
 

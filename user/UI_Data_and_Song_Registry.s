@@ -10,11 +10,11 @@
 
     ; This message appears below "Tri-Pulse Studios"
     ; See the README for details.
-    UI_Word _SUBTITLE_HI, "Chrono Trigger", $80
-    UI_Word _SUBTITLE_LOW, "By: Yasunori Mitsuda", $80
+    UI_Word _SUBTITLE_HI, "Super Metroid", $80
+    UI_Word _SUBTITLE_LOW, "By Kenji Yamamoto", $80
 
-        SUBTITLE_HI_OFFSET = 8
-        SUBTITLE_LOW_OFFSET = 5
+        SUBTITLE_HI_OFFSET = 9
+        SUBTITLE_LOW_OFFSET = 7
             ;Affects the centering of the subtitles.
                 ;0..1    for how many blank tiles to insert to the left.
 
@@ -53,8 +53,8 @@
     ;       matches
     ;       Channel Fanfare_Sq0
 
-    .include "user/Song_Data/Schala_Theme.s"
-    Song Schala_Theme, 5+6, "Schala's Theme"
+    .include "user/Song_Data/Green_Brinstar.s"
+    Song Green_Brinstar, 7+6, "Green Brinstar"
 
         ;I type 6+7 to mean 16ths of length 6 and 7.
             ;Some songs compress better when "8th" length is functionally 16th, denoted as just Tempo = 6

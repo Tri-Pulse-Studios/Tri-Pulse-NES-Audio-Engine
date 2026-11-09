@@ -56,24 +56,26 @@
         @25: ;to Get @12.5%, just ora #$40
         ;A#1-D2
         .byte $00,$10,$01,$11,$02 ;$12(-3c) = $03(-1c)
+
         ;;D#2-A2
         .byte $03,$13,$04,$14,$05,$15,$06 ;$16 (+3c) = $07(-5c)
+
         ;A#2-D3
         .byte $07,$17,$08,$18, $28 ;<- D2 (-22c)
+
         ;D#3-F#3             ; G3,  G#3, A3
         ;                    ;-15c,-17c,-38c
         .byte $09,$19,$0a,$1a, $0b, $1b, $2b
+
             ; A#3 , B3, C4
             ;+10c,+9c,-12c
-        .byte $0c,$1c;,$2c
+        .byte $0c,$1c,$2c
+
             ; C#4, D4, D#4
             ;N/A,-7c,-8c
+        .byte $18,$0d,$1d
+        ;     ;/\ Octave Down
 
-        .if Emit__Unused
-            .byte $2c
-            .byte $18,$0d,$1d,  $2d ;E4. VERY badly out of tune.
-            ;     ;/\ Octave Down
-        .endif
 
             ;Above D4 is Never used.
                 ;Above As3 is Very Rarely used.
@@ -106,11 +108,13 @@
         .byte <(DMC_Sample_Tri_Kick/64) ;$50%, Double Volume
         .byte <(Zero_Sample_Addr/64)
 
-        DMC_d25_9_81 = 0
-        DMC_d12_4_65 = 3 
-        DMC_d12_1_17 = 5
-        DMC_Tri =      6 
-        Zero_Sample =  7
+        DMC_d25_V18 = 0 ;DMC_d25_9_81 = 0
+        DMC_d25_V17 = 1 ;DMC_d25_2_17 = 1
+        ;
+        DMC_d12_V17 = 5 ;DMC_d12_1_17 = 5
+
+        DMC_d50_V34 = 6 ;DMC_Tri =      6 
+        Zero_Sample = 7
 
         py_Segment_End LUT_dmc_addr
     ;

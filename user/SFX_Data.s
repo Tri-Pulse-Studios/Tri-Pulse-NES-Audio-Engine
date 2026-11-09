@@ -4,7 +4,6 @@
 
     ; Noise Period / DMC Rate Aliases
         ; Do not alter these. The `SFX` macro validates Noise vs Pulse by them.
-
         R0  = $0
         R1  = $1
         R2  = $2
@@ -22,48 +21,32 @@
         R14 = $e
         R15 = $f
 
-    ;     R0  = $fff0
-    ;     R1  = $fff1
-    ;     R2  = $fff2
-    ;     R3  = $fff3
-    ;     R4  = $fff4
-    ;     R5  = $fff5
-    ;     R6  = $fff6
-    ;     R7  = $fff7
-    ;     R8  = $fff8
-    ;     R9  = $fff9
-    ;     R10 = $fffa
-    ;     R11 = $fffb
-    ;     R12 = $fffc
-    ;     R13 = $fffd
-    ;     R14 = $fffe
-    ;     R15 = $ffff
-            
-    ; ;
-
-
-
-    ;Musical Noise SFX 
     @non_musical_Noise:
-        SFX Hat_5_sfx,  R5
-        SFX Hat_7_sfx,  R7
-        SFX Hat_10_sfx, R10, 4, Hat_env, \
-            2,R10, 0,R11
+        SFX Hat_c_sfx,  R12
+        SFX Hat_b_sfx,  R11
+        SFX Hat_1_sfx,  R1, 1, Hat_env, \
+            0,R1
 
     Musical_Noise_SFX_Index .set SFX_Data_Index
         ;Above SFX queued by Noise Channel play via in-game SFX slots.
         ;Below play via Music-Only slot. in-game is prioritized.
 
     @dmc:
-        SFX Water_Hit_sfx, R0, 4, DMC_Tri, \     
-            1,R4, 1,R6, 1,R8, 1,R9 ;Volume 34
+        SFX d25_Kick_sfx, R0, 3, DMC_d25_V18, \     
+            1,R10, 1,R7, 0,R4 
 
-    ;
+    
 
     @musical_noise:
-        SFX Tamb_1_sfx, R1, -1, Tamb_env, \
-            1,R8, 1,R3, 2,R2, 0,R1
+        SFX Snare_9_sfx, R9
+        SFX Snare_8_sfx, R8, -1, Snare_env, \
+            1,R10, 0,R8
 
+
+        SFX Timpani_d_sfx, R13
+        SFX Timpani_c_sfx, R12
+        SFX Timpani_b_sfx, R11, -1, Timpani_env, \ 
+            1,R9, 2,R10, 0,R11
 
     ;
 
@@ -71,31 +54,29 @@
 ; Noise Bank
 ;============================================================
 
-    Schala_NB .set NoiseFX_Index 
+    Green_Brinstar_NB .set NoiseFX_Index 
 
         ;0
-        NoiseFX Tamb_1,   Tamb_1_sfx
+        
+        NoiseFX Snare_8,     Snare_8_sfx
 
-        NoiseFX Hat_10,    Hat_10_sfx
-        NoiseFX Hat_7,    Hat_7_sfx
-        NoiseFX Hat_5,   Hat_5_sfx
+        NoiseFX Snare_8_K,   Snare_8_sfx, "Kick"
+        NoiseFX Snare_9_K,   Snare_9_sfx, "Kick"
 
-        NoiseFX Hat_10_Water,  Hat_10_sfx, Water_Hit_sfx
-        NoiseFX Solo_Water,   $00,       Water_Hit_sfx
+        NoiseFX Hat_c,     Hat_c_sfx
+        NoiseFX Hat_b,     Hat_b_sfx
+        NoiseFX Hat_1,     Hat_1_sfx
 
-            ;More than 15 NoiseFX can be defined, but not accessed all at once.
-            ;Shift_Pitch instructions can change the defined window mid-song as well.
+        NoiseFX Timpani_d, Timpani_d_sfx
+        NoiseFX Timpani_c, Timpani_c_sfx
+        NoiseFX Timpani_b, Timpani_b_sfx
 
-    NB_Validate Schala_NB ;Simple check that all NoiseFX fit in 15 window.
+    NB_Validate Green_Brinstar_NB ;Simple check that all NoiseFX fit in 15 window.
 
 ;============================================================
 ; Kick Types
 ;============================================================
+ 
+    Kick_Type d25_K, d25_Kick_sfx
 
-    
-    Kick_Type Unused, $00  ;_d50_K, d50_Kick_sfx
-    ; Kick_Type _d25_K, d25_Kick_sfx
-    ; Kick_Type _d25_tom, A3_Tom_sfx
-    ;Kick_Type Unused
-
-;`
+;` 

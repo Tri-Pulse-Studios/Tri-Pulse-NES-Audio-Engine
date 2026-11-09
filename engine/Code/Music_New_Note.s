@@ -297,6 +297,7 @@ Reset_Channel:
 
         sec
         rol No_Reset_F_Effects_Flag,x ; != 0 Activates. (Disables Reseting for Multi-Note Fades.)
+            ;Not simply inc, as 256 Incs unexpectedly fails to work.
 
         ;sty Note_Volume_Damped,x 
         .if Note_Volume_Damped < $100 
@@ -314,12 +315,18 @@ Reset_Channel:
 
 
         Common_Fade_Out_Code: ;<- Auto Clears at Note's End
-        tay
+        pha
             and #$07
             sta Volume_Target,x
 
-        tya
+        pla
             lsrn 3
+            bne @skip
+            
+                lda (Note_Data,x)
+                inc Note_Data,x
+
+            @skip:
             sta Volume_Timer_Reload,x
             sta Volume_Timer,x
     @rts:

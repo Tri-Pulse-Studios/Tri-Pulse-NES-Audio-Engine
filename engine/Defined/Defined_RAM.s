@@ -188,8 +188,11 @@ Riff_Stack:
         Res_RAM Riff_Ends_At, 5*8
         Res_RAM Riff_Returns_To, 5*8
     .else
-        Res_RAM Riff_Ends_At, 5*4
-        Res_RAM Riff_Returns_To, 5*4
+        Res_RAM Riff_Ends_At, 5*8
+        Res_RAM Riff_Returns_To, 5*8
+
+        ; Res_RAM Riff_Ends_At, 5*4
+        ; Res_RAM Riff_Returns_To, 5*4
     .endif
     ;Recursion depth of 7 per channel. idx 0 = "In Root"
         ;Only DMC and Noise realistically need this much.

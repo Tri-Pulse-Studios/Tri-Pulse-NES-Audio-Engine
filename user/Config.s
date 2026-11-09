@@ -13,17 +13,20 @@
             ;Reserves $a0 (160) Bytes of contiguous standard RAM.
             ;Valid range is $300-$760  or  $00-$60
                 ;Presumes OAM is Page 2.
-            ;and not overlapping w/ ZP_RAM_Start
+                
 
         Riff_Buffer_Start = $300
             ;Reserves $50 or $a0 (80 or 160) Bytes of contiguous standard RAM.
             ;Valid range is $300-$7b0 or $300-$760
 
+        ;All RAM allocations must be Non-Overlapping.
+
         Expand_Max_Riff_Depth = 1
             ;0 = Max depth 4. Uses 80 Bytes of RAM  
             ;1 = Max depth 8. Uses 160 Bytes of RAM
             ;
-            ; Disable only if you can't spare the RAM
+            ; Disable only if the extra RAM can't be spared.
+                ; CURRENTLY UNIMPLIMENTED
 
     ;========================================================
     ;Runtime Debugging Tools
