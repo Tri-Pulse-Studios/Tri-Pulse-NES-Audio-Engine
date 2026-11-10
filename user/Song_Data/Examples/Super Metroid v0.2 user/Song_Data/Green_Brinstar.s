@@ -555,7 +555,7 @@ Channel Green_Brinstar_Noise
         Duration _1111, Hat_1,Hat_1,Snare_8,Hat_1
 
         Repeat _1, 6
-        ;4.5
+
         Notes 8th,Hat_1,  8th,Hat_1,  
         Duration _0000, Snare_9_K, Hat_1, Snare_8_K, Snare_8_K
 

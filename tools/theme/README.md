@@ -10,7 +10,7 @@ A custom Visual Studio Code dark theme and syntax highlighting extension for ca6
 
 ## Installation
 
-1. Locate `tri-pulse-studios-ca65-custom-theme-1.0.0.vsix`.
+1. Locate the `ca65-custom-theme-<version>.vsix` file.
 2. In VS Code, open the Extensions view.
 3. Open the Extensions menu (`...`) and select **Install from VSIX...**.
 4. Select the VSIX file.
@@ -18,7 +18,7 @@ A custom Visual Studio Code dark theme and syntax highlighting extension for ca6
 Alternatively, install it from the terminal:
 
 ```bat
-code --install-extension tri-pulse-studios-ca65-custom-theme-1.0.0.vsix
+code --install-extension ca65-custom-theme-<version>.vsix
 ```
 
 ## Usage

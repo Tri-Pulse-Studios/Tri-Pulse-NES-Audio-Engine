@@ -113,53 +113,53 @@
 ;===============================================================
 
   ;Repeated Shifts
-  .macro lsrn Repeat
-    .repeat Repeat
+  .macro lsrn num_repeats
+    .repeat num_repeats
     lsr
     .endrepeat
   .endmacro
 
-  .macro rorn Repeat
-    .repeat Repeat
+  .macro rorn num_repeats
+    .repeat num_repeats
     ror
     .endrepeat
   .endmacro
 
-  .macro asln Repeat
-    .repeat Repeat
+  .macro asln num_repeats
+    .repeat num_repeats
     asl
     .endrepeat
   .endmacro
 
-  .macro roln Repeat
-    .repeat Repeat
+  .macro roln num_repeats
+    .repeat num_repeats
     rol
     .endrepeat
   .endmacro
 
 
   ;Repeated Register Decriments.
-  .macro deyn Repeat
-    .repeat Repeat
+  .macro deyn num_repeats
+    .repeat num_repeats
       dey
     .endrepeat
   .endmacro
 
-  .macro inyn Repeat
-    .repeat Repeat
+  .macro inyn num_repeats
+    .repeat num_repeats
       iny
     .endrepeat
   .endmacro
 
 
-  .macro dexn Repeat
-    .repeat Repeat
+  .macro dexn num_repeats
+    .repeat num_repeats
       dex
     .endrepeat
   .endmacro
 
-  .macro inxn Repeat
-    .repeat Repeat
+  .macro inxn num_repeats
+    .repeat num_repeats
       inx
     .endrepeat
   .endmacro
@@ -248,7 +248,7 @@
         ; Error checks collisions
 
         ;
-    .macro Name_Cache Cache_Index, new_name 
+    .macro name_cache Cache_Index, new_name 
         .if Cache_Index > 15
         .error "INVALID CACHE ADDRESS PROVIDED. Valid Range 0-15 (Not 0-f)"
         .else
@@ -268,14 +268,14 @@
     .macro name_tmp Cache_Index, new_name
 
         clear_cache Cache_Index, .ident(.concat("tmp_", .string(Cache_Index)))
-        Name_Cache Cache_Index, new_name
+        name_cache Cache_Index, new_name
 
     .endmacro
 
     .macro clear_tmp Cache_Index, old_name
 
         clear_cache Cache_Index, old_name
-        Name_Cache Cache_Index, .ident(.concat("tmp_", .string(Cache_Index)))
+        name_cache Cache_Index, .ident(.concat("tmp_", .string(Cache_Index)))
 
     .endmacro
 
@@ -327,14 +327,14 @@
 
     ;Init tmp names
         .repeat 16, I
-        Name_Cache I, .ident(.concat("tmp_", .string(I)))
+        name_cache I, .ident(.concat("tmp_", .string(I)))
         .endrepeat
 
-        ; Name_Cache 0, tmp_0
-        ; Name_Cache 1, tmp_1
+        ; name_cache 0, tmp_0
+        ; name_cache 1, tmp_1
         ;...
-        ; Name_Cache 14, tmp_14
-        ; Name_Cache 15, tmp_15
+        ; name_cache 14, tmp_14
+        ; name_cache 15, tmp_15
 ;
 
 ;===============================================================
@@ -489,57 +489,3 @@
 ;
 
 
-;===============================================================
-;Music Engine
-;===============================================================
-   
-    ;===========================================================
-    ;Organizing Misc Effects
-    ;===========================================================
-
-    .macro SFX_Type _Name, _Data
-
-        .ifndef SFX_Type_Index
-
-        Pre_Data = 0
-        Data_Block = 1
-        Post_Data = 2
-
-        SFX_Type_Index .set $f8 ;$f0-$f7 is Custom Volume
-        SFX_Data_Phase .set Pre_Data
-
-        .endif
-
-
-        .if SFX_Type_Index >= $100 
-            .error "SFX_Type Error: Index overflow (f0..ff)"
-            .exitmacro
-        .endif
-
-
-        .ifblank _Data 
-
-            .if SFX_Data_Phase = Data_Block
-            SFX_Data_Phase .set Post_Data
-            .endif
-
-        .else  
-
-            .if SFX_Data_Phase = Post_Data   
-            .error "SFX_Type Error:  Missing SFX Data (All w/o data must be at Start or End)"
-
-            .elseif SFX_Data_Phase = Pre_Data
-            SFX_Data_Phase .set Data_Block
-            
-            .endif 
-
-            .byte _Data
-
-        .endif
-
-        _Name = SFX_Type_Index                ; symbol
-        SFX_Type_Index .set SFX_Type_Index + 1        ; next
-
-    .endmacro
-
-;

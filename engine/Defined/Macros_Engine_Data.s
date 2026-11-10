@@ -671,7 +671,7 @@
 
         LUT_Vibrato_Delays:
             .repeat Vib_Delay_Index, I
-                .byte <~.ident(.sprintf("Vib_Delay_%02x", I))
+                .byte <~.ident(.sprintf("Vib_Delay_%02x", I)) ;Verify the ~ is needed.
             .endrepeat
 
     .endmacro
@@ -931,5 +931,87 @@
 
     .endmacro
 
+
+;
+
+
+
+;===========================================================
+;Misc Effects
+;===========================================================
+
+    .macro MiscFX _Name, _Data
+
+        .ifndef SFX_Data_Phase
+            Pre_Data = 0
+            Data_Block = 1
+            Post_Data = 2
+
+            SFX_Data_Phase .set Pre_Data
+
+            First_sfx_data .set -1
+            Last_sfx_data .set -1
+
+        .endif
+
+
+        .if MiscFX_Index >= $100 
+            .error "MiscFX Error: Index overflow (f0..ff)"
+            .exitmacro
+        .endif
+
+
+        .ifblank _Data 
+
+            .if SFX_Data_Phase = Data_Block
+                SFX_Data_Phase .set Post_Data
+
+                Last_sfx_data .set MiscFX_Index
+            .endif
+
+        .else  
+
+            .if SFX_Data_Phase = Post_Data   
+                .error "MiscFX Error:  Missing SFX Data (All w/o data must be at Start or End)"
+
+            .elseif SFX_Data_Phase = Pre_Data
+                SFX_Data_Phase .set Data_Block
+                
+                First_sfx_data .set MiscFX_Index
+            .endif 
+
+            .ident(.sprintf("MiscFX_%02x", MiscFX_Index)) = _Data
+
+        .endif
+
+        _Name = MiscFX_Index                ; symbol
+        MiscFX_Index .set MiscFX_Index + 1        ; next
+
+    .endmacro
+
+    .macro Output_MiscFX_Data
+
+        .if First_sfx_data = -1
+
+            .warning "MiscFX Warning: No SFX data was emitted."
+            LUT_MiscFXs_Data = *
+
+        .else
+
+            .if Last_sfx_data = -1
+                Last_sfx_data .set MiscFX_Index
+            .endif
+
+
+            LUT_MiscFXs_Data = * - (First_sfx_data & $f) ;Skip Emission for those w/o lda,y Data.
+
+            .repeat Last_sfx_data - First_sfx_data, I
+                .byte .ident(.sprintf("MiscFX_%02x", First_sfx_data + I))
+
+            .endrepeat
+
+        .endif
+
+    .endmacro
 
 ;

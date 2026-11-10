@@ -40,20 +40,64 @@
 
  
 
-nmi:
-    .if Debugging_Enabled
+.macro Update_Displayed_Addresses
+    lda Pressed_Button
+    bne @exit ;not enough time to update in nmi if Song also changes.
+
+    ldy #$04
+    @Loop_5_Channels:
+    sty irq_tmp_0
+
+        lda LUT_Addr_Possitions,y
+        tax
+
+        lda LUT_Addr_Words,y ;lda #`Sq0`
         
+        ldy #$22
+        jsr Set_16bit_PPU_ADDR_Display_Word 
 
-        lda Spinning_Flag
-        beq @skip
 
-            Runtime_Exception "Runtime Exception: Frame Overrun. NMI fired before the previous frame finished. Debug the code that hung."
-        
-        @skip:
-        lda #$01
-        sta Spinning_Flag
-    .endif
+        lda #_Hex ;`: $`
+        jsr Display_Word
 
+        ;Display Pointer
+            lda irq_tmp_0
+            asln 2
+            tax
+
+            lda Note_Data_High,x
+            lsrn 4
+            tay
+            lda LUT_Hex_Tiles,y
+            sta $2007
+
+            lda Note_Data_High,x
+            and #$0f
+            tay
+            lda LUT_Hex_Tiles,y
+            sta $2007
+
+            lda Note_Data,x
+            lsrn 4
+            tay
+            lda LUT_Hex_Tiles,y
+            sta $2007
+
+            lda Note_Data,x
+            and #$0f
+            tay
+            lda LUT_Hex_Tiles,y
+            sta $2007
+
+    ldy irq_tmp_0
+    dey
+    bpl @Loop_5_Channels
+
+    @exit:
+.endmacro
+
+
+.macro Update_Selected_Track
     lda Pressed_Button
     and #up+down+left+right 
     beq @skip_UD
@@ -85,7 +129,9 @@ nmi:
         ;If can be fancy, a hold -> Scroll faster Would be nice.
 
     @skip_UD:
+.endmacro
 
+.macro Check_Init_Song
 
     bit Pressed_Button
     bpl skip_A ;A_Button
@@ -100,13 +146,6 @@ nmi:
 
     skip_A:
 
-    ; bit Pressed_Button
-    ; bvc @skip_B ;B_Button
-
-    ;     lda #Song_Silence_Index
-    ;     jsr Song_Init
-
-    ; @skip_B:
     bit Pressed_Button
     bvc @skip_B
 
@@ -115,11 +154,33 @@ nmi:
     @skip_B:
 
 
-    jsr Update_Displayed_Addresses
+.endmacro 
+
+nmi:
+    .if Debugging_Enabled
+        
+
+        lda Spinning_Flag
+        beq @skip
+
+            Runtime_Exception "Runtime Exception: Frame Overrun. NMI fired before the previous frame finished. Debug the code that hung."
+        
+        @skip:
+        lda #$01
+        sta Spinning_Flag
+    .endif
+
+    Inline Update_Selected_Track
+    Inline Check_Init_Song
+
+    Inline Update_Displayed_Addresses
 
     lda #$00
     sta $2005 ;Set Scroll
     sta $2005
+
+    lda #%000001110 ;Enable bkgrd, disable Sprites
+    sta $2001
 
     Inline OAM_DMA_Controller_Read
 
@@ -141,9 +202,10 @@ Update_Now_Playing:
     sta $2006
 
     ldx Song_ID
-    bal Display_Track_Name, bpl ; ;Tail Call
+    bal Display_Track_Name, bpl
 
 
+;Tail Call
 
     ;In A= Display Index (+1 of Song Index)
 Update_Track_Cursor:
@@ -169,10 +231,11 @@ Update_Track_Cursor:
     lda #__dash__
     jsr Display_Word
 
-;   bal Display_Track_Name, bpl ; ;Tail Call
+    ;bal Display_Track_Name, bpl
+; Fall Through
 
 
-;In X= Track Index
+    ;In X= Track Index
 Display_Track_Name:
 
     ldy LUT_Name_Start_Indexes,x 
@@ -208,9 +271,9 @@ rts
 
 
     ;In X= Low Byte
-        ;High Byte hardcoded $21
+    ;   Y= High Byte ;Optionally Hardcoded $21
 
-    ; A= Fallthrough Word_ID 
+    ; A= UI_Word 
 Set_PPU_ADDR_Display_Word:
     ldy #$21
     Set_16bit_PPU_ADDR_Display_Word:
@@ -219,9 +282,11 @@ Set_PPU_ADDR_Display_Word:
     sty $2006
         ;In X= Low Byte
     stx $2006
-;jmp Display_Word
+    ; jmp Display_Word
 
-;In A= Word Index to Display
+; Fall Through
+
+;In A= UI_Word 
 Display_Word:
     ;and #$7f
     tax ;Trashes Track_Index
@@ -238,97 +303,20 @@ Display_Word:
         bpl @loop_word
 
 
-@rts:
+    @rts:
 ldx Track_Index ;restore
 rts
 ;OUT X= Track Index
 ;    NFlag = ldx 
 
 
-Display_Nibble = 0
-Update_Displayed_Addresses:
-    lda Pressed_Button
-    bne @rts ;not enough time to update in nmi if Song also changes.
-
-    ldy #$04
-    @Loop_5_Channels:
-    sty irq_tmp_0
-
-        lda @LUT_Possition,y
-        tax
-
-        lda @LUT_Words,y ;lda #`Sq0`
-        
-        ldy #$22
-        jsr Set_16bit_PPU_ADDR_Display_Word 
 
 
-        lda #_Hex ;`: $`
-        jsr Display_Word
+LUT_Addr_Possitions:
+    .byte $65,  $71,  $a5,  $ea,  $b1
 
-        ;Display Pointer
-            lda irq_tmp_0
-            asln 2
-            tax
+LUT_Addr_Words:
+    .byte _Sq0, _Sq1, _Tri, _Noi, _DMC
 
-            lda Note_Data_High,x
-            lsrn 4
-            tay
-            lda @LUT_Hex,y
-            sta $2007
-
-            lda Note_Data_High,x
-            and #$0f
-            tay
-            lda @LUT_Hex,y
-            sta $2007
-
-            lda Note_Data,x
-            lsrn 4
-            tay
-            lda @LUT_Hex,y
-            sta $2007
-
-            lda Note_Data,x
-            and #$0f
-            tay
-            lda @LUT_Hex,y
-            sta $2007
-
-        ;Display Nibble
-        .if Display_Nibble
-            lda Read_by_Nibble_Flag,x
-            lsr ;Nibble
-
-            lda #'.'
-            sta $2007
-
-            
-            lda #'0'
-            adc #$00
-            sta $2007
-        .endif
-
-    ldy irq_tmp_0
-    dey
-    bpl @Loop_5_Channels
-
-    @rts:
-rts
-
-.if Display_Nibble
-    @LUT_Possition:
-    .byte $64, $72, $a4, $e9, $b2
-
-    .else
-
-     @LUT_Possition:
-    .byte $65, $71, $a5, $ea, $b1
-
-.endif
-
-@LUT_Words:
-.byte _Sq0, _Sq1, _Tri, _Noi, _DMC
-
-@LUT_Hex:
+LUT_Hex_Tiles:
     .byte "0123456789abcdef"

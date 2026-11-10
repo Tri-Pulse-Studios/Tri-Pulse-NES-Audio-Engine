@@ -1,10 +1,10 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "6502/65816 Assembly",
+	"name": "Tri-Pulse CA65",
 	"patterns": [
 		{
 			"include": "#comments"
-		},
+		}, 
 		{
 			"include": "#punctuation"
 		}, 
@@ -25,7 +25,11 @@
 		},
 
 		{
-			"include": "#variables"
+			"include": "#tp_macros"
+		},
+
+		{
+			"include": "#tp_noise"
 		},
 
 		{
@@ -47,7 +51,11 @@
 			"include": "#labels"
 		}
 	],
+
+
 	"repository": {
+
+
 		"comments": {
 			"patterns": [{
 				"name": "comment.line.ca65",
@@ -68,6 +76,7 @@
 				"match": ","
 			}]
 		},
+
 		"literals": {
 			"patterns": [{
 				"name": "constant.numeric.binary.ca65",
@@ -88,16 +97,18 @@
 			}, {
 				"name": "constant.language.unnamed-label.ca65",
 				"match": ":-+|:\\++"
-				}, {
+			}, {
+	
+				"name": "variable.label",
+				"match": "(?<=(?i:jds|jdc|jeq|jne|jmi|jpl|jcc|jcs|jvs|jvc|bcc|bcs|beq|bne|bmi|bne|bpl|bvc|bvs|jmp|jsr|Riff |Riff[^,]*, |Loop[^,]*, |Loop |Repeat |Inc_Page |Channel |Inline ))\\s*(?!\\\")[^\\s\\\"]+"
+			}, {
+	
+				"name": "variable.label",
+				"match": "^\\s*\\S*:"
+			}]
+		},	
 		
-					"name": "variable.label",
-					"match": "(?<=(?i:jds|jdc|jeq|jne|jmi|jpl|jcc|jcs|jvs|jvc|bcc|bcs|beq|bne|bmi|bne|bpl|bvc|bvs|jmp|jsr|Riff |Riff[^,]*, |Loop[^,]*, |Loop |Repeat |Inc_Page |Channel |Inline ))\\s*(?!\\\")[^\\s\\\"]+"
-				}, {
 		
-					"name": "variable.label",
-					"match": "^\\s*\\S*:"
-				}]
-		},		
 		"strings": {
 			"name": "string.quoted.double.ca65",
 			"begin": "\"",
@@ -128,43 +139,163 @@
 				"match": "=|<>|:=|\\+|-|\\*|/|\\&|~|\\||<<|>>|\\&\\&|\\|\\||!|<|>|<=|>="	
 			}]
 		},
+
 		"opcodes": {
-			"patterns": [{
-				"comment": "6502 Macros",
-				"name": "entity.name.function.macro",
-				"match": "\\bSet_Env\\b"
-			},
-			{
-				"comment": "Other 6502 Macros (case-insensitive)",
-				"name": "entity.name.function.macro",
-				"match": "\\b(?i:Inline|Song|NoiseFX|Res_RAM|Res_5_Channels|Set_Pitch|Shift_Pitch|Repeat|Riff|Inc_Page|Duration|Notes|If_Alt|Loop|Channel|Noise_Header|Header|clear_tmp|name_tmp|Env|inh|deh|lsrn|asln|rorn|roln|add|sub|jds|jdc|tdeq|cld|sed|jeq|jne|jmi|jpl|jcc|jcs|jvs|jvc|balt|balte|bage|bagne|bae|bane|bxl|bxle|bxge|bxgne|bxe|bxne|byl|byle|byge|bygne|bye|byne|phx|phy|ply|plx|plaxy|phaxy|asr)\\b"
-			}, {
-				
-				"comment": "6502 Opcodes",
-				"name": "keyword.other.opcode.ca65.65c02",
-				"match": "\\b(?i:adc|and|asl|bcc|bcs|beq|bit|bmi|bne|bpl|brk|bvc|bvs|clc|cli|clv|cmp|cpx|cpy|dec|dex|dey|eor|inc|inx|iny|jmp|jsr|lda|ldx|ldy|lsr|nop|ora|pha|php|pla|plp|rol|ror|rti|rts|sbc|sec|sei|sta|stx|sty|tax|tay|tsx|txa|txs|tya)\\b"
-			}, {
-				"comment": "65C02 Opcodes",
-				"name": "keyword.other.opcode.ca65.65c02",
-				"match": "\\b(?i:bra|phx|phy|plx|ply|stz|trb|tsb|bbr0|bbr1|bbr2|bbr3|bbr4|bbr5|bbr6|bbr7|bbs0|bbs1|bbs2|bbs3|bbs4|bbs5|bbs6|bbs7|rmb0|rmb1|rmb2|rmb3|rmb4|rmb5|rmb6|rmb7|smb0|smb1|smb2|smb3|smb4|smb5|smb6|smb7)\\b"
-			}, {
-
-
-				"comment": "65816 Opcodes",
-				"name": "keyword.other.opcode.ca65.65816",
-				"match": "\\b(?i:brl|cop|jml|jsl|mvn|mvp|pea|pei|per|phb|phd|phk|plb|pld|rep|rtl|sep|stp|tcd|tcs|tdc|tsc|txy|tyx|wai|wdm|xba|xce)\\b"
-			}, {
-				"comment": "65816 Opcodes",
-				"name": "keyword.other.opcode.ca65.65816",
-				"match": "\\b(?i:brl|cop|jml|jsl|mvn|mvp|pea|pei|per|phb|phd|phk|plb|pld|rep|rtl|sep|stp|tcd|tcs|tdc|tsc|txy|tyx|wai|wdm|xba|xce)\\b"
-			}, {
-				"comment": "65816 Opcode Aliases",
-				"name": "keyword.other.opcode.ca65.65816",
-				"match": "\\b(?i:bge|blt|cpa|dea|ina|swa|tad|tas|tda|tsa)\\b"
-			}]
+			"patterns": [
+				{
+					"comment": "Official 6502 Opcodes",
+					"name": "keyword.other.opcode.ca65.6502",
+					"match": "\\b(?i:adc|and|asl|bcc|bcs|beq|bit|bmi|bne|bpl|brk|bvc|bvs|clc|cli|clv|cmp|cpx|cpy|dec|dex|dey|eor|inc|inx|iny|jmp|jsr|lda|ldx|ldy|lsr|nop|ora|pha|php|pla|plp|rol|ror|rti|rts|sbc|sec|sei|sta|stx|sty|tax|tay|tsx|txa|txs|tya)\\b"
+				}
+			]
 		},
 
+
+		"tp_macros": {
+			"patterns": [
+				{
+					"comment": "Music Scaffolding Macros",
+					"name": "keyword.other.tp_macros.ca65.scaffolding",
+					"match": "\\b(Channel|Header|Noise_Header|Loop|Inc_Page)\\b"
+				},
+				{
+					"comment": "Code Macros",
+					"patterns": [
+						{
+							"comment": "Math",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(asr|add|sub)\\b"
+						},
+						{
+							"comment": "Repeated Instructions",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(lsrn|rorn|asln|roln|deyn|inyn|dexn|inxn)\\b"
+						},
+						{
+							"comment": "Stack",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(phaxy|plaxy|phx|plx|phy|ply|phm|plm)\\b"
+						},
+						{
+							"comment": "Naming",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(Inline|name_cache|name_tmp|clear_tmp|clear_cache|Res_RAM|Res_5_Channels)\\b"
+						},
+						{
+							"comment": "Branching",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|bds|bdc|jds|jdc)\\b"
+						},
+						{
+							"comment": "Debugging",
+							"name": "keyword.other.tp_macros.ca65.code",
+							"match": "\\b(Runtime_Exception)\\b"
+						}
+					]
+				},
+				{
+					"comment": "Music DSL Instructions Macros",
+					"patterns": [
+						{
+							"comment": "Notes",
+							"name": "keyword.other.tp_macros.ca65.music_dsl",
+							"match": "\\b(Notes)\\b"
+						},
+						{
+							"comment": "Compression",
+							"name": "keyword.other.tp_macros.ca65.music_dsl",
+							"match": "\\b(If_Alt|Riff|Repeat|Duration)\\b"
+						},
+						{
+							"comment": "Engine State",
+							"name": "keyword.other.tp_macros.ca65.music_dsl",
+							"match": "\\b(Set_Pitch|Shift_Pitch|Set_Env|Set_Env_Bank)\\b"
+						},
+						{
+							"comment": "Miscellaneous",
+							"name": "keyword.other.tp_macros.ca65.music_dsl",
+							"match": "\\b(Vol_Fade_In|Vol_Fade_Out|Set_Volume)\\b"
+						},
+						{
+							"comment": "Macro Subroutines",
+							"name": "keyword.other.tp_macros.ca65.music_dsl.subroutine",
+							"match": "\\b(Define_Pitches|Sub_Note|Assert_Valid_Pitch|Set_Pitch_Data|Sub_Repeat|Sub_Duration|Sub_Pair_Duration|Sub_Shift_Pitch)\\b"
+						}
+					]
+				},
+				{
+					"comment": "Music Data Macros",
+					"patterns": [
+						{
+							"comment": "Sound Effects",
+							"name": "keyword.other.tp_macros.ca65.data",
+							"match": "\\b(SFX|NoiseFX|NB_Validate|Kick_Type)\\b"
+						},
+						{
+							"comment": "Envelopes",
+							"name": "keyword.other.tp_macros.ca65.data",
+							"match": "\\b(Env|Env_Bank|Vibrato_Delay|Vibrato_Cycle)\\b"
+						},
+						{
+							"comment": "Misc",
+							"name": "keyword.other.tp_macros.ca65.data",
+							"match": "\\b(Song|Duration_Set|MiscFX)\\b"
+						},
+						{
+							"comment": "Data Output",
+							"name": "keyword.other.tp_macros.ca65.data.output",
+							"match": "\\b(Output_Song_Pointers|Output_SFX|Output_NoiseFX|Output_Kick_Type|Output_Env|Output_Vibrato_Delays|Output_Vibrato_Cycles|Output_Duration_Sets|Output_MiscFX_Data)\\b"
+						},
+						{
+							"comment": "Macro Subroutines",
+							"name": "keyword.other.tp_macros.ca65.data.subroutine",
+							"match": "\\b(Sub_SFX|Sub_Env|Sub_Vibrato_Cycle|Sub_Duration_Set|Dur_Opcode_Calc)\\b"
+						}
+					]
+				}
+
+
+			]
+		},
 		
+		"tp_noise": {
+			"patterns": [
+				{
+					"comment": "Dark Brown",
+					"name": "constant.other.tp_noise.dark_brown",
+					"match": "\\b(Crash|Tamb)_[0-9a-f](?=_|\\b)"
+				},
+				{
+					"comment": "Medium Brown",
+					"name": "constant.other.tp_noise.med_brown",
+					"match": "\\b(Rasp|Shaker)_[0-9a-f](?=_|\\b)"
+				},
+				{
+					"comment": "Light Brown",
+					"name": "constant.other.tp_noise.light_brown",
+					"match": "\\bHat_[0-9a-f](?=_|\\b)"
+				},
+
+				
+				{
+					"comment": "Dark Russet",
+					"name": "constant.other.tp_noise.dark_russet",
+					"match": "\\b(Wash|Timpani)_[0-9a-f](?=_|\\b)"
+				},
+				{
+					"comment": "Medium Russet",
+					"name": "constant.other.tp_noise.med_russet",
+					"match": "\\bSnare_[0-9a-f](?=_|\\b)"
+				},
+				{
+					"comment": "Light Russet",
+					"name": "constant.other.tp_noise.light_russet",
+					"match": "\\bCymbal_[0-9a-f](?=_|\\b)"
+				}
+			]
+		},
+
+
 		"pseudovars": {
 			"patterns": [{
 				"name": "keyword.control.pseudovar.ca65",

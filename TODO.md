@@ -23,29 +23,22 @@
 
 - **Pre-Alpha Stability:** The engine has not yet reached a polished, user-friendly release. Expect rough edges and potential bugs as development continues.
 
+
+
+
 ## v0.2 Plans 
 
-### Misc FX
-- A macro for the Misc effects is needed.
 
-### Minor Bugs
-- Templates has outdated Global tag markers.
+
 
 ### README Updates
 
 -  Refine README organization and presentation.
 	- Consistant formating.
-	- Improve documentation of assembly macros and engine behavior.
-	- Add more complete usage examples.
-
-- Document more Advanced Compression Techniques.
+	- New macros need documenting.
 
 - Likely splitting the README into multiple files, as it is rather long.
 
-### Deterministic Start
-- RAM, Stack Pointer, and Frame Start are currently all non-deterministic.
-	- This project was build to be highly minimal, and many shortcuts were taken for a specific project. Details TBA.
-- The general build on GitHub needs these shortcuts removed. 
 
 ### vscode Theme
 - Updates to highlight more kinds of text.
@@ -58,7 +51,19 @@
 		- `Env, SFX`, their data emitters, and `Channel, Header, Loop` are fundamentally different. The classify and organize data, and aren't intructions.
 			- Maybe a slightly Redder shade of purple for them? Sorta halfway between ca65 directives and macros?
 
+
+
+
 ## v0.3 Plans
+
+### README Updates
+- Improve documentation of assembly macros and engine behavior.
+- Add more complete usage examples.
+- Document more Advanced Compression Techniques.
+
+- Likely splitting the README into multiple files, as it is rather long.
+
+
 
 ### Tools
 -  Song Validator

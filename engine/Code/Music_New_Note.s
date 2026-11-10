@@ -158,7 +158,7 @@ py_Segment_End Pre_New_Note
 
 
 py_Segment LUT_Music_Opcodes_Low, Free
-    .assert >(Misc_FXs -1) = >(Special_Length - 1), warning, "Not All Music Instructions fit in a Page."
+    .assert >(MiscFXs_Instruction -1) = >(Special_Length - 1), warning, "Not All Music Instructions fit in a Page."
         ;This is presuming that Special Length is stored last, and Misc Sfx stored first.
 
     LUT_Music_Opcodes_Low:
@@ -180,7 +180,7 @@ py_Segment LUT_Music_Opcodes_Low, Free
     .byte <(Riff_Call_Short - 1) ;C = Call riff  ;Re-read  3-16 bytes
     .byte <(Riff_Call_Medium - 1)                ;Re-read 17-32 bytes
     .byte <(Change_Envelope - 1) ;E = Env change
-    .byte <(Misc_FXs - 1) ;F = misc eFfects
+    .byte <(MiscFXs_Instruction - 1) ;F = misc eFfects
 
 ;
 py_Segment_End LUT_Music_Opcodes_Low
@@ -375,11 +375,11 @@ Reset_Channel:
 All_Music_Opcodes: 
     ;
         ;$f-:
-    Misc_FXs:
+    MiscFXs_Instruction:
 
         tay
         ;beq Func_Clear_Special_Effects ;Idea
-        lda LUT_Misc_FXs_Data - SFX_Type_Offset,y ;Only the last few need data.
+        lda LUT_MiscFXs_Data,y ;- MiscFX_Offset,y ;Only the last few need data.
 
 
         cpy #(Common_Fade_Out & $f)

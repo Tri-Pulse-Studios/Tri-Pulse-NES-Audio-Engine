@@ -73,7 +73,7 @@ Channel Schala_Theme_Tri
             Set_Env T_12v_3f_m3
             Set_Pitch Gs3
 
-            Notes 14*_8th,Ds4, 8th,Cs4, 8th,As3
+            Notes 14*_8th,Ds4, 8th,Cs4, 8th,As3 
 
             Notes whl,F4, whl,Cs4
 

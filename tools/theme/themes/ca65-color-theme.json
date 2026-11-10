@@ -19,40 +19,96 @@
   },
   "tokenColors": [
     {
-      "scope": "keyword.control.controlcommand.ca65, keyword.control",
-      "settings": { "foreground": "#C586C0" }
-    },
-    {
-      "scope": "string.quoted.double.ca65, string",
-      "settings": { "foreground": "#CE9178" }
-    },
-    {
-      "scope": "comment.line.ca65, comment",
-      "settings": { "foreground": "#7CA668" }
-    },
-    {
-      "scope": "constant.numeric.hex.ca65, constant.numeric",
-      "settings": { "foreground": "#DDAA33" }
-    },
-    {
       "scope": "source.ca65",
       "settings": { "foreground": "#e0e0e0" }
     },
+    
+
+    {
+      "scope": "string.quoted.double.ca65, string",
+      "settings": { "foreground": "#c07060" }
+    },
+
+    {
+      "scope": "constant.numeric.hex.ca65, constant.numeric",
+      "settings": { "foreground": "#D8B45A" }
+    },
+
+    {
+      "scope": "comment.line.ca65, comment",
+      "settings": { "foreground": "#80a060" }
+    },
+
+
     {
       "scope": "variable.label, variable",
-      "settings": { "foreground": "#9CDCFE" }
+      "settings": { "foreground": "#90C8E0" }
     },
+
     {
-      "scope": "keyword.other.opcode.ca65.65c02, keyword",
-      "settings": { "foreground": "#569CD6" }
+      "scope": "keyword.other.opcode.ca65.6502, keyword",
+      "settings": { "foreground": "#50a0d0" }
     },
-    {
-      "scope": "entity.name.function.macro, entity.name.function",
-      "settings": { "foreground": "#AA66DD" }
-    },
+
     {
       "scope": "constant.numeric.musicname.ca65",
       "settings": { "foreground": "#9999FF" }
+    },
+
+
+    {
+        "scope": "keyword.other.tp_macros.ca65.code",
+        "settings": { "foreground": "#a070d0" }
+    },
+    {
+        "scope": "keyword.other.tp_macros.ca65.music_dsl",
+        "settings": { "foreground": "#a070d0" }
+    },
+
+    {
+        "scope": "keyword.other.tp_macros.ca65.data",
+        "settings": { "foreground": "#887898" }
+    },
+    {
+        "scope": "keyword.other.tp_macros.ca65.scaffolding",
+        "settings": { "foreground": "#887898" }
+    },
+
+
+
+
+    {
+        "scope": "constant.other.tp_noise.dark_brown",
+        "settings": { "foreground": "#997c73" }
+    },
+    {
+        "scope": "constant.other.tp_noise.med_brown",
+        "settings": { "foreground": "#a9887d" }
+    },
+    {
+        "scope": "constant.other.tp_noise.light_brown",
+        "settings": { "foreground": "#c9aa9f" }
+    },
+
+
+    {
+        "scope": "constant.other.tp_noise.dark_russet",
+        "settings": { "foreground": "#c07050" }
+    },
+    {
+        "scope": "constant.other.tp_noise.med_russet",
+        "settings": { "foreground": "#cc7c54" }
+    },
+    {
+        "scope": "constant.other.tp_noise.light_russet",
+        "settings": { "foreground": "#E5A078" }
+    },
+
+
+    {
+      "scope": "keyword.control.controlcommand.ca65, keyword.control",
+      "settings": { "foreground": "#d090b0" }
     }
+
   ]
 }

@@ -5,7 +5,6 @@
 ;===============================================================
 
 
- 
 
    ;LOTS of errors?  Likely ended a scope w/o starting one or vice versa
   .macro Channel Label, Scope_Name
@@ -15,12 +14,9 @@
     _8th = ::_8th
 
 
-
-
     Define_Pitches ;a0 = 0, as0 = 1 ,etc
 
   .endmacro
-
 
 
   .macro Define_Pitches
@@ -1080,22 +1076,17 @@
     .endmacro
 
 
-    .macro Output_Song
+    .macro Output_Song_Pointers
 
         Max_Track_Index .set (Song_Index -1)
 
-        ; -------------------------
-        ; Length table
-        ; -------------------------
+
         LUT_Song_8th_Length:
         .repeat Song_Index, I
             .byte .ident(.sprintf("Song%02x_Len", I))
         .endrepeat
 
 
-        ; -------------------------
-        ; Pointer LOW (row-major, 5 per song)
-        ; -------------------------
         LUT_Song_Ptr_Low:
         .repeat Song_Index, I
             .byte <.ident(.sprintf("Song%02x_Sq0", I))
@@ -1106,9 +1097,6 @@
         .endrepeat
 
 
-        ; -------------------------
-        ; Pointer HIGH
-        ; -------------------------
         LUT_Song_Ptr_High:
         .repeat Song_Index, I
             .byte >.ident(.sprintf("Song%02x_Sq0", I))

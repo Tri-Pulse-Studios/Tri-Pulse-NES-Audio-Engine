@@ -69,13 +69,13 @@
 
         SFX F4_Tom_sfx, R14
         SFX A3_Tom_sfx, R12      ;The three 3-semitone intervals
-        SFX D3_Tom_sfx, R9, 2, DMC_d25_9_81, \
+        SFX D3_Tom_sfx, R9, 2, DMC_d25_V18, \
             1,R9, 0,R8 ;Volume 18
 
-        SFX d25_Kick_sfx, R9, 3, DMC_d25_9_81, \
+        SFX d25_Kick_sfx, R9, 3, DMC_d25_V18, \
             1,R9, 1,R5, 0,R3 ;Volume 18
 
-        SFX d50_Kick_sfx, R9, 2, DMC_Tri, \     
+        SFX d50_Kick_sfx, R9, 2, DMC_d50_V34, \     
             1,R9, 0,R4 ;Volume 34
 
     ;

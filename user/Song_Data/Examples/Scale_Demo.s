@@ -9,6 +9,9 @@ _8th .set 7+6
 Channel Scale_Demo_Sq0
     Header A0, Pad_d12_8_0
 
+    Shift_Pitch +Octave
+    Shift_Pitch -Octave
+
         Notes 8th,rest
     Repeat "1b", $3f 
 

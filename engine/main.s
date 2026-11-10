@@ -22,31 +22,20 @@
 
 .segment "CODE"; Main code segment for the program
 
-
-
-
-;.out .sprintf("Var = $%02x", Var)
-
-  ;Start at $c000 instead of $8000
-    ;DMC samples must start past $c000, and 16K of ROM is plenty.
-  .res $4000, $00 
-
-
-
-
   .include "Defined//Print_PC_as_Warning.s"  
-  .define Print_PC_Enabled 0 ;This is very slow
-
-  ;Above here ignored//hardcoded for tmp
+  .define Print_PC_Enabled 0 ;For the py_Segment stuff, a tool TBA.
 
 py_Segment __Defines, Defines
 
   __Defines:
+
+
+
     Emit__Unused = 0 ;TODO. Make Vestigial
 
-    .feature line_continuations + ; Ending with a "//" lets single lines spill over multiple.
-    .feature underline_in_numbers + ;ie, lda #%1010_0101 is now valid.
-    .feature string_escapes +
+    .feature line_continuations +   ; Ending with a "/" lets long macro invocations split over multiple lines.
+    .feature underline_in_numbers + ; da #%1010_0101 is now valid.
+    .feature string_escapes + ;     ;`\"String\"` inside litteral Quotes.
 
     .include "user//Config.s" ;User settings.
 
@@ -57,14 +46,43 @@ py_Segment __Defines, Defines
     .include "engine//Defined//Macros_Song_Data.s"
     .include "engine//Defined//Macros_UI.s"
 
-
+.assert * = $8000, warning, "Defined Segment Shouldn't emit data."
   .include "user//Engine_Data.s"
+  .assert * = $8000, warning, "Defined Segment Shouldn't emit data."
   .include "user//SFX_Data.s"
+  .assert * = $8000, warning, "Defined Segment Shouldn't emit data."
   .include "user//UI_Data_and_Song_Registry.s"
 
     ;Data emitted elsewhere. Defines names here.
 
 py_Segment_End __Defines
+
+.assert * = $8000, warning, "Defined Segment Shouldn't emit data."
+
+; UI Engine ocupies $8000-$bfff
+py_Segment __Reset_w_UI, Free
+    __Reset_w_UI:
+
+  .include "engine//Code//Music_UI_Reset.s"
+  .include "engine//Code//Music_UI_Update.s"
+
+  Output_UI_Words
+  Output_UI_Text
+
+py_Segment_End __Reset_w_UI 
+
+
+  
+
+  ;Start at $c000 instead of $8000
+    ;DMC samples must start past $c000, and 16K of ROM is plenty.
+  .align $4000
+
+
+
+
+
+
 
 
 
@@ -78,18 +96,17 @@ py_Segment User_Data, Free
 
   Output_Duration_Sets
 
+  Output_MiscFX_Data
   ;Env defined below with DMC Samples.
 
   Output_NoiseFX  ;Macro Output Column-Major LUTs
   Output_Kick_Type ;Macro Output small Kick Type LUT
 
-  Output_Song ;Macro Output Song Pointers
+  Output_Song_Pointers ;Macro Output Song Pointers
 
-  Output_UI_Words
-  Output_UI_Text
 
   
-py_Segment_End NB_Data 
+py_Segment_End User_Data 
 
 
 ;===============================================================
@@ -104,13 +121,7 @@ py_Segment_End NB_Data
 
 
 
-py_Segment __Reset_w_UI, Free
-    __Reset_w_UI:
 
-  .include "engine//Code//Music_UI_Reset.s"
-  .include "engine//Code//Music_UI_Update.s"
-
-py_Segment_End __Reset_w_UI 
 
 
 

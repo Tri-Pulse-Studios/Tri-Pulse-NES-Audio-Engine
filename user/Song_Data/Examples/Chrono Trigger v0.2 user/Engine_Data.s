@@ -305,25 +305,25 @@
     ;WARNING. This is unfinished. 
 
 
-    LUT_Misc_FXs_Data:
+    LUT_MiscFXs_Data:
 
         ;Macros that assign Misc Effect Indicies and Data.
 
             ;SFX_Index .set $f8
-        SFX_Type Init_Sweep   ;Reads (Note_Data,x)
-        SFX_Type Set_Env_Bank_Byte
+        MiscFX Init_Sweep   ;Reads (Note_Data,x)
+        MiscFX Set_Env_Bank_Byte
 
-                SFX_Type_Offset .set (SFX_Type_Index & $0f)
+                MiscFX_Offset .set (MiscFX_Index & $0f)
 
-        SFX_Type Tie_Next_Note, $40
-        SFX_Type Clear_Special_Effects, 0
+        MiscFX Tie_Next_Note, $40
+        MiscFX Clear_Special_Effects, 0
 
-        SFX_Type Plus_Octave, 12
-        SFX_Type Minus_Octave, <-12
+        MiscFX Plus_Octave, 12
+        MiscFX Minus_Octave, <-12
 
             ;Common_FadeOut
-        SFX_Type Common_Fade_Out,    13 << 3 | Vol_12
-        SFX_Type Inc_Page_Byte ;manual lda (Note_Data,x)
+        MiscFX Common_Fade_Out,    13 << 3 | Vol_12
+        MiscFX Inc_Page_Byte ;manual lda (Note_Data,x)
         
 
 

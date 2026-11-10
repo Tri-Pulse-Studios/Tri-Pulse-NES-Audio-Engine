@@ -2,7 +2,6 @@
 
 _8th .set -1
 
-
 .align 256
 
 ;============================================================
@@ -10,7 +9,7 @@ _8th .set -1
 ;============================================================
 
 Channel Song_Name_Sq0
-    Header _BP, _Env
+    Header A0, _Env
 
     Notes whl,rest
 
@@ -22,7 +21,7 @@ Loop Song_Name_Sq0
 ;============================================================
 
 Channel Song_Name_Sq1
-    Header _BP, _Env
+    Header A0, _Env
 
     Notes whl,rest
 
@@ -34,7 +33,7 @@ Loop Song_Name_Sq1
 ;============================================================
 
 Channel Song_Name_Tri
-    Header _BP, _Env
+    Header A0, _Env
 
     Notes whl,rest
 
@@ -46,7 +45,7 @@ Loop Song_Name_Tri
 ;============================================================
 
 Channel Song_Name_dmc
-    Header _BP, _Env
+    Header A0, _Env
 
     Notes whl,rest
 
@@ -58,8 +57,7 @@ Loop Song_Name_dmc
 ;============================================================
 
 Channel Song_Name_Noise
-    Noise_Header ::NB, Kick_Type
-        ; The "::" allows the global NoiseFX_Index variable to be read.
+    Noise_Header _NB, Kick_Type
 
     Notes whl,rest
 
