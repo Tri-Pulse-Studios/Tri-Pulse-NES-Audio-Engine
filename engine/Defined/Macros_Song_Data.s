@@ -1012,49 +1012,42 @@
 
 
     .macro Song Name, Len, v1, v2, v3, v4, v5, \
-                        v6, v7, v8, v9, v10, \
-                        v11, v12, v13, v14, v15, \
-                        v16, v17, v18, v19, v20
+                           v6, v7, v8, v9, v10, \
+                           v11, v12, v13, v14, v15, \
+                           v16, v17, v18, v19, v20
 
-            .local Sq0, Sq1, Tri, Noise, Dmc
 
             .if Song_Index > 61
-            .error "Song Error: Max Index exceeded (0..61)" ;61*5 = 255
-            .exitmacro
-
-            .elseif .xmatch(Name, "Silence")
-                Song_Silence  ;Macro to emit minimal data.
+                .error "Song Error: Max Index exceeded." ;61*5 = 255
+                .out "Song Error: Max Index exceeded (0..61)"
+                .out ""
                 .exitmacro
 
-            ; Guard
-            .elseif .defined(.ident(.concat(.string(Name), "_SongDefined")))
-                .error "Song Error"
+            .elseif .defined(.ident(.concat(.string(Name), "_Index")))
+                .error "Song Error: Song Name already defined."
                 .out .sprintf("Error: Song Name: `%s` is already defined.", .string(Name))
                 .out ""
                 .exitmacro
+
             .endif
 
             ; assign index
             .ident(.concat(.string(Name), "_Index")) .set Song_Index
 
-            ; resolve symbols
-            Sq0   = .ident(.concat(.string(Name), "_Sq0"))
-            Sq1   = .ident(.concat(.string(Name), "_Sq1"))
-            Tri   = .ident(.concat(.string(Name), "_Tri"))
-            Noise = .ident(.concat(.string(Name), "_Noise"))
-            Dmc   = .ident(.concat(.string(Name), "_dmc"))
+            ; store pointers
+            .ident(.sprintf("Song%02x_Sq0", Song_Index)) = .ident(.concat(.string(Name), "_Sq0")) ;Sq0
+            .ident(.sprintf("Song%02x_Sq1", Song_Index)) = .ident(.concat(.string(Name), "_Sq1"))
+            .ident(.sprintf("Song%02x_Tri", Song_Index)) = .ident(.concat(.string(Name), "_Tri"))
+            .ident(.sprintf("Song%02x_Noise", Song_Index)) = .ident(.concat(.string(Name), "_Noise"))
+            .ident(.sprintf("Song%02x_Dmc", Song_Index)) = .ident(.concat(.string(Name), "_dmc"))
 
-            ; store row
-            .ident(.sprintf("Song%02x_Sq0", Song_Index)) = Sq0
-            .ident(.sprintf("Song%02x_Sq1", Song_Index)) = Sq1
-            .ident(.sprintf("Song%02x_Tri", Song_Index)) = Tri
-            .ident(.sprintf("Song%02x_Noise", Song_Index)) = Noise
-            .ident(.sprintf("Song%02x_Dmc", Song_Index)) = Dmc
-
+            ; store tempo
             .ident(.sprintf("Song%02x_Len", Song_Index)) = Len
 
             .if Len = 0 .or Len > 32
-                .warning .sprintf("Song Warning: Tempo > 32 causes 8-bit overflow; note lengths become non-monotonic. Given Tempo = %u", Len)
+                .warning "Song Warning: Non-monotonic Tempo."
+                .out .sprintf("Song Warning: Tempo > 32 causes 8-bit overflow. Note lengths become non-monotonic. Given Tempo = %u", Len)
+                .out ""
             .endif 
 
             ;----------------------------------------
@@ -1067,6 +1060,9 @@
                             v6, v7, v8, v9, v10, \
                             v11, v12, v13, v14, v15, \
                             v16, v17, v18, v19, v20
+
+            ; emit Song Data
+            .include .concat(SONG_DATA_DIR, .string(Name), ".s")
 
             Song_Index .set Song_Index + 1
 

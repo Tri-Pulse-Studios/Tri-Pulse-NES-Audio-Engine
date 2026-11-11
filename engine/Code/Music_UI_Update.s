@@ -243,9 +243,9 @@ Display_Track_Name:
         lda LUT_Song_Names_Text,y
         bpl @letter
 
-            jsr Display_Word
-            bal @skip_else, bpl  
-                ;Track Index is 0..24 iirc
+                @word:
+                jsr Display_Word
+                bal @skip_else, bpl  
 
             @letter:
             sta $2007
@@ -260,7 +260,7 @@ Display_Track_Name:
     ;jmp Clear_7_Tiles ;Tail-Call
 
     ;IN  y = Num to clear.
-        ldy #14 ;So Menu Erases KTB
+        ldy #14 ;So Menu Erases
     Clear_Y_Tiles:
         lda #' ' ;lda tile ID of space.
         @loop_clr: ;Clear a bit of space so old names don't stick around.

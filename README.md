@@ -319,7 +319,7 @@ To identify the cause of an error:
 1. Set Debugging_Enabled = 1 and Rebuild the ROM
 2. Open the ROM in Mesen and reproduce the error.
 3. Open Mesen's debugger and copy the address of the STP opcode. This should match the current Program Counter (PC).
-4. Set Debugging_Crash_Address to that address. For example, Debugging_Crash_Address = $8AC7.
+4. Set Debugging_Address to that address. For example, Debugging_Address = $8AC7.
 5. Rebuild the ROM. The specified crash address will identify the code responsible for the runtime error, along with an explanation of the error and any additional debugging instructions.
 
 *Crash error descriptions and debugging instructions planned for a future release*

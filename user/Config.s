@@ -31,16 +31,40 @@
     ;========================================================
     ;Runtime Debugging Tools
     ;========================================================
+
+        ;See the README for details
+
         Debugging_Enabled = 0
             ;Enables various NES runtime checks in the code.
-            ;If an exception is detected, the console is crashed.
-            ;
-            ;See the README for details
+                ;The console hardlocks if an exception is detected.
 
-        Debugging_Crash_Address = -1
-            ;When a runtime error crashes, set this to the PC of the STP opcode.
-            ;On rebuilding the ROM, this will point to the region of code responsible for the error.
-            ;Further debugging instructions may be included.
+            
+        Debugging_Address = -1
+            ; After an NES Runtime Hardlock, set `Debugging_Address` to the 16-bit address of the STOP opcode. (The $02 Byte)
+                ; After setting, rebuild the ROM.
+                ; A ca65 `.error` will identify the offending code, along with a description of the error.
 
     ;
+    ;========================================================
+    ;Engine Options
+    ;========================================================
+        ; These are Unimplemented. 
+            ; Planned for v0.3 
+            ; See TODO.md for details.
+
+        Include_UI_Engine = 1
+            ; Disable for a custom project.
+                ; The Reset and UI_Update routines are omitted.
+                ; The user is responsible for a custom handler that calls:
+                    ; `lda #<Song_Name>_Index   jsr Init_Song` 
+                    ; `jsr Update_Music`
+
+        Enable_Page_Binner = 0
+            ; Enable the 2-Stage ROM Build.
+                ; Re-organizes Song Data and Engine Code.
+                ; Eliminates the need for `.align 256` padding in Song Data.
+
+                ; Requirements:
+                    ; The external Binning Tool in `tools/`.
+                    ; The Binning Instructions in the `.s` files (currently planned as `py_segment`. Syntax TBD).
 ;

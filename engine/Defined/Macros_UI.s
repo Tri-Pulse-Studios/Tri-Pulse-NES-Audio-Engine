@@ -76,7 +76,7 @@
 
         ; ; End of final song / start of next song
         .byte UI_Text_Index
-        ;Having Song_Silence should do it.
+
 
     .endmacro
 

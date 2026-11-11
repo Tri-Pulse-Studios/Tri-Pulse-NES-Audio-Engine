@@ -318,7 +318,7 @@
             _d12, atk_3, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
-        Env "5b", Pre_Cymbal_env, \
+        Env "5b", Cymbal_env, \
             $20, +$04, $50, -$20, $00, \
             _d12, atk_14, _d12, _0f, _d12, \
             Vib_None, No_Delay

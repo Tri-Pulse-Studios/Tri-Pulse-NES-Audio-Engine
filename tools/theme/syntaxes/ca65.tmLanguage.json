@@ -46,9 +46,6 @@
 		},
 		{
 			"include": "#blockends"
-		},
-		{
-			"include": "#labels"
 		}
 	],
 
@@ -78,36 +75,67 @@
 		},
 
 		"literals": {
-			"patterns": [{
-				"name": "constant.numeric.binary.ca65",
-				"match": "%[01]+\\b"	
-			}, {
-				"name": "constant.numeric.hex.ca65",
-				"match": "(\\$[0-9A-Fa-f]+\\b)|\\b([0-9A-Fa-f]+h\\b)"
-			}, {
-				"name": "constant.numeric.decimal.ca65",
-				"match": "\\b[0-9]+\\b"
-			}, {	
-				"name": "constant.numeric.music.alias.ca65",
-				"match": "\\b(8th|qtr|dqt|hlf|dhf|whl|Repeat_xN|Repeat_x1|Repeat_x2|Repeat_x3|Repeat_x4|Repeat_x5|Repeat_x6|Repeat_x7)\\b"
-			}, {					
-
-				"name": "constant.numeric.musicname.ca65",
-				"match": "\\b([A-G](?:b|s)?[0-5]|rest)\\b"
-			}, {
-				"name": "constant.language.unnamed-label.ca65",
-				"match": ":-+|:\\++"
-			}, {
-	
-				"name": "variable.label",
-				"match": "(?<=(?i:jds|jdc|jeq|jne|jmi|jpl|jcc|jcs|jvs|jvc|bcc|bcs|beq|bne|bmi|bne|bpl|bvc|bvs|jmp|jsr|Riff |Riff[^,]*, |Loop[^,]*, |Loop |Repeat |Inc_Page |Channel |Inline ))\\s*(?!\\\")[^\\s\\\"]+"
-			}, {
-	
-				"name": "variable.label",
-				"match": "^\\s*\\S*:"
-			}]
-		},	
-		
+			"patterns": [
+				{
+				"comment": "Numeric Constants",
+				"patterns": [{
+					"name": "constant.numeric.binary.ca65",
+					"match": "%[01]+\\b"
+					}, {
+					"name": "constant.numeric.hex.ca65",
+					"match": "(\\$[0-9A-Fa-f]+\\b)|\\b([0-9A-Fa-f]+h\\b)"
+					}, {
+					"name": "constant.numeric.decimal.ca65",
+					"match": "\\b[0-9]+\\b"
+					}]
+				}, {
+				"comment": "Music Constants",
+				"patterns": [{
+					"name": "constant.music.length_alias",
+					"match": "\\b(8th|qtr|dqt|hlf|dhf|whl)\\b"
+					}, {
+					"name": "constant.music.vib_depth_alias",
+					"match": "\\b(Vib_Deep|Vib_Shallow|Vib_Very_Shallow)\\b"
+					}, {
+					"name": "constant.music.duration_alias",
+					"match": "\\b(Repeat_x(?:[1-7]|N)|Plus_Octave|Minus_Octave)\\b"
+					}, {
+					"name": "constant.music.misc_fx",
+					"match": "\\b(Init_Sweep|Tie_Next_Note|Common_Fade_Out|Clear_Special_Effects)\\b"
+					}, {
+					"name": "constant.music.shift_alias",
+					"match": "(\\+Octave|-Octave)"
+					}, {
+					"name": "constant.music.pitch_alias",
+					"match": "\\b[A-G](?:b|s)?[0-5]\\b"
+					}, {
+					"name": "constant.music.rate_alias",
+					"match": "\\bR(?:[0-9]|1[0-5])\\b"
+					}, {
+					"name": "constant.music.rest",
+					"match": "\\brest\\b"
+					}]
+				}, {
+				"comment": "Labels",
+				"patterns": [{
+					"name": "constant.language.unnamed-label.ca65",
+					"match": ":-+|:\\++"
+					}, {
+					"name": "variable.label.definition",
+					"match": "^\\s*\\S*:"
+					}, {
+					"name": "variable.label.opcode",
+					"match": "(?<=(?i:\\b(?:jmp|jsr|bcc|bcs|beq|bmi|bne|bpl|bvc|bvs)\\b))\\s*(?!\\\")[^\\s\\\"]+"
+					}, {
+					"name": "variable.label.code_macro",
+					"match": "(?<=(?i:\\b(?:bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|bds|bdc|jds|jdc)\\b))\\s*(?!\\\")[^\\s\\\"]+"
+					}, {
+					"name": "variable.label.music_macro",
+					"match": "(?<=(?i:Riff\\b[^,]*,|Riff\\b|Loop\\b[^,]*,|Loop\\b|Repeat\\b|Inc_Page\\b|Channel\\b|Inline\\b))\\s*(?!\\\")[^\\s\\\",]+"
+					}]
+				}
+			]
+		},
 		
 		"strings": {
 			"name": "string.quoted.double.ca65",
@@ -129,15 +157,14 @@
 				"name": "keyword.operators.immediate.ca65",
 				"match": "#"
 			}, {
-				"name": "constant.numeric.musicFunc.ca65",
-				"match": "(?:\\+Octave|\\-Octave|Octave)"
-			}, {	
+
 				"name": "keyword.operators.word.ca65",
 				"match": "\\.(?i:mod|bitnot|bitand|bitor|shl|shr|and|or|not|xor)\\b"
 			}, {
 				"name": "keyword.operators.misc.ca65",
 				"match": "=|<>|:=|\\+|-|\\*|/|\\&|~|\\||<<|>>|\\&\\&|\\|\\||!|<|>|<=|>="	
 			}]
+		
 		},
 
 		"opcodes": {
@@ -184,7 +211,7 @@
 						{
 							"comment": "Branching",
 							"name": "keyword.other.tp_macros.ca65.code",
-							"match": "\\b(bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|bds|bdc|jds|jdc)\\b"
+							"match": "\\b(bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|sed|cld|bds|bdc|jds|jdc)\\b"
 						},
 						{
 							"comment": "Debugging",
@@ -249,7 +276,7 @@
 						{
 							"comment": "Macro Subroutines",
 							"name": "keyword.other.tp_macros.ca65.data.subroutine",
-							"match": "\\b(Sub_SFX|Sub_Env|Sub_Vibrato_Cycle|Sub_Duration_Set|Dur_Opcode_Calc)\\b"
+							"match": "\\b(Collect_UI_Text|Sub_SFX|Sub_Env|Sub_Vibrato_Cycle|Sub_Duration_Set|Dur_Opcode_Calc)\\b"
 						}
 					]
 				}
@@ -261,36 +288,39 @@
 		"tp_noise": {
 			"patterns": [
 				{
-					"comment": "Dark Brown",
-					"name": "constant.other.tp_noise.dark_brown",
-					"match": "\\b(Crash|Tamb)_[0-9a-f](?=_|\\b)"
-				},
-				{
-					"comment": "Medium Brown",
-					"name": "constant.other.tp_noise.med_brown",
-					"match": "\\b(Rasp|Shaker)_[0-9a-f](?=_|\\b)"
-				},
-				{
-					"comment": "Light Brown",
-					"name": "constant.other.tp_noise.light_brown",
-					"match": "\\bHat_[0-9a-f](?=_|\\b)"
-				},
-
-				
-				{
-					"comment": "Dark Russet",
-					"name": "constant.other.tp_noise.dark_russet",
-					"match": "\\b(Wash|Timpani)_[0-9a-f](?=_|\\b)"
-				},
-				{
-					"comment": "Medium Russet",
-					"name": "constant.other.tp_noise.med_russet",
-					"match": "\\bSnare_[0-9a-f](?=_|\\b)"
-				},
-				{
-					"comment": "Light Russet",
-					"name": "constant.other.tp_noise.light_russet",
-					"match": "\\bCymbal_[0-9a-f](?=_|\\b)"
+					"comment": "Brown",
+					"patterns": [
+						{
+							"comment": "Dark Brown",
+							"name": "constant.other.tp_noise.dark_brown",
+							"match": "(?:(?<!\\w)|(?<=_))(Crash|Tamb)_(?:1[0-5]|[0-9a-f])?"
+						}, {
+							"comment": "Medium Brown",
+							"name": "constant.other.tp_noise.med_brown",
+							"match": "(?:(?<!\\w)|(?<=_))(Rasp|Shaker)_(?:1[0-5]|[0-9a-f])?"
+						}, {
+							"comment": "Light Brown",
+							"name": "constant.other.tp_noise.light_brown",
+							"match": "(?:(?<!\\w)|(?<=_))Hat_(?:1[0-5]|[0-9a-f])?"
+						}
+					]
+				}, {
+					"comment": "Russet",
+					"patterns": [
+						{
+							"comment": "Dark Russet",
+							"name": "constant.other.tp_noise.dark_russet",
+							"match": "(?:(?<!\\w)|(?<=_))(Wash|Timpani)_(?:1[0-5]|[0-9a-f])?"
+						}, {
+							"comment": "Medium Russet",
+							"name": "constant.other.tp_noise.med_russet",
+							"match": "(?:(?<!\\w)|(?<=_))Snare_(?:1[0-5]|[0-9a-f])?"
+						}, {
+							"comment": "Light Russet",
+							"name": "constant.other.tp_noise.light_russet",
+							"match": "(?:(?<!\\w)|(?<=_))Cymbal_(?:1[0-5]|[0-9a-f])?"
+						}
+					]
 				}
 			]
 		},
@@ -311,7 +341,7 @@
 		"controlcommands": {
 			"patterns": [{
 				"name": "keyword.control.controlcommand.ca65",
-				"match": "\\.(?i:a16|a8|addr|align|asciiz|assert|autoimport|bankbytes|bss|byt|byte|case|charmap|code|condes|constructor|data|dbyt|debuginfo|define|def|defined|definedmacro|destructor|dword|else|elseif|end|endif|endrep|endrepeat|error|exitmac|exitmacro|export|exportzp|fatal|faraddr|feature|fileopt|fopt|forceimport|global|globalzp|hibytes|i16|i8|if|ifblank|ifconst|ifdef|ifnblank|ifndef|ifnref|ifp02|ifp816|ifpc02|ifpsc02|ifref|import|importzp|incbin|include|interruptor|linecont|list|listbytes|lobytes|local|localchar|macpack|org|out|p02|p816|pagelen|pagelength|pc02|popseg|psc02|pushseg|reloc|repeat|res|rodata|segment|setcpu|smart|sunplus|tag|undef|undefine|warning|word|zeropage)\\b"
+				"match": "\\.(?i:a16|a8|addr|align|asciiz|assert|autoimport|bankbytes|bss|byt|byte|case|charmap|code|condes|constructor|data|dbyt|debuginfo|define|def|defined|definedmacro|destructor|dword|else|elseif|end|endif|endrep|endrepeat|error|exitmac|exitmacro|export|exportzp|fatal|faraddr|feature|fileopt|fopt|forceimport|global|globalzp|hibytes|i16|i8|if|ifblank|ifconst|ifdef|ifnblank|ifndef|ifnref|ifp02|ifp816|ifpc02|ifpsc02|ifref|import|importzp|incbin|include|interruptor|linecont|list|listbytes|lobytes|local|localchar|macpack|org|out|p02|p816|pagelen|pagelength|pc02|popseg|psc02|pushseg|reloc|repeat|res|rodata|segment|set|setcpu|smart|sunplus|tag|undef|undefine|warning|word|zeropage)\\b"
 			}]
 		},
 		"blockstarts": {
@@ -326,12 +356,6 @@
 			"patterns": [{
 				"name": "keyword.control.block.ca65",
 				"match": "\\.(?i:endenum|endmacro|endmac|endproc|endscope|endstruct)\\b"
-			}]
-		},
-		"labels": {
-			"patterns": [{
-				"name": "variable.ca65",
-				"match": "^\\s*\\S*:"
 			}]
 		}
 	},

@@ -26,11 +26,11 @@
 
     {
       "scope": "string.quoted.double.ca65, string",
-      "settings": { "foreground": "#c07060" }
+      "settings": { "foreground": "#c08060" }
     },
 
     {
-      "scope": "constant.numeric.hex.ca65, constant.numeric",
+      "scope": "constant.numeric, constant.music",
       "settings": { "foreground": "#D8B45A" }
     },
 
@@ -40,6 +40,7 @@
     },
 
 
+    
     {
       "scope": "variable.label, variable",
       "settings": { "foreground": "#90C8E0" }
@@ -51,7 +52,7 @@
     },
 
     {
-      "scope": "constant.numeric.musicname.ca65",
+      "scope": "constant.music.pitch_alias, constant.music.rate_alias, constant.music.rest",
       "settings": { "foreground": "#9999FF" }
     },
 
@@ -74,9 +75,7 @@
         "settings": { "foreground": "#887898" }
     },
 
-
-
-
+    
     {
         "scope": "constant.other.tp_noise.dark_brown",
         "settings": { "foreground": "#997c73" }

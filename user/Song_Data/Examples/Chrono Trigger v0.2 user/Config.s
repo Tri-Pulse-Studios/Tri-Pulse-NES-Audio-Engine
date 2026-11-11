@@ -34,7 +34,7 @@
             ;
             ;See the README for details
 
-        Debugging_Crash_Address = -1
+        Debugging_Address = -1
             ;When a runtime error crashes, set this to the PC of the STP opcode.
             ;On rebuilding the ROM, this will point to the region of code responsible for the error.
             ;Further debugging instructions may be included.

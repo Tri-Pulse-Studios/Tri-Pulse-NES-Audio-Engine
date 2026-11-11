@@ -20,6 +20,7 @@
 
 
 
+
 .segment "CODE"; Main code segment for the program
 
   .include "Defined//Print_PC_as_Warning.s"  
@@ -28,8 +29,6 @@
 py_Segment __Defines, Defines
 
   __Defines:
-
-
 
     Emit__Unused = 0 ;TODO. Make Vestigial
 
@@ -46,20 +45,29 @@ py_Segment __Defines, Defines
     .include "engine//Defined//Macros_Song_Data.s"
     .include "engine//Defined//Macros_UI.s"
 
-.assert * = $8000, warning, "Defined Segment Shouldn't emit data."
-  .include "user//Engine_Data.s"
-  .assert * = $8000, warning, "Defined Segment Shouldn't emit data."
-  .include "user//SFX_Data.s"
-  .assert * = $8000, warning, "Defined Segment Shouldn't emit data."
-  .include "user//UI_Data_and_Song_Registry.s"
 
+  .include "user//Engine_Data.s"
+  .include "user//SFX_Data.s"
     ;Data emitted elsewhere. Defines names here.
 
 py_Segment_End __Defines
 
-.assert * = $8000, warning, "Defined Segment Shouldn't emit data."
+.assert * = $8000, warning, "Primary Defined Segment Shouldn't emit data."
 
-; UI Engine ocupies $8000-$bfff
+
+; Song Data ocupies $8000-$9fff
+py_Segment _Song_Registry, Defines
+  _Song_Registry:
+
+  .include "user//UI_Data_and_Song_Registry.s"
+    ;Internal Song_Data .includes 
+    
+py_Segment_End _Song_Registry
+
+
+.align $2000
+
+; UI Engine ocupies $a000-$bfff
 py_Segment __Reset_w_UI, Free
     __Reset_w_UI:
 
@@ -74,16 +82,9 @@ py_Segment_End __Reset_w_UI
 
   
 
-  ;Start at $c000 instead of $8000
-    ;DMC samples must start past $c000, and 16K of ROM is plenty.
-  .align $4000
 
-
-
-
-
-
-
+; Music Engine ocupies $c000... 
+  .align $2000
 
 
 
@@ -118,15 +119,19 @@ py_Segment_End User_Data
 .include "engine//Code//Music_New_Note.s"
 
 .include "engine//Data//Music_Period_LUTs.s"
-
-
-
+.include "engine//Data//DMC_Samples_Inc.s"
 
 
 
 
 
  
+
+
+
+
+
+
 py_Segment irq, Free
   
   irq: 
@@ -137,45 +142,6 @@ py_Segment irq, Free
 
   .endif
 py_Segment_End irq
-
-
-
-DMC_Samples:
-
-    .align 64, $DC
-  py_Segment DMC_Sample_1_17, Indicies, 0, $40, $80, $c0
-    Zero_Sample_Addr:
-    DMC_Sample_1_17:
-    DMC_Sample_4_65: ;Data Overlaps
-    .incbin "engine//Data//DMC Samples//DMC_Sample_Merged_12.5%_Tri_Pulse.bin" ;All Three  12.5% Tri-Pulse
-    DMC_Sample_6_81 = DMC_Sample_1_17+64 ;Shares the 65th $00 Byte.
-  
-    Output_Env  ;Overloading $00s w// DMC
-  py_Segment_End DMC_Sample_1_17
-
-    .align 64, $DC
-  py_Segment DMC_Sample_8_65, Indicies, 0, $40, $80, $c0
-    DMC_Sample_8_65: 
-    DMC_Sample_9_81 = DMC_Sample_8_65+64 ;Shares the 65th $FF Byte.
-    .incbin "engine//Data//DMC Samples//DMC_Sample_Merged_25%_Tri_Pulse.bin" ;Two 25% Tri-Pulse
-  py_Segment_End DMC_Sample_8_65
-
-
-    .align 64, $DC
-  py_Segment DMC_Sample_2_17, Indicies, 0, $40, $80, $c0
-    FF_Sample:
-    DMC_Sample_2_17:
-    .incbin "engine//Data//DMC Samples//DMC_Sample_2_17.bin" ;One 25% Tri-Pulse
-  py_Segment_End DMC_Sample_2_17
-
-
-    .align 64, $DC
-  py_Segment DMC_Sample_Tri_Kick, Indicies, 0, $40, $80, $c0
-    DMC_Sample_Tri_Kick: ;2-17, 50% Duty, Double Volume.
-    .incbin "engine//Data//DMC Samples//DMC_Sample_Tri_Kick.bin" 
-  py_Segment_End DMC_Sample_Tri_Kick
-
-;
 
 
 
@@ -193,16 +159,29 @@ DMC_Samples:
 .endif
 
 
-.if Debugging_Crash_Address <> -1
-    .out .sprintf("Attempting to fetch Runtime Exception error message associated with Address: $%04x ...", Debugging_Crash_Address)
+.if Debugging_Address <> -1
+    .out .sprintf("Attempting to fetch Runtime Exception error message associated with Address: $%04x ...", Debugging_Address)
     .out "      - Build will fail if a matching error message is found."
 
-    .if (Debugging_Crash_Address < $8000) .or (Debugging_Crash_Address > $ffff)
-        .out .sprintf("    Address: $%04x is not a ROM address.", Debugging_Crash_Address)
+    .if (Debugging_Address < $8000) .or (Debugging_Address > $ffff)
+        .out .sprintf("    Address: $%04x is not a ROM address.", Debugging_Address)
     .endif
 
     .out ""
 
 .endif
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

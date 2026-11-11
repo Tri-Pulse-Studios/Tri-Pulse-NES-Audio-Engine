@@ -141,7 +141,7 @@ Channel Schala_Theme_Tri
     _60_5:
     Riff _60_BP, _60_5
 
-Loop Schala_Theme_Tri,_21
+Loop Schala_Theme_Tri, _21
 
 
 
@@ -157,7 +157,7 @@ Channel Schala_Theme_dmc, ST_dmc
         Notes 16*_8th,rest
         Repeat "2b", 5
 
-        _13:;-> Noise
+        _13: ;-> Noise
 
         If_Alt "Toggle"
         _13_No_Toggle: 

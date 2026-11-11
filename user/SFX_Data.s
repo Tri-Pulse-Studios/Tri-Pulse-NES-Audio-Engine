@@ -22,26 +22,6 @@
         R14 = $e
         R15 = $f
 
-    ;     R0  = $fff0
-    ;     R1  = $fff1
-    ;     R2  = $fff2
-    ;     R3  = $fff3
-    ;     R4  = $fff4
-    ;     R5  = $fff5
-    ;     R6  = $fff6
-    ;     R7  = $fff7
-    ;     R8  = $fff8
-    ;     R9  = $fff9
-    ;     R10 = $fffa
-    ;     R11 = $fffb
-    ;     R12 = $fffc
-    ;     R13 = $fffd
-    ;     R14 = $fffe
-    ;     R15 = $ffff
-            
-    ; ;
-
-
 
     ;Musical Noise SFX 
     @non_musical_Noise:
@@ -65,18 +45,16 @@
         ;Below play via Music-Only slot. in-game is prioritized.
 
     @dmc:
-        SFX A2_Tom_sfx, R6            ;2-semitone for BC
-
         SFX F4_Tom_sfx, R14
         SFX A3_Tom_sfx, R12      ;The three 3-semitone intervals
         SFX D3_Tom_sfx, R9, 2, DMC_d25_V18, \
-            1,R9, 0,R8 ;Volume 18
+            1,R9, 0,R8 
 
         SFX d25_Kick_sfx, R9, 3, DMC_d25_V18, \
-            1,R9, 1,R5, 0,R3 ;Volume 18
+            1,R9, 1,R5, 0,R3 
 
         SFX d50_Kick_sfx, R9, 2, DMC_d50_V34, \     
-            1,R9, 0,R4 ;Volume 34
+            1,R9, 0,R4 
 
     ;
 
@@ -90,20 +68,20 @@
         SFX Snare_6_sfx, R6, -1, Snare_env, \
             1,R10, 0,R6
 
-        SFX Pre_Cymbal_4_sfx, R4, -1, Pre_Cymbal_env, \
+        SFX Cymbal_4_sfx, R4, -1, Cymbal_env, \
             0,R4
 
         SFX Rasp_w_Shaker_3_sfx, R3
         SFX Rasp_w_Shaker_2_sfx, R2, -1, Shaker_env, \
             1,R12, 0,R2
 
-    ;
 
 ;============================================================
 ; Noise Bank
 ;============================================================
 
     Default_NB .set NoiseFX_Index 
+
 
         ;0
         NoiseFX Crash_3,       Crash_3_sfx,  "Kick"
@@ -129,7 +107,7 @@
         NoiseFX Rasp_2_Kick, Rasp_w_Shaker_2_sfx, "Kick"
 
         ;15
-        NoiseFX Pre_Cymbal_4,  Pre_Cymbal_4_sfx
+        NoiseFX Cymbal_4,  Cymbal_4_sfx
 
 
             ;More than 15 NoiseFX can be defined, but not accessed all at once.

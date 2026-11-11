@@ -2,7 +2,7 @@
 ;Debugging
 ;===============================================================
     .macro Runtime_Exception Error_Msg
-        .assert Debugging_Crash_Address <> *, error, Error_Msg
+        .assert Debugging_Address <> *, error, Error_Msg
         .byte $02
     .endmacro
 
@@ -341,6 +341,7 @@
 ;Branching
 ;===============================================================
 
+    ; Jump if EQual.
     .macro  jeq     Target
         .if     .def(Target) .and ((*+2)-(Target) <= 127)
         beq     Target
@@ -417,7 +418,7 @@
     .endmacro
 
 
-    ;Branch "Always"
+    ;Branch "ALways"
         ;jmp optimization with debugging at runtime.
     .macro bal Target, Condition
 
@@ -450,7 +451,7 @@
         .endif
 
         .if Debugging_Enabled
-            Runtime_Exception "Runtime Exception: BAL Error. `bal` is intended to always branch, but execution failed to branch. Debug the branch condition and preceding instructions."
+            Runtime_Exception "Runtime Exception: BAL Error. `bal` is intended to Branch ALways, but execution failed to branch. Debug the branch condition and preceding instructions."
 
         .endif
     .endmacro
