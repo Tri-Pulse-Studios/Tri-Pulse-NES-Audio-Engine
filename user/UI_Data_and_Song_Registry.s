@@ -64,7 +64,7 @@
     ;       Channel Fanfare_Sq0
     ;           Header ...
 
-    .define SONG_DATA_DIR "user/Song_Data/Examples/"
+    .define SONG_DATA_DIR "user/Song_Data/"
     ; Internal Name must also match the Song Data filename.
     ;   ie: Song Fanfare, ...
     ;
@@ -72,7 +72,7 @@
     
 
 
-    Song Scale_Demo, 12, "Scale Demo"
+    Song Fear_Factory, 7, "Fear Factory"
 
 
 

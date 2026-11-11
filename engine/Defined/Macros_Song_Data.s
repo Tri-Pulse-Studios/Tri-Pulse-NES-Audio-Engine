@@ -291,12 +291,12 @@
         .elseif .xmatch(L1, whl)
             Sub_Note 8,P1
 
-        .elseif ((L1 >= 1) .and (L1 <= 255))
+        .elseif ((L1 >= 1) .and (L1 <= 256))
                 Sub_Note 0,P1
-                .byte L1
-
+                .byte L1 & $ff ;256f is $00
         .else
-            .error "Notes Error: Invalid Note length. Must be 8th,qtr,dqt,hlf,dhf,whl or 1–255 (raw frames)."
+            .error "Notes Error: Invalid Note length."
+            .out .sprintf("Notes Error: Invalid Note length. Must be 8th,qtr,dqt,hlf,dhf,whl or 1-256 (raw frames). Received: %d", L1)
             .out"        Usage: Notes <Length>,<Pitch>, <Length>,<Pitch>, ..."
             .exitmacro
         .endif
@@ -1105,3 +1105,10 @@
     .endmacro
 
 ;
+
+.macro Inf_Wait
+
+    Notes whl,rest
+    Repeat "1b", "Inf"
+
+.endmacro

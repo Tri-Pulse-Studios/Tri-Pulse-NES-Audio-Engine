@@ -103,6 +103,9 @@
 					"name": "constant.music.misc_fx",
 					"match": "\\b(Init_Sweep|Tie_Next_Note|Common_Fade_Out|Clear_Special_Effects)\\b"
 					}, {
+					"name": "constant.music.volume_alias",
+					"match": "\\b(Vol_(12|25|37|50|62|75|87|100))\\b"
+					}, {
 					"name": "constant.music.shift_alias",
 					"match": "(\\+Octave|-Octave)"
 					}, {
@@ -118,20 +121,20 @@
 				}, {
 				"comment": "Labels",
 				"patterns": [{
-					"name": "constant.language.unnamed-label.ca65",
-					"match": ":-+|:\\++"
+						"name": "constant.language.unnamed-label.ca65",
+						"match": ":-+|:\\++"
 					}, {
-					"name": "variable.label.definition",
-					"match": "^\\s*\\S*:"
+						"name": "variable.label.definition",
+						"match": "^\\s*(?:::)?@?[a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*:"
 					}, {
-					"name": "variable.label.opcode",
-					"match": "(?<=(?i:\\b(?:jmp|jsr|bcc|bcs|beq|bmi|bne|bpl|bvc|bvs)\\b))\\s*(?!\\\")[^\\s\\\"]+"
+						"name": "variable.label.opcode",
+						"match": "(?<=(?i:\\b(?:jmp|jsr|bcc|bcs|beq|bmi|bne|bpl|bvc|bvs)\\b))\\s*(?:::)?@?[a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*"
 					}, {
-					"name": "variable.label.code_macro",
-					"match": "(?<=(?i:\\b(?:bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|bds|bdc|jds|jdc)\\b))\\s*(?!\\\")[^\\s\\\"]+"
+						"name": "variable.label.code_macro",
+						"match": "(?<=(?i:\\b(?:bal|jeq|jne|jmi|jpl|jcs|jcc|jvs|jvc|bds|bdc|jds|jdc)\\b))\\s*(?:::)?@?[a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*"
 					}, {
-					"name": "variable.label.music_macro",
-					"match": "(?<=(?i:Riff\\b[^,]*,|Riff\\b|Loop\\b[^,]*,|Loop\\b|Repeat\\b|Inc_Page\\b|Channel\\b|Inline\\b))\\s*(?!\\\")[^\\s\\\",]+"
+						"name": "variable.label.music_macro",
+						"match": "(?<=(?i:Riff\\b[^,]*,|Riff\\b|Loop\\b[^,]*,|Loop\\b|Repeat\\b|Inc_Page\\b|Channel\\b|Inline\\b))\\s*(?:::)?@?[a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*"
 					}]
 				}
 			]
@@ -293,15 +296,15 @@
 						{
 							"comment": "Dark Brown",
 							"name": "constant.other.tp_noise.dark_brown",
-							"match": "(?:(?<!\\w)|(?<=_))(Crash|Tamb)_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))(Crash|Tamb)_(?:1[0-5]|env|[0-9a-f])?"
 						}, {
 							"comment": "Medium Brown",
 							"name": "constant.other.tp_noise.med_brown",
-							"match": "(?:(?<!\\w)|(?<=_))(Rasp|Shaker)_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))(Rasp|Shaker)_(?:1[0-5]|env|[0-9a-f])?"
 						}, {
 							"comment": "Light Brown",
 							"name": "constant.other.tp_noise.light_brown",
-							"match": "(?:(?<!\\w)|(?<=_))Hat_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))Hat_(?:1[0-5]|env|[0-9a-f])?"
 						}
 					]
 				}, {
@@ -310,15 +313,15 @@
 						{
 							"comment": "Dark Russet",
 							"name": "constant.other.tp_noise.dark_russet",
-							"match": "(?:(?<!\\w)|(?<=_))(Wash|Timpani)_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))(Wash|Timpani)_(?:1[0-5]|env|[0-9a-f])?"
 						}, {
 							"comment": "Medium Russet",
 							"name": "constant.other.tp_noise.med_russet",
-							"match": "(?:(?<!\\w)|(?<=_))Snare_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))Snare_(?:1[0-5]|env|[0-9a-f])?"
 						}, {
 							"comment": "Light Russet",
 							"name": "constant.other.tp_noise.light_russet",
-							"match": "(?:(?<!\\w)|(?<=_))Cymbal_(?:1[0-5]|[0-9a-f])?"
+							"match": "(?:(?<!\\w)|(?<=_))Cymbal_(?:1[0-5]|env|[0-9a-f])?"
 						}
 					]
 				}
