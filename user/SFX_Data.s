@@ -71,7 +71,7 @@
 ;============================================================
 
     FF_NB .set NoiseFX_Index 
-
+    HHB_NB .set NoiseFX_Index
 
         ;0
         NoiseFX Snare_6,       Snare_6_sfx   

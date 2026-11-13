@@ -72,6 +72,7 @@
     
 
 
+    Song HotHead_Bop, 8+8, "Hot-Head Bop"
     Song Fear_Factory, 7, "Fear Factory"
 
 

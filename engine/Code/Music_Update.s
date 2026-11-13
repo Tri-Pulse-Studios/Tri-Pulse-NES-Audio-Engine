@@ -29,37 +29,6 @@ py_Segment Update_Music, Free
         @exit:
     .endmacro
 
-
-    .macro Update_Sweep
-            lda Sweep_Speed,x
-            ;beq @rts ;2b saves  ~30/cc every frame.
-
-                add {Note_Period_Low,x} ;2's comp
-                sta Note_Period_Low,x
-
-                bvc @Exit_Sweep
-
-                    ;@dec
-                    .if Emit__Unused
-                        bmi @inc
-
-                        ; @dec:
-                            dec Note_Period_High,x
-                            jsr Note_Conditional_Write_Period_High
-
-                            jmp @Exit_Sweep
-                            ;can bal Conditional, bpl
-                    .endif
-
-                    @inc:
-                        inc Note_Period_High,x ;Tail Calls
-                        jsr Note_Conditional_Write_Period_High 
-
-
-            @Exit_Sweep: 
-    .endmacro
-
-
     .macro Check_Init_SFX
 
         lda SFX_Queued,x
@@ -73,6 +42,50 @@ py_Segment Update_Music, Free
 
     .endmacro
 
+    .macro Update_Sweep
+            lda Sweep_Speed,x
+
+                add {Note_Period_Low,x} ;2's comp
+                sta Note_Period_Low,x
+
+                bvc @skip_new_note
+
+                    ;@dec
+                    .if Emit__Unused
+                        bmi @inc
+
+                        ; @dec:
+                            dec Note_Period_High,x
+                            jsr Note_Conditional_Write_Period_High
+
+                            bal @skip_new_note bvs
+                            ;can bal Conditional, bpl
+                    .endif
+
+                    @inc:
+                        inc Note_Period_High,x ;Tail Calls
+                        jsr Note_Conditional_Write_Period_High 
+
+                        bal @skip_new_note, bvs
+  
+    .endmacro
+
+
+    .macro Update_Note
+        dec Note_Timer,x
+        beq @New_Note
+
+            @Update_Frame:
+                jsr Update_Volume  ;If Tied Note w/ Notes 256,<Pitch>, channel silences.
+                Inline Update_Sweep 
+                    ;Internal bal @skip_new_note
+
+            @New_Note:
+                jsr Pre_New_Note 
+
+
+        @skip_new_note:
+    .endmacro
 
     .macro DMC_Update_Regs
         lda SFX_Timer,x
@@ -119,15 +132,9 @@ py_Segment Update_Music, Free
         ldx #$00
         Loop_All_Channels:
 
-            jsr Update_Volume 
-            Inline Update_Sweep 
 
-            dec Note_Timer,x
-            bne @skip
+            Inline Update_Note
 
-                jsr Pre_New_Note 
-
-            @skip:
 
             Inline Update_Fade
             Inline Check_Init_SFX
@@ -519,20 +526,21 @@ py_Segment Update_Volume, Free
             beq @Decay_Init ;== 1, Init
             bpl @Attack ;> 1, AT
 
+        lda LUT_Env_Decay_Rate,y ;ATK and Decay both use.
         inc Note_Env_Timer,x ;Once Expired, stay Static
             beq @Decay ;== 0 Decay
             ;bne @Sustain ;== -1 Sustain -> Release
     
 
         @Sustain:
-            lda No_Reset_Env_Flag,x ;[WARN] SFX shares this execution
-            bmi @rts
+            ;lda LUT_Env_Decay_Rate,y
+            and #$07 ;== 0 Doesnt release
 
-                lda LUT_Env_Decay_Rate,y
-                and #$07 ;== 0 Doesnt release
+            cmp Note_Timer,x
+            bcc @rts
 
-                cmp Note_Timer,x
-                bcc @rts
+                ldy No_Reset_Env_Flag,x ;[WARN] SFX shares this execution
+                bmi @rts
 
                     @Released:
                     lda #$03   ;Also from Decay w/ Anything
@@ -541,27 +549,8 @@ py_Segment Update_Volume, Free
             @rts:
         rts
 
-
-        @Attack:
-            lda LUT_Env_AT_Rate,y ;lda, and #$f0
-            and #$f0
-
-            asr ;Range +1.75 .. -2.00 /f
-            asr
-            add {Note_Volume,x}, clc
-            sta Note_Volume,x ;Blindly added w/ NO bounds check. 
-        rts 
-
-
-        @Decay_Init:
-            lda LUT_Env_Decay_Init,y ;%VVVV vv DD 
-            sta Note_Volume,x
-        rts
-
-        ;
-        
         @Decay:
-            lda LUT_Env_Decay_Rate,y ;lda, and #$f8
+            ;lda LUT_Env_Decay_Rate,y
             and #$f8
 
             sec ;asr, but always negetive  (Range is -0.25 to -8.0 /f)
@@ -580,7 +569,25 @@ py_Segment Update_Volume, Free
 
             @Not_Sustained:
             sta Note_Volume,x 
-    rts
+        rts
+
+
+        @Decay_Init:
+            lda LUT_Env_Decay_Init,y ;%VVVV vv DD 
+            sta Note_Volume,x
+        rts
+
+
+        @Attack:
+            lda LUT_Env_AT_Rate,y ;lda, and #$f0
+            and #$f0
+
+            asr ;Range +1.75 .. -2.00 /f
+            asr
+            add {Note_Volume,x}, clc
+            sta Note_Volume,x ;Blindly added w/ NO bounds check. 
+    rts 
+
 py_Segment_End Update_Volume
 
 

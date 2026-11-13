@@ -89,7 +89,7 @@ py_Segment Pre_New_Note, Free
         bne @skip
 
             ;lda #$00 
-            jsr Reset_Volume_Damping ;These reset per note (DMC only uses it for multi-note fades.)
+            jsr Reset_Volume_Damping ;These reset per note
             
         
         @skip:
@@ -256,11 +256,8 @@ Reset_Channel:
 
     sta No_Reset_Env_Flag,x ;Ensure Volume is 100% 
 
+;Fallthorugh
     
-    
-    
-
-
 ;jmp Func_Clear_Special_Effects  ;Tail-Call ;After Reset doesn't do Pre-New-Note, so must manually reset damping.
     ;OUT A = 0
 
@@ -280,16 +277,16 @@ Reset_Channel:
     rts
 
 
-    Func_8th_Cont_Sweep: ;Unused 
-        sta Sweep_Speed,x
+    ; Func_8th_Cont_Sweep: ;Unused 
+    ;     sta Sweep_Speed,x
         
-        lda Eighth_Length
-        sta Note_Timer,x
+    ;     lda Eighth_Length
+    ;     sta Note_Timer,x
 
-        pla
-        pla 
-    rts ;return from New_Note
-
+    ;     plp
+    ;     plp
+    ; rts ;return from New_Note
+        ; This can easily fall throguh to normal Sweep Speed store.
 
     ;In A= (Note_Data,x)
         ;Y = Opperand

@@ -454,12 +454,14 @@
 
 
     .macro Riff id, Length, Explicit_Type
+
         .ifblank Length
             .error "Riff Error: Missing Length/End label"
             .out "    Usage: Riff <Start_Label>, <End_Label> [, \"3b\"]"
             .out "           Legacy: Riff <Length>, <End_Label>  ;raw byte count"
             .out ""
             .exitmacro
+
         .endif
 
         .assert (>* = >(id)), warning, "Riff Warning: Page Crossed"
