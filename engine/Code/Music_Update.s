@@ -115,9 +115,10 @@ py_Segment Update_Music, Free
 
     Update_Music:
         lda Silence_APU_Flag
-        bne @play        
+        lsr
+        bcc @play        
 
-            ;lda #$00
+            lda #$00
             sta APU_Channel_Enable
             rts
 
@@ -287,10 +288,28 @@ py_Segment Update_Music, Free
         ;Update Pitch
         ldy SFX_Index,x
 
-            ; .if Debugging_Enabled
-            ;     lda SFX_pitch_timer,x
-            ;     bne @repeat_current_pitch ;Prevents endless garbage read.
-            ; .endif
+
+                ; .if Debugging_Enabled  
+                ;     pha
+                ;     lda SFX_pitch_timer,x
+                ;     cmp #$10
+                ;     bcc @valid ;
+
+                ;             lda SFX_Volume,x 
+                ;             and #$f0
+                ;             beq :+
+
+                ;             Runtime_Exception "Runtime Exception. SFX Error. Garbage Data is read while the Noise Channel is unmuted."
+
+                ;             :
+    
+                ;         @valid:
+                ;     pla
+                ; .endif
+                    ;This can give false possitives.
+                        ;A real check needs tmp RAM to check:
+                            ; a $00 timer wrapped. <-
+                            ; Volume is Non 0.
 
             dec SFX_pitch_timer,x
             bne @repeat_current_pitch
@@ -307,35 +326,7 @@ py_Segment Update_Music, Free
             lda LUT_SFX_Data-1,y
             and #$0f
 
-            .if Emit__Unused
-                bne @sfx_note
-                
-                @sfx_rest:
-                ;lda #$00
-                sta SFX_Volume,x  ;With volume silenced, pitch is irrelevant.
-                                    ;For this to be useful for the whole engine, Musical needs a flag of some kinda that tells it to jsr Reset_Envelepe
-                @sfx_note:
-
-                .elseif Debugging_Enabled
-
-                    bne @valid
-                    pha
-                        lda SFX_Volume,x ;If un-muted, crash
-                        and #$f0
-                        beq :+
-
-                        Runtime_Exception "Runtime Exception. SFX Error. Garbage Data is read while the Noise Channel is unmuted."
-
-                        :
-                        pla
-                    @valid:
-
-
-                
-            .endif
-
             add {SFX_MIDI,x} 
-            ; jmp @Update_Pitch_APU
 
 
         ;A = Pitch Index / Noise Period / dmc Rate
@@ -381,6 +372,7 @@ py_Segment Update_Music, Free
             ;Primary/Secondary AND Game SFX will all be volume damped.
                 ;Can filter out Game SFX by the queue priority idea I have
                 ;Basically, all Music SFX will have low priority. And only low priority sounds will be affected here.
+
             phx
             lda SFX_Volume,x 
 
@@ -390,7 +382,7 @@ py_Segment Update_Music, Free
                 ;Can Write to APU_Noise_Volume+1  w/o effect ($400d is ignored)
 
                 ;Noise Does not use $400c's Duty bits like Pulse.
-                    ;Entirely Ignored. Save to Or-In garbage to those bits.
+                    ;Entirely Ignored. Safe to Or-In garbage to those bits.
 
             plx                ;
         rts
@@ -404,7 +396,7 @@ py_Segment Update_Music, Free
 
         .if Debugging_Enabled
             bpl :+
-            Runtime_Exception "Runtime_Exception: DMC IRQs: The DMC is configured to use IRQs, when it should. Bad LUT data or index is the likely cause."
+            Runtime_Exception "Runtime_Exception: DMC IRQs: The DMC is configured to use IRQs, when it shouldn't. Bad LUT data or index is the likely cause."
             :
         .endif
     rts

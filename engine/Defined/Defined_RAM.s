@@ -212,7 +212,7 @@ Page7: ;Unusued
 
 
 Misc_Constants:
-
+ 
 
     ;This is for anything that the game relies on it existing
 

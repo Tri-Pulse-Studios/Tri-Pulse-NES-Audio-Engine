@@ -377,22 +377,23 @@ Channel Fear_Factory_dmc
     Header E2, T_0f__C3
 
     _1:
+        If_Alt "Toggle"
+
+        _1_T:
         Set_Env T_0f__C3 ;Swaps Duty so E2/E3 and A2/A3 are different.
 
-        If_Alt E3,E2 
-        Notes 8th,E3
+        If_Alt E2,E3 
+        Notes 8th,E2
 
         Set_Env T_3f__d25
         Notes 8th,E2, 8th,E2, 8th,E2,
 
         _1_3:
+            Riff _1_T, *
 
-            Riff _1, _1_3
-
-            If_Alt "Toggle"
-
+    
         _1_5:
-            Riff _1, _1_5
+            Riff _1, *
 
         _2:
         Repeat _1_5, 38 ;Riff _1, _2 x19

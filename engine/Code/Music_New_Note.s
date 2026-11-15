@@ -100,6 +100,7 @@ py_Segment Pre_New_Note, Free
 
     .macro Check_Riff_Return
         @Check_Riff_Return:
+        
         ldy Riff_Depth,x
 
         tya
@@ -791,7 +792,7 @@ All_Music_Opcodes:
                 bcc @Error
 
                 cmp #Cs4
-                bcs @valid
+                bcc @valid
           
                     @Error:
                     Runtime_Exception "Runtime Exception: DMC Pitch Range Error. Valid Range: B0 .. Cs4"

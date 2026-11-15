@@ -11,7 +11,7 @@
     UI_Word _CURRENT_TRACK__, "CURRENT "
     UI_Word _TRACK__, "TRACK ", $80
 
-        TRACK_OFFSET = 6
+        TRACK_OFFSET = 4
             ; Affects the horizontal centering of:
             ;   `TRACK <Index> - <Song_Name>`
                             
@@ -23,11 +23,11 @@
 
             
 
-    UI_Word _SUBTITLE_HI, "Custom Subtitle", $80
-    UI_Word _SUBTITLE_LOW, "Goes Here", $80
+    UI_Word _SUBTITLE_HI, "Donkey Kong Country 2", $80
+    UI_Word _SUBTITLE_LOW, "OST by: David Wise", $80
 
-        SUBTITLE_HI_OFFSET = 8
-        SUBTITLE_LOW_OFFSET = 11
+        SUBTITLE_HI_OFFSET = 5
+        SUBTITLE_LOW_OFFSET = 7
         ; Affects the horizontal centering of:
         ;   `Tri-Pulse Studios`
         ;

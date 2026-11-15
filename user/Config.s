@@ -28,23 +28,8 @@
             ; Disable only if the extra RAM can't be spared.
                 ; CURRENTLY UNIMPLIMENTED
 
-    ;========================================================
-    ;Runtime Debugging Tools
-    ;========================================================
-
-        ;See the README for details
-
-        Debugging_Enabled = 0
-            ;Enables various NES runtime checks in the code.
-                ;The console hardlocks if an exception is detected.
-
-            
-        Debugging_Address = -1
-            ; After an NES Runtime Hardlock, set `Debugging_Address` to the 16-bit address of the STOP opcode. (The $02 Byte)
-                ; After setting, rebuild the ROM.
-                ; A ca65 `.error` will identify the offending code, along with a description of the error.
-
     ;
+
     ;========================================================
     ;Engine Options
     ;========================================================
@@ -67,4 +52,25 @@
                 ; Requirements:
                     ; The external Binning Tool in `tools/`.
                     ; The Binning Instructions in the `.s` files (currently planned as `py_segment`. Syntax TBD).
+
+    ;
+
+    ;========================================================
+    ;Runtime Debugging Tools
+    ;========================================================
+
+        ;See the README for details
+
+        Debugging_Enabled = 1
+            ;Enables various NES runtime checks in the code.
+                ;The console hardlocks if an exception is detected.
+
+            
+        Debugging_Address = -1
+            ; After an NES Runtime Hardlock, set `Debugging_Address` to the 16-bit address of the STOP opcode. (The $02 Byte)
+                ; After setting, rebuild the ROM.
+                ; A ca65 `.error` will identify the offending code, along with a description of the error.
+
+    ;
+
 ;
