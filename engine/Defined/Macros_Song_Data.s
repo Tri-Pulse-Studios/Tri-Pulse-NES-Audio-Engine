@@ -765,104 +765,137 @@
     ;===========================================================
     ;Base Pitch
     ;===========================================================
-    .macro Shift_Pitch before, after, update_bp
-        .ifblank after
+        .macro Shift_Pitch before, after, update_bp
+            .ifblank after
 
-            Sub_Shift_Pitch before, update_bp ;update_bp doubling as Supress_Warnings?
+                Sub_Shift_Pitch before, update_bp ;update_bp doubling as Supress_Warnings?
 
-        .else
+            .else
 
-        .if before = BP
-        .elseif .blank (update_bp)  ;Lazy Way to skip warnings w/ mixed signals
+            .if before = BP
+            .elseif .blank (update_bp)  ;Lazy Way to skip warnings w/ mixed signals
 
-        .if before <> BP .and .blank (update_bp)
-            ;.error .sprintf("Shift_Pitch Error: Internal BP (%d) does not match Source_Pitch (%d)", BP, before)
-            ; .out "    Usage: Shift_Pitch <Start_Pitch>, <Target_Pitch> [, Suppress_Warning]"
-            ; .out "    [NOTE]: Internal BP desyncs after Repeats/Riffs that use Shift_Pitch."
-            ; .out "        Correct manually after sequences:"
-            ; .out "             BP .set BP + <delta>"
-            ; .out "             BP .set <correct_pitch>"
-            ; .exitmacro
-        .endif
-
-        .endif
-        Sub_Shift_Pitch after-before, update_bp
-
-        .endif
-    .endmacro
-
-    .macro Sub_Shift_Pitch shift, update_bp
-        .if .xmatch(shift, -Octave) || shift = -12
-            .byte Minus_Octave ;Defined in New_Note
-
-            .ifblank update_bp
-            BP .set BP-12
+            .if before <> BP .and .blank (update_bp)
+                ;.error .sprintf("Shift_Pitch Error: Internal BP (%d) does not match Source_Pitch (%d)", BP, before)
+                ; .out "    Usage: Shift_Pitch <Start_Pitch>, <Target_Pitch> [, Suppress_Warning]"
+                ; .out "    [NOTE]: Internal BP desyncs after Repeats/Riffs that use Shift_Pitch."
+                ; .out "        Correct manually after sequences:"
+                ; .out "             BP .set BP + <delta>"
+                ; .out "             BP .set <correct_pitch>"
+                ; .exitmacro
             .endif
 
-        .elseif .xmatch(shift, +Octave) || shift = 12
-            .byte Plus_Octave
+            .endif
+            Sub_Shift_Pitch after-before, update_bp
+
+            .endif
+        .endmacro
+
+        .macro Sub_Shift_Pitch shift, update_bp
+            .if .xmatch(shift, -Octave) || shift = -12
+                .byte Minus_Octave ;Defined in New_Note
+
+                .ifblank update_bp
+                BP .set BP-12
+                .endif
+
+            .elseif .xmatch(shift, +Octave) || shift = 12
+                .byte Plus_Octave
+
+                .ifblank update_bp
+                BP .set BP+12
+                .endif
+
+            .elseif ((shift) < -7) || ((shift) > 7)
+                .error .sprintf("Shift_Pitch Error: Shift value out of range (Input: %d, valid: -7..7 or +/-Octave)", shift)
+                .out   "    Usage: Shift_Pitch <Start_Pitch>, <Target_Pitch> ; e.g., A3 to G3"
+                .out   "    Usage: Shift_Pitch <Shift> ; e.g., -2"
+                .out   "        Note: Usage Set_Pitch <Note> if Shift not in range"
+                .exitmacro
+
+            .else ;Normal
+            .byte $b0 | ((shift) & $0F)
 
             .ifblank update_bp
-            BP .set BP+12
+                BP .set BP+shift
             .endif
 
-        .elseif ((shift) < -7) || ((shift) > 7)
-            .error .sprintf("Shift_Pitch Error: Shift value out of range (Input: %d, valid: -7..7 or +/-Octave)", shift)
-            .out   "    Usage: Shift_Pitch <Start_Pitch>, <Target_Pitch> ; e.g., A3 to G3"
-            .out   "    Usage: Shift_Pitch <Shift> ; e.g., -2"
-            .out   "        Note: Usage Set_Pitch <Note> if Shift not in range"
-            .exitmacro
-
-        .else ;Normal
-        .byte $b0 | ((shift) & $0F)
-
-        .ifblank update_bp
-            BP .set BP+shift
-        .endif
-
-        .endif
-    .endmacro
+            .endif
+        .endmacro
 
 
-    .macro Set_Pitch pitch, vibrato_depth
+        .macro Set_Pitch pitch, vibrato_depth
 
-        .byte $b8
-        Set_Pitch_Data pitch, vibrato_depth
+            .byte $b8
+            Set_Pitch_Data pitch, vibrato_depth
 
-    .endmacro
-
-
-    .macro Set_Pitch_Data pitch, vibrato_depth
-        .ifblank pitch
-            .error "Header Error: Missing BP param"
-            .out "Header Error: Missing BP param"
-            .out ""
-            .exitmacro
-
-        .elseif ::pitch > $3f
-            .error "Header Error: BP out of Range."
-            .out "Header Error: Base Pitch out of Range A0..B5"
-            .out ""
-            .exitmacro
-        .endif
-
-        .ifblank vibrato_depth
-            .byte ( (pitch<<2) |1) ;Default depth is 1 or "Medium"
-
-        .elseif ::vibrato_depth < 4
-            .byte ( (pitch<<2) |vibrato_depth)
-
-        .else
-            .error "Header Error: Vibrato Depth out of Range"
-            .out .sprintf("Header Error: Vibrato Depth out of Range. Given: %d. Valid Range: 0..3", vibrato_depth)
-            .out ""
-
-        .endif
-
-        BP .set (::pitch)
-    .endmacro
+        .endmacro
 
 
+        .macro Set_Pitch_Data pitch, vibrato_depth
+            .ifblank pitch
+                .error "Header Error: Missing BP param"
+                .out "Header Error: Missing BP param"
+                .out ""
+                .exitmacro
+
+            .elseif .not .const(pitch)
+                .if .not .const(::pitch)
+                    .error "Header Error: Undefined BP."
+                    .out "Header Error: BP is not defined as a constant."
+                    .out ""
+                    .exitmacro
+                .endif
+
+
+            .elseif ::pitch > $3f
+                .error "Header Error: BP out of Range."
+                .out "Header Error: Base Pitch out of Range A0..B5"
+                .out ""
+                .exitmacro
+            .endif
+
+            .ifblank vibrato_depth
+                .byte ( (pitch<<2) |1) ;Default depth is 1 or "Medium"
+
+            .elseif .not .const(vibrato_depth)
+                .if .not .const(::vibrato_depth)
+                    .error "Header Error: Undefined Vibrato Depth."
+                    .out "Header Error: Vibrato Depth is not defined as a constant."
+                    .out ""
+                    .exitmacro
+                .endif
+
+            .elseif ::vibrato_depth < 4
+                .byte ( (pitch<<2) |vibrato_depth)
+
+            .else
+                .error "Header Error: Vibrato Depth out of Range"
+                .out .sprintf("Header Error: Vibrato Depth out of Range. Given: %d. Valid Range: 0..3", vibrato_depth)
+                .out ""
+
+            .endif
+
+            BP .set (::pitch)
+        .endmacro
+
+        .macro Assert_BP _BP
+
+            .if _BP <> BP
+                .error "User BP Error."
+                .out "Internal ca65 BP does not match provided BP."
+                    .out .sprintf("    Expected BP:     %d.%d", (_BP+9) / 12, (_BP+9) .mod 12)
+                    .out .sprintf("    Actual ca65 BP:  %d.%d", (BP+9) / 12, (BP+9) .mod 12)
+                .out ""
+                .out "  BP Mismatch has two possible causes:"
+                .out "      1. An incorrect sequence of Shifts / Sets. (Actual NES runtime BP diverges.)"
+                .out "      2. A Riff / Repeat unexpectedly re-read a Shift / Set. (The ca65 internal BP is incorrect.)"
+                .out "          - Review Riffs / Repeats. Add a `BP .set BP + <shift_delta>` line after offending Riffs / Repeats."
+                .out ""
+
+            .endif
+
+        .endmacro
 
 
     ;===========================================================

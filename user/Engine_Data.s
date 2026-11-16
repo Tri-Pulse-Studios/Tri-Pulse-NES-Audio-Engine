@@ -31,7 +31,7 @@
 
     Vibrato_Delay 0, No_Delay
     Vibrato_Delay 8, Short_Delay
-    Vibrato_Delay 15, Med_Delay
+    Vibrato_Delay 18, Med_Delay
     Vibrato_Delay 28, Long_Delay
 
 
@@ -90,14 +90,15 @@
             ;Bits are stored backwards.
 
         _0f = 0
-        _1f = 2
-        _2f = 3
-        _3f = 4
-        _4f = 5
-        _5f = 6
-        _6f = 7
+        _1f = 1
+        _2f = 2
+        _3f = 3
+        _4f = 4
+        _5f = 5
+        _6f = 6
+        _7f = 7
             ;Cutoff length
-            ;0 and 1 both Don't Release 
+            ;0 Doesn't Release 
 
 
         atk_1  = 1
@@ -130,69 +131,40 @@
     ;============================================================
         Env_Bank "Init_Index", 0
 
-        Env "3b", Lead_d12_d25_s6_v12, \
-            $b0, -$30, $60, \
-            _d12, _0f, _d25, \
-            Vib_Slow, Short_Delay
-        T_0f_12v .set Lead_d12_d25_s6_v12
+
+        Env "3b", Lead_d12_s7_1f_v8, \
+            $90, -$10, $70, \
+            _d25, _1f, _d12, \
+            Vib_Med, Long_Delay, \
 
         Env "3b", Lead_sqr_1f_v12,\
             $90, -$14, $50, \
             _d50, _1f, _d50, \
             Vib_Slow, Long_Delay
-
         T_1f_12v .set Lead_sqr_1f_v12
 
-        Env "5b", Lead_d12_d25_9_4_0, \
-            $90, -$20, $4c, -$04, $00, \
-            _d25, atk_2, _d12, _0f, _d12, \
+
+
+
+
+
+        Env "5b", Pad_d25_10_0, \
+            $a0, -$18, $60, -$08, $00, \
+            _d25, atk_3, _d25, _0f, _d25, \
             Vib_None, No_Delay
-
-
-        Env "5b", Echo_d25_10_5_0, \
-            $a0, -$10, $5c, -$04, $00, \
-            _d25, atk_9, _d25, _0f, _d25, \
-            Vib_None, No_Delay
-
-
-
-        Env "5b", Pad_d75_10_0, \
-            $a0, -$14, $60, -$08, $00, \
-            _d75, atk_3, _d75, _0f, _d75, \
-            Vib_None, No_Delay
-
-        Env "5b", Pad_s1_d12_v12, \
-            $10, +$04, $2c, -$04, $10, \
-            _d12, atk_8, _d12, _0f, _d12, \
-            Vib_Slow, Long_Delay
   
 
-
-        Env "4b", Pad_d12_s2_m3_2f,\
-            $40, -$0c, $20, \
-            _d12, _2f, _d25, \
-            Vib_None, No_Delay, \
-            dmc_d12
-        T_2f__d12 .set Pad_d12_s2_m3_2f
-
-        Env "4b", T_0f__C3,\
-            $10, -$04, $10, \
-            _d12, _0f, _d25, \
-            Vib_None, No_Delay, \
-            C3
-
-        Env "4b", T_3f__d25,\
-            $10, -$04, $10, \
-            _d25, _3f, _d25, \
-            Vib_None, No_Delay, \
-            dmc_d25
-
-
-        Env "3b", Pad_d25_3_0, \
-            $30, -$08, $00, \
+        Env "3b", Lead_d25_s5, \
+            $a0, -$10, $50, \
             _d25, _0f, _d25, \
-            Vib_None, No_Delay
+            Vib_Slow, Med_Delay
   
+
+        Env "4b", T_2f__d25, \
+            $10, -$04, $10, \
+            _d25, _2f, _d25, \
+            Vib_None, No_Delay,\
+            dmc_d25
 
 
     ;============================================================
@@ -214,25 +186,12 @@
             _d12, atk_3, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
-        Env "5b", Cymbal_env, \
-            $20, +$04, $50, -$20, $00, \
-            _d12, atk_14, _d12, _0f, _d12, \
+        Env "5b", Timpani_env, \
+            $b0, -$20, $6c, -$04, $00, \
+            _d12, atk_3, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
-    
 
-        Env "3b", Shaker_env, \
-            $a0, -$30, $00, \
-            _d12, _0f, _d12, \
-            Vib_None, No_Delay
-    
-
-        Env "3b", Hat_env, \
-            $40, -$40, $00, \
-            _d12, _0f, _d12, \
-            Vib_None, No_Delay
-    
-    
 ;
 
 

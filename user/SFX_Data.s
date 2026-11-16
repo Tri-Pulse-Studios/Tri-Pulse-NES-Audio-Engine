@@ -25,22 +25,8 @@
 
     ;Musical Noise SFX 
     @non_musical_Noise:
-        SFX Hat_e_sfx, R14
-
-        SFX Hat_b_sfx, R11
-        SFX Hat_a_sfx, R10
-        SFX Hat_9_sfx, R9
-        SFX Hat_8_sfx, R8
-        SFX Hat_7_sfx, R7
-
-        SFX Hat_2_sfx, R2, 1, Hat_env,\
-            0,R2
-
-
-
-        SFX Shaker_3_sfx, R3
-        SFX Shaker_2_sfx, R2, 3, Shaker_env,\
-            1,R1, 1,R2, 0,R3
+        SFX Snare_8_sfx, R8, 3, Snare_env, \
+            1,R11, 0,R8
 
     ;
 
@@ -59,50 +45,55 @@
 
     @musical_noise:
 
-        SFX Snare_6_sfx, R6, -1, Snare_env, \
-            1,R10, 0,R6
+        SFX Timpani_c_sfx, R12
+        SFX Timpani_d_sfx, R13
+        SFX Timpani_e_sfx, R14
+        SFX Timpani_f_sfx, R15, -1, Timpani_env, \
+            1,R13, 2,R14, 0,R15
+        
 
-        SFX Cymbal_4_sfx, R4, -1, Cymbal_env, \
-            0,R4
+        SFX Snare_8_w_Timpani_f_sfx, R15, -1, Snare_env, \
+            1,R11, 2,R8, 0,R15
+
+        SFX Snare_8_w_Timpani_e_sfx, R14, -1, Snare_env, \
+            1,R11, 2,R8, 0,R14
+
+        SFX Snare_8_w_Timpani_d_sfx, R13, -1, Snare_env, \
+            1,R11, 2,R8, 0,R13
+
+        SFX Crash_6_sfx, R6
+        SFX Crash_7_sfx, R7, -1, Timpani_env, \
+            1,R14, 2,R10, 3,R9, 5,R8, 0,R7
+
 
 
 ;============================================================
 ; Noise Bank
 ;============================================================
 
-    FF_NB .set NoiseFX_Index 
-    HHB_NB .set NoiseFX_Index
+    DM_NB .set NoiseFX_Index 
+    HC_NB .set NoiseFX_Index
 
         ;0
-        NoiseFX Snare_6,       Snare_6_sfx   
-        NoiseFX Snare_6_Kick,  Snare_6_sfx,  "Kick"
+        NoiseFX Snare_8,       Snare_8_sfx, "Kick"
 
-        NoiseFX Shaker_3,      Shaker_3_sfx
-        NoiseFX Shaker_Kick,   Shaker_3_sfx, "Kick"
-
-        NoiseFX Hat_2,         Hat_2_sfx  
-        NoiseFX Hat_2_Kick,    Hat_2_sfx,    "Kick"    
-
-        NoiseFX Hat_e,         Hat_e_sfx  
-        NoiseFX Hat_e_Kick,    Hat_e_sfx,    "Kick"  
-
-        NoiseFX Solo_Kick,     $00,          "Kick"  
+        NoiseFX Snare_8_w_Timpani_f, Snare_8_w_Timpani_f_sfx, "Kick"
+        NoiseFX Snare_8_w_Timpani_e, Snare_8_w_Timpani_e_sfx, "Kick"
+        NoiseFX Snare_8_w_Timpani_d, Snare_8_w_Timpani_d_sfx, "Kick"
+    
+        NoiseFX Crash_6,       Crash_6_sfx
 
 
-        NoiseFX Hat_7,         Hat_7_sfx  
-        NoiseFX Hat_8,         Hat_8_sfx  
-        NoiseFX Hat_9,         Hat_9_sfx  
-        NoiseFX Hat_a,         Hat_a_sfx  
-        NoiseFX Hat_b,         Hat_b_sfx  
-
-
-        NoiseFX Cymbal_4,  Cymbal_4_sfx
+        NoiseFX Timpani_c,         Timpani_c_sfx  
+        NoiseFX Timpani_d,         Timpani_d_sfx  
+        NoiseFX Timpani_e,         Timpani_e_sfx  
+        NoiseFX Timpani_f,         Timpani_f_sfx  
 
 
             ;More than 15 NoiseFX can be defined, but not accessed all at once.
             ;Shift_Pitch instructions can change the defined window mid-song as well.
 
-    NB_Validate FF_NB ;Simple check that all NoiseFX fit in 15 window.
+    NB_Validate DM_NB ;Simple check tTimpani all NoiseFX fit in 15 window.
 
 ;============================================================
 ; Kick Types

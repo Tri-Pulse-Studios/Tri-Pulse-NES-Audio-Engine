@@ -72,8 +72,9 @@
     
 
 
-    Song HotHead_Bop, 8+8, "Hot-Head Bop"
-    Song Fear_Factory, 7, "Fear Factory"
+    Song Death_Mountain, 6+7, "Death Mountain"
+    ;Song Hyrule_Castle,  6+7, "Hyrule Castle"
+
 
 
 

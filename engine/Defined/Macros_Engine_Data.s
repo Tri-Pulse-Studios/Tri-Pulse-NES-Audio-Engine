@@ -266,9 +266,13 @@
 
         .elseif .xmatch(Size, "6b")
             .ifblank v13
-                .error "Not enough Variables for 6-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Not enough Variables for 6-Byte Env. Received %d, Expected 13.", .paramcount - 2)
+                .out ""
             .elseif .not .blank (v14)
-                .error "Too Many Variables for 6-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Too many Variables for 6-Byte Env. Received %d, Expected 13.", .paramcount - 2)
+                .out ""
             .endif
 
             .if first_atk = -1
@@ -296,9 +300,13 @@
 
         .elseif .xmatch(Size, "5b")
             .ifblank v12
-                .error "Not enough Variables for 5-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Not enough Variables for 5-Byte Env. Received %d, Expected 12.", .paramcount - 2)
+                .out ""
             .elseif .not .blank (v13)
-                .error "Too Many Variables for 5-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Too many Variables for 5-Byte Env. Received %d, Expected 12.", .paramcount - 2)
+                .out ""
             .endif
 
             .if first_atk = -1
@@ -310,11 +318,9 @@
                 .endif
             .endif 
 
-
             .if (first_dmc <> -1) .and last_dmc = -1
                 last_dmc .set Env_Index
             .endif
-
 
             Sub_Env Name, v1,v2,v3,v4,v5,\
                           v6,v7,v8,v9,v10, \
@@ -323,11 +329,14 @@
 
         .elseif .xmatch(Size, "4b")
             .ifblank v9
-                .error "Not enough Variables for 4-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Not enough Variables for 4-Byte Env. Received %d, Expected 9.", .paramcount - 2)
+                .out ""
             .elseif .not .blank (v10)
-                .error "Too Many Variables for 4-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Too many Variables for 4-Byte Env. Received %d, Expected 9.", .paramcount - 2)
+                .out ""
             .endif
-
 
             .if (first_atk <> -1) .and last_atk = -1
                 last_atk .set Env_Index
@@ -349,9 +358,13 @@
 
         .elseif .xmatch(Size, "3b")
             .ifblank v8
-                .error "Not enough Variables for 3-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Not enough Variables for 3-Byte Env. Received %d, Expected 8.", .paramcount - 2)
+                .out ""
             .elseif .not .blank (v9)
-                .error "Too Many Variables for 3-Byte Env."
+                .error "Incorrect Env Variables."
+                .out .sprintf("Too many Variables for 3-Byte Env. Received %d, Expected 8.", .paramcount - 2)
+                .out ""
             .endif
 
             .if (first_atk <> -1) .and last_atk = -1
@@ -375,9 +388,7 @@
 
         Env_Index .set Env_Index + 1
 
-
     .endmacro
-
     .macro Sub_Env Name, atk_vol, atk_rate, dec_vol, dec_rate, sus_vol, atk_duty, atk_len, dec_duty, cutoff, sus_duty, vib_spd, vib_del, dmc_lowest_d25
 
 
