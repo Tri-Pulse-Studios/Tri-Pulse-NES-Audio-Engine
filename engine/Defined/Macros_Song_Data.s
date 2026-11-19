@@ -211,14 +211,21 @@
   .endmacro
 
 
-  .macro Noise_Header Noise_Bank, Kick_Type, Cont_Tag
+  .macro Noise_Header _Noise_Bank, _Kick_Type, Cont_Tag
 
-    .ifblank Noise_Bank
+    .ifblank _Noise_Bank
         .error "Header Error: Missing NB Param."
         .out "Header Error: Missing Noise Bank Param."
         .out ""
+        .exitmacro
     .endif 
 
+    .ifblank _Kick_Type
+        .error "Header Error: Missing KT Param."
+        .out "Header Error: Missing Kick Type Param."
+        .out ""
+        .exitmacro
+    .endif 
 
     .if .xmatch(Cont_Tag, "Cont")
         ;pass
@@ -227,11 +234,11 @@
         .out "Header Error: Invalid Cont Tag. Expects the string \"Cont\" "
         .out ""
     .else
-        Set_Pitch_Data Noise_Bank, Kick_Type
+        Set_Pitch_Data _Noise_Bank, _Kick_Type
 
     .endif 
 
-    BP .set ::Noise_Bank
+    BP .set ::_Noise_Bank
 
   .endmacro
 
@@ -833,38 +840,50 @@
 
 
         .macro Set_Pitch_Data pitch, vibrato_depth
-            .ifblank pitch
-                .error "Header Error: Missing BP param"
-                .out "Header Error: Missing BP param"
-                .out ""
-                .exitmacro
 
-            .elseif .not .const(pitch)
+            ;Validation
+                .ifblank pitch
+                    .error "Header Error: Missing BP param"
+                    .out "Header Error: Missing BP param"
+                    .out ""
+                    .exitmacro
+                .endif
+
+                .if .not .const(pitch)
                 .if .not .const(::pitch)
                     .error "Header Error: Undefined BP."
                     .out "Header Error: BP is not defined as a constant."
                     .out ""
                     .exitmacro
                 .endif
+                .endif
 
 
-            .elseif ::pitch > $3f
-                .error "Header Error: BP out of Range."
-                .out "Header Error: Base Pitch out of Range A0..B5"
-                .out ""
-                .exitmacro
-            .endif
+                .if ::pitch > $3f
+                    .error "Header Error: BP out of Range."
+                    .out "Header Error: Base Pitch out of Range A0..B5"
+                    .out ""
+                    .exitmacro
+                .endif
+
+                .if .not .blank (vibrato_depth)
+                .if .not .const(vibrato_depth)
+                .if .not .const(::vibrato_depth)
+                    .error "Header Error: Undefined Vibrato Depth."
+                    .out "Header Error: Undefined Vibrato Depth."
+                    .out ""
+                    .exitmacro
+                .endif
+                .endif
+                .endif
+
+            ;
+
+
 
             .ifblank vibrato_depth
                 .byte ( (pitch<<2) |1) ;Default depth is 1 or "Medium"
 
-            .elseif .not .const(vibrato_depth)
-                .if .not .const(::vibrato_depth)
-                    .error "Header Error: Undefined Vibrato Depth."
-                    .out "Header Error: Vibrato Depth is not defined as a constant."
-                    .out ""
-                    .exitmacro
-                .endif
 
             .elseif ::vibrato_depth < 4
                 .byte ( (pitch<<2) |vibrato_depth)

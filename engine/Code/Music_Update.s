@@ -118,7 +118,7 @@ py_Segment Update_Music, Free
         lsr
         bcc @play        
 
-            lda #$00
+            lda #$00 ;Silence. 
             sta APU_Channel_Enable
             rts
 
@@ -146,7 +146,7 @@ py_Segment Update_Music, Free
             bcs @dmc
 
                 @sqr_tri:
-                    jsr Sq_Tri_Update_Regs  
+                    jsr Sq_Tri_Update_Regs  ;Internal Tail-Calls.
 
                     inxn 4
                     bal Loop_All_Channels, bne 
@@ -182,6 +182,31 @@ py_Segment Update_Music, Free
     rts
 
 
+
+    .macro Call_RNG
+        ; High: -edcba98
+        ; Low:  01234567
+
+        ; OUT A = (High << 1) XOR Low.
+            ; Same 32,767 Cycle length of 15-bit LSFR.
+            ; Improvement: Every successor is different. (2 Reads are Highly-Decorrelated.)
+                ; though there are still local correlations with 3 or mroe reads.
+
+        lda RNG_high ;$bit $e
+        asl 
+        clc ;default incoming to clear
+
+        eor RNG_low  ;$bit $0
+        bpl @skip
+
+            sec ;set incoming
+
+        @skip:
+        ror RNG_low 
+        rol RNG_high
+        ;32/33 clock cycles. (28/29 if ZP)
+    .endmacro
+
     ;In A= Pointer to SFX data.
         ;Negetive = Musical
         
@@ -200,7 +225,12 @@ py_Segment Update_Music, Free
             .endif
         .endif
 
+        inc $fe
+
         tay
+
+        Inline Call_RNG
+        sta SFX_RNG,x ;Can be used for whatever. Presently just for volume modulation.
 
         lda LUT_SFX_Data-2,y
         and #$7f ;bit 7 set means its a Base Period.  Its so multiple Pitches to the same sound are usable.
@@ -276,14 +306,15 @@ py_Segment Update_Music, Free
 
     Update_SFX: ;For Primary.
         jsr SFX_Write_Regs
+
         ;Update Volume
         inx
         jsr SFX_Update_Volume
         dex
 
-    rts
+    rts ;Secondary Automatically Updates Volume by SFX engine.
 
-    SFX_Write_Regs:
+    SFX_Write_Regs: 
 
         ;Update Pitch
         ldy SFX_Index,x
@@ -373,11 +404,26 @@ py_Segment Update_Music, Free
                 ;Can filter out Game SFX by the queue priority idea I have
                 ;Basically, all Music SFX will have low priority. And only low priority sounds will be affected here.
 
+
+            lda Note_Volume_Damped+$c
+            bne @No_RNG
+
+                lda SFX_RNG,x 
+                and #$03
+                cmp #$03
+                bne @skip
+
+                    lda #$01
+                @skip: ;0,1,1,2
+
+            @No_RNG:
+            sta irq_tmp_0
+
             phx
             lda SFX_Volume,x 
 
             ldx #$0c
-            ldy Note_Volume_Damped+$c ;Needed for when Volume is damped.
+            ldy irq_tmp_0
             jsr Write_APU_Volume_Noise_LDY_BEQ_RELIANT ;Just a bunch of Bit shifts.
                 ;Can Write to APU_Noise_Volume+1  w/o effect ($400d is ignored)
 

@@ -61,7 +61,7 @@
 
         ;See the README for details
 
-        Debugging_Enabled = 1
+        Debugging_Enabled = 0
             ;Enables various NES runtime checks in the code.
                 ;The console hardlocks if an exception is detected.
 

@@ -177,6 +177,14 @@ Normal_RAM:
                     SFX_Queued
 
     ;$a0
+    Res_5_Channels      SFX_RNG_Noise_Alt, \
+                    SFX_RNG, \
+                    Unused, \
+                    Unused
+                    
+    Res_RAM RNG_high
+    Res_RAM RNG_low
+
 OAM:
     OAM_Buffer_Page = 2
     Res_RAM_Set_Page OAM_Buffer_Page

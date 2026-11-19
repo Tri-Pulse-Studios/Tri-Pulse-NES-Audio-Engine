@@ -23,10 +23,10 @@
 
             
 
-    UI_Word _SUBTITLE_HI, "Donkey Kong Country 2", $80
-    UI_Word _SUBTITLE_LOW, "OST by: David Wise", $80
+    UI_Word _SUBTITLE_HI, "The Legend of Zelda: ALttP", $80
+    UI_Word _SUBTITLE_LOW, "OST by Koji Kondo", $80
 
-        SUBTITLE_HI_OFFSET = 5
+        SUBTITLE_HI_OFFSET = 3
         SUBTITLE_LOW_OFFSET = 7
         ; Affects the horizontal centering of:
         ;   `Tri-Pulse Studios`
@@ -71,9 +71,9 @@
     ;   "SONG_DATA_DIR/Fanfare.s"
     
 
-
+    Song Hyrule_Castle,  9, "Hyrule Castle" ;Intro phrase is 9. Set to 6+7 later.
     Song Death_Mountain, 6+7, "Death Mountain"
-    ;Song Hyrule_Castle,  6+7, "Hyrule Castle"
+    
 
 
 

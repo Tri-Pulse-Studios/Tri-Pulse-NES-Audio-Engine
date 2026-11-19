@@ -132,10 +132,19 @@
         Env_Bank "Init_Index", 0
 
 
-        Env "3b", Lead_d12_s7_1f_v8, \
-            $90, -$10, $70, \
-            _d25, _1f, _d12, \
-            Vib_Med, Long_Delay, \
+        Env "5b", Lead_d12_s7_1f_v8, \
+            $70, +$08, $a0, -$10, $80, \
+            _d25, atk_4, _d12, _2f, _d12, \
+            Vib_Med, Long_Delay
+
+            ;_2f, but like _m11. T can't use.
+
+        Env "5b", Lead_d25_s6_1f_v12, \
+            $70, +$1c, $a0, -$18, $60, \
+            _d25, atk_2, _d25, _1f, _d25, \
+            Vib_Slow, Short_Delay, \
+
+
 
         Env "3b", Lead_sqr_1f_v12,\
             $90, -$14, $50, \
@@ -145,27 +154,42 @@
 
 
 
-
+        Env "5b", Pad_sqr_1_4_2_v12, \
+            $10, +$10, $4c, -$04, $20, \
+            _d50, atk_3, _d50, _0f, _d50, \
+            Vib_Slow, Med_Delay
+  
 
 
         Env "5b", Pad_d25_10_0, \
-            $a0, -$18, $60, -$08, $00, \
-            _d25, atk_3, _d25, _0f, _d25, \
+            $a0, -$14, $50, -$08, $00, \
+            _d25, atk_5, _d25, _0f, _d25, \
             Vib_None, No_Delay
   
 
-        Env "3b", Lead_d25_s5, \
-            $a0, -$10, $50, \
+        Env "3b", Lead_d25_s5_v12, \
+            $a0, -$14, $50, \
             _d25, _0f, _d25, \
             Vib_Slow, Med_Delay
   
 
-        Env "4b", T_2f__d25, \
-            $10, -$04, $10, \
-            _d25, _2f, _d25, \
+        Env "4b", T_1f__d12, \
+            $50, -$10, $10, \
+            _d25, _1f, _d25, \
             Vib_None, No_Delay,\
-            dmc_d25
+            dmc_d12
 
+        Env "3b", T_m3_5f, \
+            $30, -$10, $10, \
+            _d25, _5f, _d25, \
+            Vib_None, No_Delay,\
+
+
+        Env "4b", T_0f__E2, \
+            $30, -$10, $10, \
+            _d25, _0f, _d25, \
+            Vib_None, No_Delay,\
+            E2
 
     ;============================================================
     ; Bank 1 Noise Channel
@@ -182,7 +206,7 @@
 
  
         Env "5b", Snare_env, \
-            $a0, -$1c, $50, -$10, $00, \
+            $e0, -$20, $6c, -$04, $00, \
             _d12, atk_3, _d12, _0f, _d12, \
             Vib_None, No_Delay
 
@@ -310,7 +334,8 @@
 
         ;Reads (Note_Data,x)
         MiscFX Init_Sweep   
-        MiscFX Set_Env_Bank_Byte
+        MiscFX Set_Tempo
+        ;MiscFX Set_Env_Bank_Byte
 
             ;Reads LUT,y 
             MiscFX Tie_Next_Note, $40

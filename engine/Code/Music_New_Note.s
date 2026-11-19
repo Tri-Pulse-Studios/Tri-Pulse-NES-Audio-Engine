@@ -331,7 +331,22 @@ Reset_Channel:
     rts
 
 
+    Func_Set_Tempo:
+        .if Debugging_Enabled
+            cpx #$00
+            beq :+
+                Runtime_Exception "Runtime Exception: Set_Tempo Error: Set_Tempo Instructions only function correctly inside Sq0's Channel."
+            :
 
+            cmp #$21
+            bcc :+
+                Runtime_Exception "Runtime Exception: Set_Tempo Error: Non-monotonic Tempo provided."
+
+            :
+
+        .endif
+        sta Eighth_Length
+    rts 
 
     Func_Inc_Page: ;$ff
         jsr Riff_Jmp_To ;lda (Note_Data,x) ;
@@ -399,7 +414,7 @@ All_Music_Opcodes:
         cpy #(Init_Sweep & $f)
             bcc Set_Volume_w_Custom_Ramp ;$f0-$f7
             
-            bne Func_Set_Env_Bank ;$f9
+            bne Func_Set_Tempo ;Func_Set_Env_Bank ;$f9
             ;beq @Init_Sweep ;$f8
 
 

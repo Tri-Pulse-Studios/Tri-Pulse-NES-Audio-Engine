@@ -22,7 +22,7 @@
         R14 = $e
         R15 = $f
 
-
+ 
     ;Musical Noise SFX 
     @non_musical_Noise:
         SFX Snare_8_sfx, R8, 3, Snare_env, \
@@ -52,14 +52,14 @@
             1,R13, 2,R14, 0,R15
         
 
-        SFX Snare_8_w_Timpani_f_sfx, R15, -1, Snare_env, \
-            1,R11, 2,R8, 0,R15
+        SFX Snare_8_w_Timpani_f_sfx, R0, -1, Snare_env, \
+            1,R11, 2,R8, 1,R13, 0,R14
 
-        SFX Snare_8_w_Timpani_e_sfx, R14, -1, Snare_env, \
-            1,R11, 2,R8, 0,R14
+        SFX Snare_8_w_Timpani_e_sfx, R0, -1, Snare_env, \
+            1,R11, 2,R8, 1,R12, 0,R13
 
-        SFX Snare_8_w_Timpani_d_sfx, R13, -1, Snare_env, \
-            1,R11, 2,R8, 0,R13
+        SFX Snare_8_w_Timpani_d_sfx, R0, -1, Snare_env, \
+            1,R11, 2,R8, 1,R11, 0,R12
 
         SFX Crash_6_sfx, R6
         SFX Crash_7_sfx, R7, -1, Timpani_env, \
@@ -75,14 +75,15 @@
     HC_NB .set NoiseFX_Index
 
         ;0
-        NoiseFX Snare_8,       Snare_8_sfx, "Kick"
+        NoiseFX Snare_8,       Snare_8_sfx, "Kick" ;G3
 
-        NoiseFX Snare_8_w_Timpani_f, Snare_8_w_Timpani_f_sfx, "Kick"
-        NoiseFX Snare_8_w_Timpani_e, Snare_8_w_Timpani_e_sfx, "Kick"
-        NoiseFX Snare_8_w_Timpani_d, Snare_8_w_Timpani_d_sfx, "Kick"
+        
+        NoiseFX Snare_8_w_Timpani_f, Snare_8_w_Timpani_f_sfx, "Kick" ;Gs3
+        NoiseFX Snare_8_w_Timpani_e, Snare_8_w_Timpani_e_sfx, "Kick" ;A3
+        NoiseFX Snare_8_w_Timpani_d, Snare_8_w_Timpani_d_sfx, "Kick" ;As3
     
+        ; May be important to have an easy shift buffer.
         NoiseFX Crash_6,       Crash_6_sfx
-
 
         NoiseFX Timpani_c,         Timpani_c_sfx  
         NoiseFX Timpani_d,         Timpani_d_sfx  
@@ -102,6 +103,7 @@
     
     Kick_Type _d50_K, d50_Kick_sfx
     Kick_Type _d25_K, d25_Kick_sfx
+
     ;Kick_Type _d25_tom, A3_Tom_sfx
     ;Kick_Type Unused
 
