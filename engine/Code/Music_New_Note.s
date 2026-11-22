@@ -192,6 +192,8 @@ py_Segment_End LUT_Music_Opcodes_Low
 
 py_Ignore
 
+    ;.res $50
+
     .align 256
 
     ;Push toward end of page.

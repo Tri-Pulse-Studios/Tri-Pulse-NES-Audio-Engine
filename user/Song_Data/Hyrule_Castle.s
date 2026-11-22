@@ -1,12 +1,12 @@
 ;============================================================
 ; Statistics
 ;============================================================
-; Total Size: 397 Bytes
-    ; Sq0 133 B 
-    ; Sq1 64 B
-    ; Tri 74 B
-    ; DMC 43 B
-    ; Noise 83 B
+; Total Size: 530 Bytes
+;  - Sq0: 152 Bytes 
+;  - Sq1: 82 Bytes 
+;  - Tri: 112 Bytes
+;  - Noise: 119 Bytes
+;  - DMC: 65 Bytes
 
 _Env .set 0
 _8th .set 6+7
@@ -35,7 +35,7 @@ Channel Hyrule_Castle_Sq0, HC_Sq0
         _1_7:
         Notes dqt,Gs2
 
-        If_Alt B2,As2
+
         Notes 8th,B2
 
         _2:
@@ -189,9 +189,8 @@ Channel Hyrule_Castle_Tri, HC_Tri
     _23:
         ; Notes 2*_8th+8,F4, 9,Ds4, 9,D4
         ; Notes 8th,C4
-        Riff _28, _28_6
-        ;_23_6:
-        Notes 8th,Ds4
+        Riff _28, _28_7
+
 
         Notes 8th,F4, 8th,C5
 
@@ -201,13 +200,15 @@ Channel Hyrule_Castle_Tri, HC_Tri
         _25:
         Riff _23, _25
 
+
+
         _27:
         Riff _28, _28_7 +1 
         Duration "Cont", F4,rest, G4,rest 
 
         
         Shift_Pitch F4,As4
-        _28:
+        _28: ;REWRITE. Tri Is mostly a Transposition now.
             Notes 2*_8th+8,As4, 9,Gs4, 
             
             _28_4:
@@ -490,7 +491,7 @@ Loop Hyrule_Castle_Sq1_Cont, HC_Sq1::_3_BP
 ;============================================================
 ; DMC
 ;============================================================
-
+.align 256
 Channel Hyrule_Castle_dmc
     Header F2, T_0f__E2
 
@@ -517,17 +518,55 @@ Channel Hyrule_Castle_dmc
         Riff _15, _19
 
     ;
-    Shift_Pitch -Octave
+    
     _23:
-        Duration _8x8, Gs1,G1, Gs1,G1, As1,Gs1,A1,D2
+            ;23
+                Shift_Pitch -Octave ;F2,F1
 
-        _31:
-            Duration _8888, G1,A1,Fs1,G1
-        Repeat _31, 1
+                Notes 2*_8th+8,Gs1
+                Notes 9,Ds2
 
-        _39:
-        Duration _6x8, C2,As1,A1,G1, C2,As1
-        Notes whl,A1
+                Shift_Pitch +Octave
+
+                Notes 9,Gs2, hlf,Ds3
+
+            _24:
+            Shift_Pitch Ds3, D3
+            Riff _23, _24
+            Shift_Pitch D3,Ds3
+
+        _25:
+        Riff _23, _25
+
+
+
+        Shift_Pitch F2,As1 
+        _27:
+    
+            Notes 2*_8th +8+9,As1
+            Notes 9,Ds2, hlf,As2
+
+        _28:
+        Shift_Pitch As1,Gs1
+        Riff _27, _28
+
+        Shift_Pitch Gs1,A1
+        Riff _27, _28
+
+        Shift_Pitch A1, D2
+        Riff _27, _28
+
+
+    ;
+
+    Shift_Pitch -Octave 
+    _31:
+        Duration _8888, G1,A1,Fs1,G1
+    Repeat _31, 1
+
+    _39:
+    Duration _6x8, C2,As1,A1,G1, C2,As1
+    Notes whl,A1
 
 Loop Hyrule_Castle_dmc, _3
 
@@ -552,14 +591,14 @@ Channel Hyrule_Castle_Noise
         _1:
         Notes 12*(9), Crash_6
 
-            Vol_Fade_In Vol_25, Vol_62, (9)
+            Vol_Fade_In Vol_37, Vol_75, (9)
             _1_7:
                 Duration _00, Timpani_d,Timpani_d
             
             Repeat _1_7, 2
             Notes 8th,Timpani_d
 
-        Vol_Fade_In Vol_25, Vol_62, (9)*3
+        Vol_Fade_In Vol_37, Vol_75, (9)*3
         _2:
     
         Duration _00, Timpani_e,Timpani_e
@@ -575,7 +614,7 @@ Channel Hyrule_Castle_Noise
 
     _3_vol:
 
-    Vol_Fade_In Vol_50, Vol_62, _8th*16 ;Inc Volume when Sq0 comes in.
+    Vol_Fade_In Vol_62, Vol_75, _8th*16 ;Inc Volume when Sq0 comes in.
 
     _3:
         Riff _19, _21
@@ -604,7 +643,7 @@ Channel Hyrule_Castle_Noise
     ;
     
     _23:
-            Vol_Fade_In Vol_25, Vol_62, 3*(4)
+            Vol_Fade_In Vol_37, Vol_75, 3*(4)
 
             Notes 4,Timpani_e
             Repeat "2b", 12 ;4*13 = hlf  Slightly fast Triplets.

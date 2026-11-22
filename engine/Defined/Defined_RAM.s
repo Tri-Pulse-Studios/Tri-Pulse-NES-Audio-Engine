@@ -177,7 +177,7 @@ Normal_RAM:
                     SFX_Queued
 
     ;$a0
-    Res_5_Channels      SFX_RNG_Noise_Alt, \
+    Res_5_Channels      Note_RNG, \
                     SFX_RNG, \
                     Unused, \
                     Unused

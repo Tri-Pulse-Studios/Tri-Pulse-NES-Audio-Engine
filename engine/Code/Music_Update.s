@@ -72,6 +72,8 @@ py_Segment Update_Music, Free
 
 
     .macro Update_Note
+        inc $fe
+
         dec Note_Timer,x
         beq @New_Note
 
@@ -225,7 +227,7 @@ py_Segment Update_Music, Free
             .endif
         .endif
 
-        inc $fe
+
 
         tay
 
@@ -270,6 +272,8 @@ py_Segment Update_Music, Free
         bcs Prime_DMC
 
         SFX_Reset_Env:
+                
+
             ; AT Duration
                 lda LUT_Env_AT_Rate,y  
                 and #$0f ;== 0 Skips Decay_Init Entirely.
@@ -405,26 +409,33 @@ py_Segment Update_Music, Free
                 ;Basically, all Music SFX will have low priority. And only low priority sounds will be affected here.
 
 
-            lda Note_Volume_Damped+$c
-            bne @No_RNG
 
-                lda SFX_RNG,x 
-                and #$03
-                cmp #$03
-                bne @skip
+            ; lda Note_Volume_Damped+$c
+            ; bne @No_RNG
 
-                    lda #$01
-                @skip: ;0,1,1,2
+            inc $ff
 
-            @No_RNG:
-            sta irq_tmp_0
+            lda SFX_RNG,x ;This value isn't being changed every new SFX like it should.
+            and #$03  
+            lsr  ;0,1  1,2 Volume.
+
+            ldy Note_Volume_Damped+$c
+            beq @skip
+                
+                clc ;else  just 0,1 + Manual Dampen.
+                
+            @skip:
+            
+
+            adc Note_Volume_Damped+$c
+            tay 
+
 
             phx
-            lda SFX_Volume,x 
 
+            lda SFX_Volume,x 
             ldx #$0c
-            ldy irq_tmp_0
-            jsr Write_APU_Volume_Noise_LDY_BEQ_RELIANT ;Just a bunch of Bit shifts.
+            jsr SFX_Write_APU_Volume ;Just a bunch of Bit shifts.
                 ;Can Write to APU_Noise_Volume+1  w/o effect ($400d is ignored)
 
                 ;Noise Does not use $400c's Duty bits like Pulse.
@@ -630,6 +641,48 @@ py_Segment_End Update_Volume
 
 
 py_Segment Write_APU_Volume, Free
+    ; Write_APU_Volume:
+
+    ;     ;%VVVV vv dD
+    ;     ;V= 0-f written volume (0 Mutes Tri, Otherwise, full Volume.)
+    ;     ;v= stored quarter-resolution
+    ;     ;D = Duty
+
+    ;     lda Note_Volume,x
+    ;     ldy Note_Volume_Damped,x
+
+    ;         Write_APU_Volume_Noise_LDY_BEQ_RELIANT: ;SFX
+    ;     beq Write_APU_Volume_no_dampen
+
+    ;         .if Debugging_Enabled
+    ;             cpy #$08
+    ;             bcc :+
+    ;                 Runtime_Exception "Runtime Exception: Invalid Volume Damper. Valid Range 0..7."
+    ;             :
+
+    ;         .endif
+
+    ;             ;%_Damping
+
+    ;         ;In Y= Damp level 1-7
+            
+    ;         and #%11110000 ;Clear the fractional-volume (Causes wierd aliasing otherwise)
+
+    ;         pha
+    ;             lsrn 3
+    ;             sta irq_tmp_0 
+
+    ;         pla
+    ;         @loop:
+    ;             sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
+    ;             dey
+    ;             bne @loop
+
+    ;         eor Note_Volume,x 
+    ;         and #$fc
+    ;         eor Note_Volume,x ;Or- in duty bits.
+
+
     Write_APU_Volume:
 
         ;%VVVV vv dD
@@ -640,20 +693,13 @@ py_Segment Write_APU_Volume, Free
         lda Note_Volume,x
         ldy Note_Volume_Damped,x
 
-            Write_APU_Volume_Noise_LDY_BEQ_RELIANT: ;SFX
-        beq Write_APU_Volume_no_dampen
+        SFX_Write_APU_Volume: ;SFX
 
-            .if Debugging_Enabled
-                cpy #$08
-                bcc :+
-                    Runtime_Exception "Runtime Exception: Invalid Volume Damper. Valid Range 0..7."
-                :
 
-            .endif
 
                 ;%_Damping
 
-            ;In Y= Damp level 1-7
+            ;In Y= Damp level 0-7
             
             and #%11110000 ;Clear the fractional-volume (Causes wierd aliasing otherwise)
 
@@ -663,10 +709,13 @@ py_Segment Write_APU_Volume, Free
 
             pla
             @loop:
-                sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
                 dey
-                bne @loop
+                bmi @exit_loop
 
+                sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
+                bcs @loop ;exit on Silence.
+
+            @exit_loop:
             eor Note_Volume,x 
             and #$fc
             eor Note_Volume,x ;Or- in duty bits.
