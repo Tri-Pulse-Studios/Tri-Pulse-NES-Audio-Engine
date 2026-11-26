@@ -67,7 +67,6 @@
 
 ZP_RAM:
 
-
     Res_RAM_Set_Page 0
     RAM_Index .set ZP_RAM_Start
 
@@ -98,11 +97,7 @@ ZP_RAM:
     Res_RAM NDH_DMC
 
 
-    ;For UI Text 
-    Res_RAM Held_Button
-    Res_RAM Pressed_Button
-    Res_RAM Track_Index ;Displayed Name
-    Res_RAM Silence_APU_Flag
+
 
 ;
 
@@ -185,25 +180,41 @@ Normal_RAM:
     Res_RAM RNG_high
     Res_RAM RNG_low
 
+
+    ;For UI Text 
+    Res_RAM Held_Button
+    Res_RAM Pressed_Button
+    Res_RAM Track_Index ;Displayed Name
+    Res_RAM Silence_APU_Flag
+
+
 OAM:
     OAM_Buffer_Page = 2
     Res_RAM_Set_Page OAM_Buffer_Page
+
     Res_RAM OAM_Buffer, $100
 
 Riff_Stack:
 
-    .if Expand_Max_Riff_Depth
-        Res_RAM Riff_Ends_At, 5*8
-        Res_RAM Riff_Returns_To, 5*8
-    .else
-        Res_RAM Riff_Ends_At, 5*8
-        Res_RAM Riff_Returns_To, 5*8
+    Res_RAM_Set_Page >Riff_Buffer_Start
+    RAM_Index .set <Riff_Buffer_Start
 
-        ; Res_RAM Riff_Ends_At, 5*4
-        ; Res_RAM Riff_Returns_To, 5*4
-    .endif
+    Res_RAM Riff_Ends_At, 5*8
+    Res_RAM Riff_Returns_To, 5*8
+
+
+    ; .if Expand_Max_Riff_Depth
+    ;     Res_RAM Riff_Ends_At, 5*8
+    ;     Res_RAM Riff_Returns_To, 5*8
+
+    ; .else
+    ;     Res_RAM Riff_Ends_At, 5*4
+    ;     Res_RAM Riff_Returns_To, 5*4
+
+    ; .endif
+
     ;Recursion depth of 7 per channel. idx 0 = "In Root"
-        ;Only DMC and Noise realistically need this much.
+        ;Only DMC and Noise can use this much.
 
 
 Page6: ;Unusued

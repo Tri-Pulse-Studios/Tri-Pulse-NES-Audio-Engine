@@ -1,6 +1,6 @@
 # Tri-Pulse NES Audio Engine — v0.2.0
 
-Version 0.2 introduces substantial improvements to the engine's organization, usability, and development workflow. Several existing systems have been overhauled, new macros have been introduced, and basic debugging and optimization tools are now included.
+Version 0.2 introduces substantial improvements to the engine's organization, usability, and development workflow. Several existing systems have been overhauled, new macros have been introduced, and some basic debugging and optimization tools are now included.
 
 Documentation remains based on v0.1, and it does not reflect the changes introduced in v0.2. Updated documentation is planned for a future hotfix. (Likely after the New Year.)
 
@@ -37,7 +37,7 @@ The Domain-Specific-Language (DSL) is mostly unchanged, although numerous tweaks
     - The current system is somewhat fragile. A robust type-validation system is planned for a future release.
 - Increased error checking.
 
-### Miscalanious Notes
+### Miscellaneous Notes
 
 #### Organization
 - Macro Definitions are seperated topically.
@@ -63,5 +63,5 @@ The Domain-Specific-Language (DSL) is mostly unchanged, although numerous tweaks
 
 
 #### Tools
-- Added `tools\Raw Byte Riff Analyzer.py`. 
-- It scans raw Song Data and highlights some potential optimizations.
+- Added `tools/Raw Byte Riff Analyzer.py`. 
+    - It scans raw Song Data and highlights some potential optimizations.

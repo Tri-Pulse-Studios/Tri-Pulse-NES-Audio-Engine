@@ -21,12 +21,14 @@
 
         ;All RAM allocations must be Non-Overlapping.
 
+
+        ; CURRENTLY UNIMPLIMENTED
         Expand_Max_Riff_Depth = 1
             ;0 = Max depth 4. Uses 80 Bytes of RAM  
             ;1 = Max depth 8. Uses 160 Bytes of RAM
             ;
             ; Disable only if the extra RAM can't be spared.
-                ; CURRENTLY UNIMPLIMENTED
+                
 
     ;
 
