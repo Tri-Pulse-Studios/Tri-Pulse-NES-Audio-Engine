@@ -177,6 +177,14 @@ Normal_RAM:
                     SFX_Queued
 
     ;$a0
+    Res_5_Channels      Note_RNG, \
+                    SFX_RNG, \
+                    Unused, \
+                    Unused
+                    
+    Res_RAM RNG_high
+    Res_RAM RNG_low
+
 OAM:
     OAM_Buffer_Page = 2
     Res_RAM_Set_Page OAM_Buffer_Page
@@ -212,10 +220,7 @@ Page7: ;Unusued
 
 
 Misc_Constants:
-
-
-    ;This is for anything that the game relies on it existing
-
+ 
     Joy_Pad_1 = $4016
     Joy_Pad_2 = $4017
 
@@ -240,7 +245,7 @@ Misc_Constants:
 
     
     APU_Volume = $4000
-    APU_Sweep = $4001
+        APU_Sweep = $4001
     APU_Period_Low = $4002
     APU_Period_High = $4003
 
@@ -250,7 +255,7 @@ Misc_Constants:
     APU_Init_Noise = $400f
 
     DMC_Rate = $4010
-        ;DMC_Direct_Load = $4011
+        DMC_Direct_Load = $4011
     DMC_Address = $4012
     DMC_Length = $4013
 
@@ -259,4 +264,4 @@ Misc_Constants:
 
 
 
-;End of Constants
+;

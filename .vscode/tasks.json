@@ -9,7 +9,17 @@
                 "${workspaceFolder}/tools/builder.py"
             ],
             "problemMatcher": [
-                "$ca65",
+                {
+                    "owner": "ca65",
+                    "fileLocation": "absolute",
+                    "pattern": {
+                        "regexp": "^(.*\\.s):(\\d+):\\s+(Error|Warning):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "severity": 3,
+                        "message": 4
+                    }
+                },
                 "$ld65",
                 "$ld65-unresolved",
                 "$ld65-config"

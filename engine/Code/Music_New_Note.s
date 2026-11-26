@@ -89,7 +89,7 @@ py_Segment Pre_New_Note, Free
         bne @skip
 
             ;lda #$00 
-            jsr Reset_Volume_Damping ;These reset per note (DMC only uses it for multi-note fades.)
+            jsr Reset_Volume_Damping ;These reset per note
             
         
         @skip:
@@ -100,6 +100,7 @@ py_Segment Pre_New_Note, Free
 
     .macro Check_Riff_Return
         @Check_Riff_Return:
+        
         ldy Riff_Depth,x
 
         tya
@@ -191,6 +192,8 @@ py_Segment_End LUT_Music_Opcodes_Low
 
 py_Ignore
 
+    ;.res $50
+
     .align 256
 
     ;Push toward end of page.
@@ -256,11 +259,8 @@ Reset_Channel:
 
     sta No_Reset_Env_Flag,x ;Ensure Volume is 100% 
 
+;Fallthorugh
     
-    
-    
-
-
 ;jmp Func_Clear_Special_Effects  ;Tail-Call ;After Reset doesn't do Pre-New-Note, so must manually reset damping.
     ;OUT A = 0
 
@@ -280,16 +280,16 @@ Reset_Channel:
     rts
 
 
-    Func_8th_Cont_Sweep: ;Unused 
-        sta Sweep_Speed,x
+    ; Func_8th_Cont_Sweep: ;Unused 
+    ;     sta Sweep_Speed,x
         
-        lda Eighth_Length
-        sta Note_Timer,x
+    ;     lda Eighth_Length
+    ;     sta Note_Timer,x
 
-        pla
-        pla 
-    rts ;return from New_Note
-
+    ;     plp
+    ;     plp
+    ; rts ;return from New_Note
+        ; This can easily fall throguh to normal Sweep Speed store.
 
     ;In A= (Note_Data,x)
         ;Y = Opperand
@@ -333,7 +333,22 @@ Reset_Channel:
     rts
 
 
+    Func_Set_Tempo:
+        .if Debugging_Enabled
+            cpx #$00
+            beq :+
+                Runtime_Exception "Runtime Exception: Set_Tempo Error: Set_Tempo Instructions only function correctly inside Sq0's Channel."
+            :
 
+            cmp #$21
+            bcc :+
+                Runtime_Exception "Runtime Exception: Set_Tempo Error: Non-monotonic Tempo provided."
+
+            :
+
+        .endif
+        sta Eighth_Length
+    rts 
 
     Func_Inc_Page: ;$ff
         jsr Riff_Jmp_To ;lda (Note_Data,x) ;
@@ -401,7 +416,7 @@ All_Music_Opcodes:
         cpy #(Init_Sweep & $f)
             bcc Set_Volume_w_Custom_Ramp ;$f0-$f7
             
-            bne Func_Set_Env_Bank ;$f9
+            bne Func_Set_Tempo ;Func_Set_Env_Bank ;$f9
             ;beq @Init_Sweep ;$f8
 
 
@@ -794,7 +809,7 @@ All_Music_Opcodes:
                 bcc @Error
 
                 cmp #Cs4
-                bcs @valid
+                bcc @valid
           
                     @Error:
                     Runtime_Exception "Runtime Exception: DMC Pitch Range Error. Valid Range: B0 .. Cs4"

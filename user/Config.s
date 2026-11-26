@@ -28,6 +28,33 @@
             ; Disable only if the extra RAM can't be spared.
                 ; CURRENTLY UNIMPLIMENTED
 
+    ;
+
+    ;========================================================
+    ;Engine Options
+    ;========================================================
+        ; These are Unimplemented. 
+            ; Planned for v0.3 
+            ; See TODO.md for details.
+
+        Include_UI_Engine = 1
+            ; Disable for a custom project.
+                ; The Reset and UI_Update routines are omitted.
+                ; The user is responsible for a custom handler that calls:
+                    ; `lda #<Song_Name>_Index  jsr Init_Song` 
+                    ; `jsr Update_Music`
+
+        Enable_Page_Binner = 0
+            ; Enable the 2-Stage ROM Build.
+                ; Re-organizes Song Data and Engine Code.
+                ; Eliminates the need for `.align 256` padding in Song Data.
+
+                ; Requirements:
+                    ; The external Binning Tool in `tools/`.
+                    ; The Binning Instructions in the `.s` files (currently planned as `py_segment`. Syntax TBD).
+
+    ;
+
     ;========================================================
     ;Runtime Debugging Tools
     ;========================================================
@@ -45,26 +72,5 @@
                 ; A ca65 `.error` will identify the offending code, along with a description of the error.
 
     ;
-    ;========================================================
-    ;Engine Options
-    ;========================================================
-        ; These are Unimplemented. 
-            ; Planned for v0.3 
-            ; See TODO.md for details.
 
-        Include_UI_Engine = 1
-            ; Disable for a custom project.
-                ; The Reset and UI_Update routines are omitted.
-                ; The user is responsible for a custom handler that calls:
-                    ; `lda #<Song_Name>_Index   jsr Init_Song` 
-                    ; `jsr Update_Music`
-
-        Enable_Page_Binner = 0
-            ; Enable the 2-Stage ROM Build.
-                ; Re-organizes Song Data and Engine Code.
-                ; Eliminates the need for `.align 256` padding in Song Data.
-
-                ; Requirements:
-                    ; The external Binning Tool in `tools/`.
-                    ; The Binning Instructions in the `.s` files (currently planned as `py_segment`. Syntax TBD).
 ;

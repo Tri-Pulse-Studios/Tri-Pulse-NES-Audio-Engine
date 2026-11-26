@@ -41,6 +41,8 @@
  
 
 .macro Update_Displayed_Addresses
+    Res_RAM Note_Data_tmp
+
     lda Pressed_Button
     bne @exit ;not enough time to update in nmi if Song also changes.
 
@@ -66,28 +68,58 @@
             tax
 
             lda Note_Data_High,x
-            lsrn 4
-            tay
-            lda LUT_Hex_Tiles,y
-            sta $2007
+            pha
 
-            lda Note_Data_High,x
-            and #$0f
-            tay
-            lda LUT_Hex_Tiles,y
-            sta $2007
+                lsrn 4
+                tay
+                lda LUT_Hex_Tiles,y
+                sta $2007
 
-            lda Note_Data,x
-            lsrn 4
-            tay
-            lda LUT_Hex_Tiles,y
-            sta $2007
+            pla
+                and #$0f
+                tay
+                lda LUT_Hex_Tiles,y
+                sta $2007
 
             lda Note_Data,x
-            and #$0f
-            tay
-            lda LUT_Hex_Tiles,y
-            sta $2007
+            
+            ;     sta Note_Data_tmp ;Copy/Pasted Riff Return, Read-Only
+            ;     ldy Riff_Depth,x
+
+                
+
+            ;     @Recurse_if_Return:
+            ;     tya
+            ;     and #$07 ;Max Depth.
+            ;     beq @Not_Returned
+
+            ;         lda Note_Data_tmp
+            ;         cmp Riff_Ends_At -1,y ;y=0 is "in root" 
+            ;         bcc @Not_Returned
+
+
+
+            ;             lda Riff_Returns_To -1,y
+            ;             sta Note_Data_tmp
+            ;             inc Note_Data_tmp ;like how jsr pushes -1
+
+            ;             dey
+            ;             bal @Recurse_if_Return, bpl
+
+            ; @Not_Returned:
+            ; lda Note_Data_tmp  ;Simulates Riff Returns. Kinda meh about it 
+            pha
+
+                lsrn 4
+                tay
+                lda LUT_Hex_Tiles,y
+                sta $2007
+
+            pla
+                and #$0f
+                tay
+                lda LUT_Hex_Tiles,y
+                sta $2007
 
     ldy irq_tmp_0
     dey
@@ -133,11 +165,10 @@
 
 .macro Check_Init_Song
 
-    bit Pressed_Button
+    lda Pressed_Button
     bpl skip_A ;A_Button
 
-        lda #$80
-        sta Silence_APU_Flag ;Clear when Set.
+        asl Silence_APU_Flag ;Clear Flag
 
         lda Track_Index
         jsr Song_Init
@@ -149,9 +180,10 @@
     bit Pressed_Button
     bvc @skip_B
 
-        asl Silence_APU_Flag ;Clear Flag.
+        inc Silence_APU_Flag ;Toggle Flag
 
     @skip_B:
+
 
 
 .endmacro 
@@ -185,6 +217,27 @@ nmi:
     Inline OAM_DMA_Controller_Read
 
     jsr Update_Music
+
+    lda Held_Button 
+    and #start+select
+    beq @skip
+
+        ldy #$01
+        and #select
+        beq @Double
+
+            ldy #15 ;x16 Speed.
+            
+        @Double:
+        sty $7ff
+
+        :
+        jsr Update_Music
+        dec $7ff
+        bne :-
+
+    @skip:
+
 
     .if Debugging_Enabled
         lda #$00

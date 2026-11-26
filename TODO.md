@@ -26,9 +26,7 @@
 
 
 
-## v0.2 Plans 
-
-
+## v0.2.1 Plans 
 
 
 ### README Updates
@@ -38,18 +36,6 @@
 	- New macros need documenting.
 
 - Likely splitting the README into multiple files, as it is rather long.
-
-
-### vscode Theme
-- Updates to highlight more kinds of text.
-	- Noise SFX Names with Famistudio matching tints.
-	- The Noise Period Aliases, matching Pulse piano key Aliases.
-
-- Highlighting all Macros.
-	- Possibly making a subset of macros different colors
-		- `add, lsrn`, and `Riff, Notes`, etc are proper "instructions"
-		- `Env, SFX`, their data emitters, and `Channel, Header, Loop` are fundamentally different. The classify and organize data, and aren't intructions.
-			- Maybe a slightly Redder shade of purple for them? Sorta halfway between ca65 directives and macros?
 
 
 

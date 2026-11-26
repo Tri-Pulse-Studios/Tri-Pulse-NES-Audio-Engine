@@ -29,37 +29,6 @@ py_Segment Update_Music, Free
         @exit:
     .endmacro
 
-
-    .macro Update_Sweep
-            lda Sweep_Speed,x
-            ;beq @rts ;2b saves  ~30/cc every frame.
-
-                add {Note_Period_Low,x} ;2's comp
-                sta Note_Period_Low,x
-
-                bvc @Exit_Sweep
-
-                    ;@dec
-                    .if Emit__Unused
-                        bmi @inc
-
-                        ; @dec:
-                            dec Note_Period_High,x
-                            jsr Note_Conditional_Write_Period_High
-
-                            jmp @Exit_Sweep
-                            ;can bal Conditional, bpl
-                    .endif
-
-                    @inc:
-                        inc Note_Period_High,x ;Tail Calls
-                        jsr Note_Conditional_Write_Period_High 
-
-
-            @Exit_Sweep: 
-    .endmacro
-
-
     .macro Check_Init_SFX
 
         lda SFX_Queued,x
@@ -73,6 +42,51 @@ py_Segment Update_Music, Free
 
     .endmacro
 
+    .macro Update_Sweep
+            lda Sweep_Speed,x
+
+                add {Note_Period_Low,x} ;2's comp
+                sta Note_Period_Low,x
+
+                bvc @skip_new_note
+
+                    ;@dec
+                    .if Emit__Unused
+                        bmi @inc
+
+                        ; @dec:
+                            dec Note_Period_High,x
+                            jsr Note_Conditional_Write_Period_High
+
+                            bal @skip_new_note bvs
+                            ;can bal Conditional, bpl
+                    .endif
+
+                    @inc:
+                        inc Note_Period_High,x ;Tail Calls
+                        jsr Note_Conditional_Write_Period_High 
+
+                        bal @skip_new_note, bvs
+  
+    .endmacro
+
+
+    .macro Update_Note
+
+        dec Note_Timer,x
+        beq @New_Note
+
+            @Update_Frame:
+                jsr Update_Volume  ;If Tied Note w/ Notes 256,<Pitch>, channel silences.
+                Inline Update_Sweep 
+                    ;Internal bal @skip_new_note
+
+            @New_Note:
+                jsr Pre_New_Note 
+
+
+        @skip_new_note:
+    .endmacro
 
     .macro DMC_Update_Regs
         lda SFX_Timer,x
@@ -102,9 +116,10 @@ py_Segment Update_Music, Free
 
     Update_Music:
         lda Silence_APU_Flag
-        bne @play        
+        lsr
+        bcc @play        
 
-            ;lda #$00
+            lda #$00 ;Silence. 
             sta APU_Channel_Enable
             rts
 
@@ -119,15 +134,9 @@ py_Segment Update_Music, Free
         ldx #$00
         Loop_All_Channels:
 
-            jsr Update_Volume 
-            Inline Update_Sweep 
 
-            dec Note_Timer,x
-            bne @skip
+            Inline Update_Note
 
-                jsr Pre_New_Note 
-
-            @skip:
 
             Inline Update_Fade
             Inline Check_Init_SFX
@@ -138,7 +147,7 @@ py_Segment Update_Music, Free
             bcs @dmc
 
                 @sqr_tri:
-                    jsr Sq_Tri_Update_Regs  
+                    jsr Sq_Tri_Update_Regs  ;Internal Tail-Calls.
 
                     inxn 4
                     bal Loop_All_Channels, bne 
@@ -174,6 +183,31 @@ py_Segment Update_Music, Free
     rts
 
 
+
+    .macro Call_RNG
+        ; High: -edcba98
+        ; Low:  01234567
+
+        ; OUT A = (High << 1) XOR Low.
+            ; Same 32,767 Cycle length of 15-bit LSFR.
+            ; Improvement: Every successor is different. (2 Reads are Highly-Decorrelated.)
+                ; though there are still local correlations with 3 or mroe reads.
+
+        lda RNG_high ;$bit $e
+        asl 
+        clc ;default incoming to clear
+
+        eor RNG_low  ;$bit $0
+        bpl @skip
+
+            sec ;set incoming
+
+        @skip:
+        ror RNG_low 
+        rol RNG_high
+        ;32/33 clock cycles. (28/29 if ZP)
+    .endmacro
+
     ;In A= Pointer to SFX data.
         ;Negetive = Musical
         
@@ -192,7 +226,12 @@ py_Segment Update_Music, Free
             .endif
         .endif
 
+
         tay
+
+        Inline Call_RNG
+        sta SFX_RNG,x ;Can be used for whatever. Presently just for volume modulation.
+
 
         lda LUT_SFX_Data-2,y
         and #$7f ;bit 7 set means its a Base Period.  Its so multiple Pitches to the same sound are usable.
@@ -232,6 +271,8 @@ py_Segment Update_Music, Free
         bcs Prime_DMC
 
         SFX_Reset_Env:
+                
+
             ; AT Duration
                 lda LUT_Env_AT_Rate,y  
                 and #$0f ;== 0 Skips Decay_Init Entirely.
@@ -268,22 +309,41 @@ py_Segment Update_Music, Free
 
     Update_SFX: ;For Primary.
         jsr SFX_Write_Regs
+
         ;Update Volume
         inx
         jsr SFX_Update_Volume
         dex
 
-    rts
+    rts ;Secondary Automatically Updates Volume by SFX engine.
 
-    SFX_Write_Regs:
+    SFX_Write_Regs: 
 
         ;Update Pitch
         ldy SFX_Index,x
 
-            ; .if Debugging_Enabled
-            ;     lda SFX_pitch_timer,x
-            ;     bne @repeat_current_pitch ;Prevents endless garbage read.
-            ; .endif
+
+                ; .if Debugging_Enabled  
+                ;     pha
+                ;     lda SFX_pitch_timer,x
+                ;     cmp #$10
+                ;     bcc @valid ;
+
+                ;             lda SFX_Volume,x 
+                ;             and #$f0
+                ;             beq :+
+
+                ;             Runtime_Exception "Runtime Exception. SFX Error. Garbage Data is read while the Noise Channel is unmuted."
+
+                ;             :
+    
+                ;         @valid:
+                ;     pla
+                ; .endif
+                    ;This can give false possitives.
+                        ;A real check needs tmp RAM to check:
+                            ; a $00 timer wrapped. <-
+                            ; Volume is Non 0.
 
             dec SFX_pitch_timer,x
             bne @repeat_current_pitch
@@ -300,35 +360,7 @@ py_Segment Update_Music, Free
             lda LUT_SFX_Data-1,y
             and #$0f
 
-            .if Emit__Unused
-                bne @sfx_note
-                
-                @sfx_rest:
-                ;lda #$00
-                sta SFX_Volume,x  ;With volume silenced, pitch is irrelevant.
-                                    ;For this to be useful for the whole engine, Musical needs a flag of some kinda that tells it to jsr Reset_Envelepe
-                @sfx_note:
-
-                .elseif Debugging_Enabled
-
-                    bne @valid
-                    pha
-                        lda SFX_Volume,x ;If un-muted, crash
-                        and #$f0
-                        beq :+
-
-                        Runtime_Exception "Runtime Exception. SFX Error. Garbage Data is read while the Noise Channel is unmuted."
-
-                        :
-                        pla
-                    @valid:
-
-
-                
-            .endif
-
             add {SFX_MIDI,x} 
-            ; jmp @Update_Pitch_APU
 
 
         ;A = Pitch Index / Noise Period / dmc Rate
@@ -374,16 +406,38 @@ py_Segment Update_Music, Free
             ;Primary/Secondary AND Game SFX will all be volume damped.
                 ;Can filter out Game SFX by the queue priority idea I have
                 ;Basically, all Music SFX will have low priority. And only low priority sounds will be affected here.
-            phx
-            lda SFX_Volume,x 
 
+
+
+            ; lda Note_Volume_Damped+$c
+            ; bne @No_RNG
+
+
+            lda SFX_RNG,x ;This value isn't being changed every new SFX like it should.
+            and #$03  
+            lsr  ;0,1  1,2 Volume.
+
+            ldy Note_Volume_Damped+$c
+            beq @skip
+                
+                clc ;else  just 0,1 + Manual Dampen.
+                
+            @skip:
+            
+
+            adc Note_Volume_Damped+$c
+            tay 
+
+
+            phx
+
+            lda SFX_Volume,x 
             ldx #$0c
-            ldy Note_Volume_Damped+$c ;Needed for when Volume is damped.
-            jsr Write_APU_Volume_Noise_LDY_BEQ_RELIANT ;Just a bunch of Bit shifts.
+            jsr SFX_Write_APU_Volume ;Just a bunch of Bit shifts.
                 ;Can Write to APU_Noise_Volume+1  w/o effect ($400d is ignored)
 
                 ;Noise Does not use $400c's Duty bits like Pulse.
-                    ;Entirely Ignored. Save to Or-In garbage to those bits.
+                    ;Entirely Ignored. Safe to Or-In garbage to those bits.
 
             plx                ;
         rts
@@ -397,7 +451,7 @@ py_Segment Update_Music, Free
 
         .if Debugging_Enabled
             bpl :+
-            Runtime_Exception "Runtime_Exception: DMC IRQs: The DMC is configured to use IRQs, when it should. Bad LUT data or index is the likely cause."
+            Runtime_Exception "Runtime_Exception: DMC IRQs: The DMC is configured to use IRQs, when it shouldn't. Bad LUT data or index is the likely cause."
             :
         .endif
     rts
@@ -519,20 +573,21 @@ py_Segment Update_Volume, Free
             beq @Decay_Init ;== 1, Init
             bpl @Attack ;> 1, AT
 
+        lda LUT_Env_Decay_Rate,y ;ATK and Decay both use.
         inc Note_Env_Timer,x ;Once Expired, stay Static
             beq @Decay ;== 0 Decay
             ;bne @Sustain ;== -1 Sustain -> Release
     
 
         @Sustain:
-            lda No_Reset_Env_Flag,x ;[WARN] SFX shares this execution
-            bmi @rts
+            ;lda LUT_Env_Decay_Rate,y
+            and #$07 ;== 0 Doesnt release
 
-                lda LUT_Env_Decay_Rate,y
-                and #$07 ;== 0 Doesnt release
+            cmp Note_Timer,x
+            bcc @rts
 
-                cmp Note_Timer,x
-                bcc @rts
+                ldy No_Reset_Env_Flag,x ;[WARN] SFX shares this execution
+                bmi @rts
 
                     @Released:
                     lda #$03   ;Also from Decay w/ Anything
@@ -541,27 +596,8 @@ py_Segment Update_Volume, Free
             @rts:
         rts
 
-
-        @Attack:
-            lda LUT_Env_AT_Rate,y ;lda, and #$f0
-            and #$f0
-
-            asr ;Range +1.75 .. -2.00 /f
-            asr
-            add {Note_Volume,x}, clc
-            sta Note_Volume,x ;Blindly added w/ NO bounds check. 
-        rts 
-
-
-        @Decay_Init:
-            lda LUT_Env_Decay_Init,y ;%VVVV vv DD 
-            sta Note_Volume,x
-        rts
-
-        ;
-        
         @Decay:
-            lda LUT_Env_Decay_Rate,y ;lda, and #$f8
+            ;lda LUT_Env_Decay_Rate,y
             and #$f8
 
             sec ;asr, but always negetive  (Range is -0.25 to -8.0 /f)
@@ -580,11 +616,71 @@ py_Segment Update_Volume, Free
 
             @Not_Sustained:
             sta Note_Volume,x 
-    rts
+        rts
+
+
+        @Decay_Init:
+            lda LUT_Env_Decay_Init,y ;%VVVV vv DD 
+            sta Note_Volume,x
+        rts
+
+
+        @Attack:
+            lda LUT_Env_AT_Rate,y ;lda, and #$f0
+            and #$f0
+
+            asr ;Range +1.75 .. -2.00 /f
+            asr
+            add {Note_Volume,x}, clc
+            sta Note_Volume,x ;Blindly added w/ NO bounds check. 
+    rts 
+
 py_Segment_End Update_Volume
 
 
 py_Segment Write_APU_Volume, Free
+    ; Write_APU_Volume:
+
+    ;     ;%VVVV vv dD
+    ;     ;V= 0-f written volume (0 Mutes Tri, Otherwise, full Volume.)
+    ;     ;v= stored quarter-resolution
+    ;     ;D = Duty
+
+    ;     lda Note_Volume,x
+    ;     ldy Note_Volume_Damped,x
+
+    ;         Write_APU_Volume_Noise_LDY_BEQ_RELIANT: ;SFX
+    ;     beq Write_APU_Volume_no_dampen
+
+    ;         .if Debugging_Enabled
+    ;             cpy #$08
+    ;             bcc :+
+    ;                 Runtime_Exception "Runtime Exception: Invalid Volume Damper. Valid Range 0..7."
+    ;             :
+
+    ;         .endif
+
+    ;             ;%_Damping
+
+    ;         ;In Y= Damp level 1-7
+            
+    ;         and #%11110000 ;Clear the fractional-volume (Causes wierd aliasing otherwise)
+
+    ;         pha
+    ;             lsrn 3
+    ;             sta irq_tmp_0 
+
+    ;         pla
+    ;         @loop:
+    ;             sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
+    ;             dey
+    ;             bne @loop
+
+    ;         eor Note_Volume,x 
+    ;         and #$fc
+    ;         eor Note_Volume,x ;Or- in duty bits.
+
+
     Write_APU_Volume:
 
         ;%VVVV vv dD
@@ -595,20 +691,13 @@ py_Segment Write_APU_Volume, Free
         lda Note_Volume,x
         ldy Note_Volume_Damped,x
 
-            Write_APU_Volume_Noise_LDY_BEQ_RELIANT: ;SFX
-        beq Write_APU_Volume_no_dampen
+        SFX_Write_APU_Volume: ;SFX
 
-            .if Debugging_Enabled
-                cpy #$08
-                bcc :+
-                    Runtime_Exception "Runtime Exception: Invalid Volume Damper. Valid Range 0..7."
-                :
 
-            .endif
 
                 ;%_Damping
 
-            ;In Y= Damp level 1-7
+            ;In Y= Damp level 0-7
             
             and #%11110000 ;Clear the fractional-volume (Causes wierd aliasing otherwise)
 
@@ -618,10 +707,13 @@ py_Segment Write_APU_Volume, Free
 
             pla
             @loop:
-                sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
                 dey
-                bne @loop
+                bmi @exit_loop
 
+                sub irq_tmp_0 ;subtract 12.5%  1-7 times. (or 256 if unintended  sneaks in)
+                bcs @loop ;exit on Silence.
+
+            @exit_loop:
             eor Note_Volume,x 
             and #$fc
             eor Note_Volume,x ;Or- in duty bits.

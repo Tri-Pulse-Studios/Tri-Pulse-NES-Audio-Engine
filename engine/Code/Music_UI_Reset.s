@@ -87,7 +87,8 @@ sta $2007 ;White
     lda #_CURRENT_TRACK__
     jsr Set_PPU_ADDR_Display_Word
 
-
+lda #$cd 
+sta RNG_low ;RNG Seed must be non-0
 
 lda #butA|down 
 sta Pressed_Button ;Init Track Text to 01, and Play it.
