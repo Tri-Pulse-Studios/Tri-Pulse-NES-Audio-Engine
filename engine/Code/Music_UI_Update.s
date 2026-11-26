@@ -97,7 +97,7 @@
             ;         cmp Riff_Ends_At -1,y ;y=0 is "in root" 
             ;         bcc @Not_Returned
 
-            ;             inc $ff
+
 
             ;             lda Riff_Returns_To -1,y
             ;             sta Note_Data_tmp

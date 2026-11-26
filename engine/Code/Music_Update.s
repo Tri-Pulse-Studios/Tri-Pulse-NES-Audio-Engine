@@ -72,7 +72,6 @@ py_Segment Update_Music, Free
 
 
     .macro Update_Note
-        inc $fe
 
         dec Note_Timer,x
         beq @New_Note
@@ -228,11 +227,11 @@ py_Segment Update_Music, Free
         .endif
 
 
-
         tay
 
         Inline Call_RNG
         sta SFX_RNG,x ;Can be used for whatever. Presently just for volume modulation.
+
 
         lda LUT_SFX_Data-2,y
         and #$7f ;bit 7 set means its a Base Period.  Its so multiple Pitches to the same sound are usable.
@@ -413,7 +412,6 @@ py_Segment Update_Music, Free
             ; lda Note_Volume_Damped+$c
             ; bne @No_RNG
 
-            inc $ff
 
             lda SFX_RNG,x ;This value isn't being changed every new SFX like it should.
             and #$03  

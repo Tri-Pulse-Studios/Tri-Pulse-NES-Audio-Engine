@@ -61,14 +61,17 @@
     ;============================================================
     ; Envelope Optimization
     ;============================================================
-    ; This attempts to omit unused envelope data.
-    ;       WARNING: This should be a final step.
-    ;       It easy to mess up, hard to debug, and leaves the Env organization brittle.
-    ;
-    ; See the README for Envelope Optimization.
+        
+        ; PLANNED FOR A FUTURE UPDATE.
+        
+        ; This attempts to omit unused envelope data.
+        ;       WARNING: This should be a final step.
+        ;       It easy to create bugs, hard to debug, and leaves the Env organization brittle.
+        ;
+        ; See the README for Envelope Optimization.
 
-        Enable_Env_Optimization = 0
-        Suppress_Env_Optimization_Warnings = 1
+            Enable_Env_Optimization = 0
+            Suppress_Env_Optimization_Warnings = 1
 
 
     ;============================================================
@@ -224,99 +227,102 @@
 ;============================================================
 
     Enable_Custom_Duration_Sets = 1
-        ;Disabling is not currently implimented.
+    ;SIMPLER, HARDCODED SET PLANNED FOR A FUTURE RELEASE.
+        ; ; 
+        ; .if Enable_Custom_Duration_Sets
+        ; ; WARNING. Custom Duration Sets are an advanced feature.
+        ; ;   It also has a very large overhead. 
+        ; ;       - It costs approx 60 Bytes of Code and Data. 
+        ; ;       - It takes multiple songs making heavy use of custom sets to be worth the overhead.
 
 
-    ; WARNING. Custom Duration Sets are an advanced feature.
-    ;   It also has a very large overhead. 
-    ;       - It costs approx 60 Bytes of Code and Data. 
-    ;       - It takes multiple songs making heavy use of custom sets to be worth the overhead.
+        ; .else ;Hardcoded Set
+
+        
+        ; ;These are the aliases for the Simple, Hardcoded Duration Sets
+            ; ;Rename if desired, but their function is hardcoded.
 
 
-    .if Enable_Custom_Duration_Sets
+        ;     ;16th x2, x4, x6, x8
+        ;     _00    = $5f
+        ;     _0000  = $5e
+        ;     _6x0   = $5d
+        ;     _8x0   = $5c
 
-        ;Sets are defined with the Opcodes: 16th, 8th, qtr, dqt, hlf, dhf, whl, or by the raw byte that instruction encodes.
-            ;ie $e0 = Set_Env,  $b0 = Shift_Pitch
-                ;See `Bad Ideas` in the README for the other instructions.
+        ;     ;8th x4, x6, x8
+        ;     _1111  = $5b
+        ;     _6x1   = $5a
+        ;     _8x1   = $59
 
-        ; See the README for details on defining custom duration sets.
+        ;     ;qtr x4, x6, x8
+        ;     _2222  = $58
+        ;     _6x2   = $57
+        ;     _8x2   = $56
 
-        ;WARNING Validation on the Custom Sets is limited. See the example set for usage.
+        ;     ;hlf x4, x6, x8
+        ;     _4444  = $55
+        ;     _6x4   = $54
+        ;     _8x4   = $53
 
-        ;Index $50:
-        Duration_Set _00,   1
-        Duration_Set _0000, 2
-        Duration_Set _6x0,  3
-        Duration_Set _8x0,  4, 16th,16th, 16th,16th, 16th,16th, 16th,16th
+        ;     ;whl x4, x6, x8
+        ;     _8888  = $52
+        ;     _6x8   = $51
+        ;     _8x8   = $50
 
-        ;Index $54:
-        Duration_Set _1111, 2
-        Duration_Set _6x1, 3
-        Duration_Set _8x1, 4, 8th,8th, 8th,8th, 8th,8th ; 8th,8th
+        ;     ;Usage
+        ;         ;Duration <Set_Alias>, <Pitch>,<Pitch>, <Pitch>,<Pitch>, ...
+        ;         ;ie Duration _00, As3,B3
+        ; ;
 
-        Duration_Set _111_R, 2, 8th,8th, 8th,$90 ;$90 is Repeat "3b"
-
-        Duration_Set _2222, 2
-        Duration_Set _6x2, 3
-        Duration_Set _8x2, 4, qtr,qtr,qtr,qtr,qtr,qtr,qtr,qtr
-
-        ;Index $58:
-        Duration_Set _8888, 2
-        Duration_Set _6x8, 3
-        Duration_Set _8x8, 4, whl,whl, whl,whl, whl,whl, whl,whl
-
-
-
-        ;These are the aliases for the Simple, Hardcoded Duration Sets
-            ;Rename if desired, but their function is hardcoded.
-
-
-        ; Naming Convention:
-        ;   _XXXX    Four repetitions of a note length.
-        ;   _6xX     Six repetitions of a note length.
-        ;   _8xX     Eight repetitions of a note length.
-        ;
-        ;   X = Length type:
-        ;       0 = 16th note.
-        ;       1,2,4,8 = X * 8th-note length.
-        ;
-        ;   _00 = Two 16th notes.
+        ; .endif
     ;
 
-    .else ;Hardcoded Set
+    ;Sets are defined with the Opcodes: 16th, 8th, qtr, dqt, hlf, dhf, whl, or by the raw byte that instruction encodes.
+        ;ie $e0 = Set_Env,  $b0 = Shift_Pitch
+            ;See `Bad Ideas` in the README for the other instructions.
 
-        ;16th x2, x4, x6, x8
-        _00    = $5f
-        _0000  = $5e
-        _6x0   = $5d
-        _8x0   = $5c
+    ; See the README for details on defining custom duration sets.
 
-        ;8th x4, x6, x8
-        _1111  = $5b
-        _6x1   = $5a
-        _8x1   = $59
+    ;WARNING Validation on the Custom Sets is limited. See the example set for usage.
 
-        ;qtr x4, x6, x8
-        _2222  = $58
-        _6x2   = $57
-        _8x2   = $56
+    ;Index $50:
+    Duration_Set _00,   1
+    Duration_Set _0000, 2
+    Duration_Set _6x0,  3
+    Duration_Set _8x0,  4, 16th,16th, 16th,16th, 16th,16th, 16th,16th
 
-        ;hlf x4, x6, x8
-        _4444  = $55
-        _6x4   = $54
-        _8x4   = $53
+    ;Index $54:
+    Duration_Set _1111, 2
+    Duration_Set _6x1, 3
+    Duration_Set _8x1, 4, 8th,8th, 8th,8th, 8th,8th ; 8th,8th
 
-        ;whl x4, x6, x8
-        _8888  = $52
-        _6x8   = $51
-        _8x8   = $50
+    Duration_Set _111_R, 2, 8th,8th, 8th,$90 ;$90 is Repeat "3b"
 
-        ;Usage
-            ;Duration <Set_Alias>, <Pitch>,<Pitch>, <Pitch>,<Pitch>, ...
-            ;ie Duration _00, As3,B3
+    Duration_Set _2222, 2
+    Duration_Set _6x2, 3
+    Duration_Set _8x2, 4, qtr,qtr,qtr,qtr,qtr,qtr,qtr,qtr
+
+    ;Index $58:
+    Duration_Set _8888, 2
+    Duration_Set _6x8, 3
+    Duration_Set _8x8, 4, whl,whl, whl,whl, whl,whl, whl,whl
+
+
+
+
+    ; Naming Convention:
+    ;   _XXXX    Four repetitions of a note length.
+    ;   _6xX     Six repetitions of a note length.
+    ;   _8xX     Eight repetitions of a note length.
+    ;
+    ;   X = Length type:
+    ;       0 = 16th note.
+    ;       1,2,4,8 = X * 8th-note length.
+    ;
+    ;   _00 = Two 16th notes.
     ;
 
-    .endif
+
 ;
 
 
